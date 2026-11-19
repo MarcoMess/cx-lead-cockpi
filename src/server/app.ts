@@ -13,6 +13,8 @@ export interface AppOptionen {
   demo: boolean;
   passwort: string;
   sitzungsSchluessel: Buffer;
+  /** Klartext des Agenten-Schlüssels; braucht nur der simulierte Agent im Vorführmodus. */
+  agentSchluessel?: string;
 }
 
 declare module 'fastify' {
@@ -52,6 +54,6 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
   await richteZugangEin(app, { passwort: opt.passwort, sitzungsSchluessel: opt.sitzungsSchluessel });
   await app.register(gesundheitRouten, { prefix: '/api/v1' });
   await app.register(agentRouten, { prefix: '/api/v1' });
-  if (opt.demo) await app.register(simRouten, { prefix: '/api/v1' });
+  if (opt.demo) await app.register(simRouten, { prefix: '/api/v1', agentSchluessel: opt.agentSchluessel });
   return app;
 }

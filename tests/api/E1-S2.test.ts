@@ -26,9 +26,9 @@ describe('E1-S2 Vorführdatum und Zurücksetzen', () => {
     expect(db.prepare(`SELECT status FROM ansprechpartner WHERE id = 3`).get()).toEqual({ status: 'freigegeben' });
     expect(zahl(db, 'SELECT COUNT(*) n FROM firma')).toBe(7);
     // Die Sitzung und der Agenten-Schlüssel bleiben gültig.
-    expect((await app.inject({ method: 'GET', url: '/api/v1/sim/zustand', headers: kopf })).json()).toEqual({
-      heute: '2026-11-18',
-    });
+    expect((await app.inject({ method: 'GET', url: '/api/v1/sim/zustand', headers: kopf })).json().heute).toBe(
+      '2026-11-18',
+    );
     expect(zahl(db, `SELECT COUNT(*) n FROM einstellung WHERE schluessel = 'agent_schluessel_hash'`)).toBe(1);
   });
 

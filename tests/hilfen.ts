@@ -19,6 +19,7 @@ export async function neueApp(opt: { demo?: boolean } = {}) {
     demo: opt.demo ?? true,
     passwort: TEST_PASSWORT,
     sitzungsSchluessel: randomBytes(32),
+    agentSchluessel: TEST_AGENT_SCHLUESSEL,
   });
   return { app, db };
 }

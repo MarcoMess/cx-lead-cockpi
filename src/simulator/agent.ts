@@ -1,0 +1,94 @@
+// Simulierter Recherche-Agent (architektur.md, Abschnitt 6). Er benutzt ausschließlich die Agenten-API
+// mit dem Agenten-Schlüssel – genau wie später die geplante Claude-Aufgabe – und schreibt nie direkt in die Datenbank.
+// Die Anfrage läuft über `app.inject`, also durch dieselbe Routen-, Zugangs- und Fehlerbehandlung wie eine HTTP-Anfrage.
+import type { FastifyInstance } from 'fastify';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import type { FehlerAntwort } from '../gemeinsam/fehler';
+import type { LaufAngelegt } from '../gemeinsam/lauf';
+import { FachFehler } from '../server/fehler';
+
+const BEISPIEL_LAUF = JSON.parse(readFileSync(fileURLToPath(new URL('./beispiel-lauf.json', import.meta.url)), 'utf8'));
+const LEERER_LAUF = { abdeckungsgrenzen: 'Keine weiteren belegten Treffer', vorschlaege: [] };
+
+// Zustand des Simulators; liegt in den Einstellungen und wird mit den Vorführdaten zurückgesetzt.
+const GELIEFERT = 'sim_agent_geliefert';
+const GESTOERT = 'sim_agent_api_gestoert';
+const DATEI = 'sim_agent_ergebnisdatei';
+
+function lies(app: FastifyInstance, k: string): string | null {
+  const z = app.db.prepare(`SELECT wert FROM einstellung WHERE schluessel = ?`).get(k) as
+    { wert: string | null } | undefined;
+  return z?.wert ?? null;
+}
+function schreibe(app: FastifyInstance, k: string, wert: string | null): void {
+  app.db
+    .prepare(
+      `INSERT INTO einstellung (schluessel, wert) VALUES (?, ?) ON CONFLICT (schluessel) DO UPDATE SET wert = excluded.wert`,
+    )
+    .run(k, wert);
+}
+
+export function agentZustand(app: FastifyInstance) {
+  return { api_gestoert: lies(app, GESTOERT) === '1', ergebnisdatei_bereit: lies(app, DATEI) !== null };
+}
+
+export function setzeApiGestoert(app: FastifyInstance, gestoert: boolean): void {
+  schreibe(app, GESTOERT, gestoert ? '1' : '0');
+}
+
+export function ergebnisdatei(app: FastifyInstance): unknown | null {
+  const d = lies(app, DATEI);
+  return d === null ? null : JSON.parse(d);
+}
+
+export type AgentMeldung =
+  | { ergebnis: 'lauf_angelegt'; lauf_id: number; angelegt: number; meldung: string }
+  | { ergebnis: 'api_gestoert'; meldung: string };
+
+/** Der Agent meldet sich: erster Lauf mit den vier Beispielvorschlägen, danach Läufe ohne Vorschläge. */
+export async function agentMeldetSich(
+  app: FastifyInstance,
+  agentSchluessel: string | undefined,
+): Promise<AgentMeldung> {
+  const lauf = lies(app, GELIEFERT) === '1' ? LEERER_LAUF : BEISPIEL_LAUF;
+
+  if (lies(app, GESTOERT) === '1') {
+    schreibe(app, DATEI, JSON.stringify(lauf));
+    schreibe(app, GELIEFERT, '1');
+    return {
+      ergebnis: 'api_gestoert',
+      meldung:
+        'Der Agent hat recherchiert, erreicht die Cockpit-API aber nicht. Die Ergebnisdatei liegt zum Hochladen bereit.',
+    };
+  }
+  if (!agentSchluessel) {
+    throw new FachFehler(409, 'agent_schluessel_fehlt', 'Für den simulierten Agenten fehlt COCKPIT_AGENT_KEY in .env.');
+  }
+
+  const r = await app.inject({
+    method: 'POST',
+    url: '/api/v1/agent/laeufe',
+    headers: { authorization: `Bearer ${agentSchluessel}` },
+    payload: lauf,
+  });
+  if (r.statusCode !== 201) {
+    const f = (r.json() as FehlerAntwort).fehler;
+    throw new FachFehler(
+      r.statusCode === 409 ? 409 : 502,
+      f.code,
+      `Der Agent konnte keinen Lauf anlegen: ${f.meldung}`,
+    );
+  }
+  const ergebnis = r.json() as LaufAngelegt;
+  schreibe(app, GELIEFERT, '1');
+  return {
+    ergebnis: 'lauf_angelegt',
+    lauf_id: ergebnis.lauf_id,
+    angelegt: ergebnis.angelegt,
+    meldung:
+      ergebnis.angelegt === 1
+        ? 'Der Agent hat 1 Vorschlag geliefert.'
+        : `Der Agent hat ${ergebnis.angelegt} Vorschläge geliefert.`,
+  };
+}
