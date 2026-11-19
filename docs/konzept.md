@@ -1,6 +1,6 @@
 # CX Lead Cockpit – Konzept
 
-Version: 1.2 · Datum: 18.11.2026 · Status: Freigegeben (Konzept 1.0 und Clickdummy von Marco freigegeben am 18.11.2026; 1.1 und 1.2 übernehmen die Ergebnisse aus Clickdummy und Stories)
+Version: 1.3 · Datum: 19.11.2026 · Status: Freigegeben (Konzept 1.0 und Clickdummy von Marco freigegeben am 18.11.2026; 1.1 und 1.2 übernehmen die Ergebnisse aus Clickdummy und Stories; 1.3 übernimmt Marcos Entscheidung zum Weg des Agenten vom 19.11.2026)
 
 Lesehilfe: Unmarkierte Aussagen hat Marco bestätigt oder sie stammen aus seinem Agenten-Prompt. `[Annahme]` = Vorschlag, noch nicht bestätigt. `[Offen]` = Lücke.
 
@@ -67,6 +67,10 @@ Erster Wurf ist ein Ein-Nutzer-System am Desktop. Jeder Datensatz trägt trotzde
 - Bedienung am Handy.
 - Auswertung, welche Aufhänger und Formulierungen Antworten bringen, als Rückkanal an den Agenten.
 
+### Ergänzung 1.3: Echtbetrieb
+
+- Neben dem Vorführbestand gibt es einen Echtbestand: eigene Datenbank ohne Beispieldaten, nur mit dem Startbestand der Sperrliste und dem Rechercheprofil; echtes Datum, keine Vorführleiste. Ein eigener Befehl startet das Cockpit im Echtbetrieb. Echte Kontaktdaten liegen nur in dieser Datenbank auf Marcos Rechner, nie im Repository.
+
 ### Bewusst nicht
 
 - Kein automatisches Senden, Vernetzen oder Auslesen auf LinkedIn / Sales Navigator.
@@ -88,7 +92,8 @@ Erster Wurf ist ein Ein-Nutzer-System am Desktop. Jeder Datensatz trägt trotzde
 4. Der Agent recherchiert nach dem gelieferten Zielbild und Marcos Regeltext.
 5. Der Agent legt einen Recherchelauf mit den Vorschlägen an (Firma, Ansprechpartner, Anlass mit Datum und Quelle, Relevanzhypothese, Gesprächsziel, Betreff und LinkedIn-Nachricht) → das System prüft Dubletten und Pflichtfelder und legt den Lauf im Eingangskorb ab (S2).
 - Ergebnis: Ein neuer Lauf mit Status »Zu prüfen«; Dubletten sind markiert und nicht freigebbar.
-- Ausnahmen: Weniger belegte Treffer als angefordert → der Lauf nennt die Lücke im Feld »Abdeckungsgrenzen«. API nicht erreichbar → Marco lädt die Ergebnisdatei des Agenten von Hand in S2 hoch `[Annahme]`.
+- Ausnahmen: Weniger belegte Treffer als angefordert → der Lauf nennt die Lücke im Feld »Abdeckungsgrenzen«. API nicht erreichbar → Marco lädt die Ergebnisdatei des Agenten von Hand in S2 hoch.
+- **Weg im ersten Echtbetrieb (Entscheidung 19.11.2026):** Das Cockpit läuft nur auf Marcos Rechner; eine geplante Claude-Aufgabe in der Cloud erreicht es nicht. Deshalb gilt zunächst: Die Claude-Aufgabe recherchiert werktags um 6:30 Uhr nach Marcos Regeltext und liefert die Ergebnisdatei; Marco lädt sie in S2 hoch (Schritt 5 über den Upload statt über die API). Die Schritte 1 bis 3 entfallen auf diesem Weg: Zielbild und Anzahl stehen im Prompt der Aufgabe, den Abgleich mit der Sperrliste und dem Bestand macht das Cockpit beim Hochladen. Die Agenten-API bleibt bestehen und wird genutzt, sobald das Cockpit erreichbar betrieben wird.
 
 ### A2 – Vorschläge prüfen und freigeben (F2, F3)
 
@@ -331,6 +336,7 @@ Endzustände daneben: Verworfen, Kein Interesse, Ohne Antwort geschlossen, Gespe
 - Geschlossene Kontakte bleiben für den Agenten 6 Monate gesperrt; danach darf er sie mit neuem Anlass erneut vorschlagen, gekennzeichnet als »Wiederansprache«. Gibt Marco eine Wiederansprache frei, wird der bestehende Kontakt mit vollständigem Verlauf auf »Freigegeben« gesetzt und erhält den neuen Anlass und die neue Nachricht; es entsteht kein zweiter Kontakt.
 - Antwort »neutral/später«: Status »Antwort erhalten«, Marco setzt eine Wiedervorlage mit eigenem Datum; vorgeschlagen wird heute plus 30 Tage.
 - »Kein Interesse« schließt den Kontakt und sperrt ihn dauerhaft für den Agenten; Marco kann ihn von Hand wieder öffnen `[Annahme]`.
+- Hochladen der Ergebnisdatei (1.3): Steht die Firma oder die Person eines Vorschlags auf der Sperrliste (bei Personen nur bis »gesperrt bis«), ist der Vorschlag als »Gesperrt« gekennzeichnet und nicht freigebbar; der Grund steht dabei.
 - Verwerfen im Eingangskorb: Die Gründe »passt nicht ins Zielbild« und »wird von Kollegen betreut« sperren die Firma für den Agenten; die übrigen Gründe sperren nur die Person, für 6 Monate `[Annahme]`. Eine so gesperrte Firma bleibt gesperrt, bis Marco den Sperreintrag entfernt.
 - »An SAP übergeben« ist nur aus »Antwort erhalten (positiv)« oder »Gespräch vereinbart« möglich.
 - Opt-out setzt »Gesperrt« und erzeugt einen Sperreintrag; gesperrte Personen liefert die API dem Agenten dauerhaft als Ausschluss.
@@ -468,4 +474,5 @@ Nach drei Monaten:
 | 0.3 | 18.11.2026 | Runde 3: Laufzeit fest 6:30 Uhr. HubSpot im ersten Wurf nicht angebunden, F11 gestrichen und nach »Später« verschoben. E-Mail-Grundlage prüft Marco von Hand und wählt sie vor dem Öffnen des Entwurfs. Agent liefert nur die LinkedIn-Fassung, E-Mail-Fassung auf Knopfdruck. Wiederansprache nach 6 Monaten bestätigt |
 | 1.0 | 18.11.2026 | Runde 4 und Fertig-Check: E-Mail-Fassung per Vorlage, zweiter Ansprechpartner erlaubt und markiert, SAP-Suche vor dem Anlegen, Obergrenze und Zusatzlauf, Anmutung und Name bestätigt. Aus dem Fertig-Check ergänzt: Regeln für »neutral/später«, »Kein Interesse« und Verwerfen; Beispieldaten für Antworten und SAP-Fehlerfall erweitert |
 | 1.1 | 18.11.2026 | Clickdummy freigegeben, Ergebnisse übernommen: Beispielvorschläge für den Eingangskorb ergänzt; Widerspruch bei Albers aufgelöst (SAP-Protokoll entsteht erst in A5); Regeln für »Wieder öffnen«, Zusatzlauf in Sperrzeiten, Nachfassen per E-Mail, Bezugsgrößen der Kennzahlen, CSV-Spalten und Signatur ergänzt; S5 und S7 ohne gewählten Kontakt beschrieben. Abweichung: Der Dummy erzeugt den Schließen-Vorschlag nur nach dem Nachfassen und protokolliert auch lauffreie Tage; maßgeblich sind die Regeln in Abschnitt 9 |
+| 1.3 | 19.11.2026 | Marco will echte Daten statt des Simulators. Entscheidung: Die geplante Claude-Aufgabe liefert die Ergebnisdatei, Marco lädt sie hoch (A1); beim Hochladen prüft das Cockpit gegen die Sperrliste (Regel in Abschnitt 9). Neu: Echtbetrieb mit eigenem Datenbestand neben dem Vorführbestand (Abschnitt 5). Die Agenten-API bleibt für später |
 | 1.2 | 18.11.2026 | Entscheidungen aus der Stories-Stufe: lauffreie Tage erscheinen nicht im Laufprotokoll (bestätigt); Freigabe einer Wiederansprache öffnet den bestehenden Kontakt; Mindestumsatz wird am Gegenwert in EUR geprüft, den der Agent mit Kurs und Quelle liefert; Aktion »Löschen« in S3 und S4; Fristen in S8 nur Anzeige; verworfene Firmen bleiben gesperrt, bis der Eintrag entfernt wird. Der Clickdummy zeigt diese Punkte noch nicht. Stories am 18.11.2026 freigegeben; damit ist auch bestätigt, dass eine Firma nur ohne Ansprechpartner gelöscht werden kann |

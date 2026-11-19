@@ -76,3 +76,17 @@ describe('Prüfung E2-S4 Sollte: Grenzfälle der Normalisierung', () => {
     expect(bewerteBekanntePerson(g, '2026-11-19', true)).toBe('wiederansprache');
   });
 });
+
+import { pruefeGegenBestand } from '../../src/server/regeln/dubletten';
+describe('Firmenabgleich mit Land', () => {
+  it('gleicher Stammname in anderem Land ist eine andere Firma', () => {
+    const bestand = {
+      firmen: [{ id: 4, name: 'Hansemarkt Handels SE', domain: null, land: 'DE' }],
+      kontakte: [],
+    };
+    const v = (land: 'DE' | 'CH') =>
+      ({ firma: { name: 'Hansemarkt Handels AG', land }, person: { vorname: 'A', nachname: 'B' } }) as never;
+    expect(pruefeGegenBestand(v('CH'), bestand, '2026-11-19').firma_id).toBeNull();
+    expect(pruefeGegenBestand(v('DE'), bestand, '2026-11-19').firma_id).toBe(4);
+  });
+});

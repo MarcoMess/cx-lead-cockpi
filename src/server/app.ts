@@ -40,7 +40,7 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
     if (err instanceof FachFehler) {
       return reply.status(err.status).send({ fehler: { code: err.code, meldung: err.message, feld: err.feld } });
     }
-    const e = err as { validation?: unknown; statusCode?: number; message: string };
+    const e = err as { validation?: unknown; statusCode?: number; code?: string; message: string };
     if (e.validation || e.statusCode === 400) {
       return reply.status(400).send({
         fehler: {
@@ -50,6 +50,16 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
             : 'Die Eingabe ist ungültig. Bitte prüfe die Angaben.',
         },
       });
+    }
+    if (e.statusCode === 413) {
+      return reply
+        .status(413)
+        .send({ fehler: { code: 'zu_gross', meldung: 'Die Datei ist zu groß. Erlaubt ist höchstens 1 MB.' } });
+    }
+    if (e.statusCode === 415) {
+      return reply
+        .status(415)
+        .send({ fehler: { code: 'falsches_format', meldung: 'Erwartet wird JSON (Content-Type application/json).' } });
     }
     app.log.error(err);
     return reply

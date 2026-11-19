@@ -24,6 +24,8 @@ export interface VorschlagKarte {
   bestehende_firma: { id: number; name: string } | null;
   /** Hinweis, wenn bei der Firma schon eine Ansprache läuft. */
   hinweis_zweiter_ansprechpartner: string | null;
+  /** Eintrag der Sperrliste, der diesen Vorschlag sperrt (Konzept 1.3, Story E2-S5); dann nicht freigebbar. */
+  gesperrt: { art: 'firma' | 'person'; name: string; grund: string; gesperrt_bis: string | null } | null;
   /** Grund, wenn Marco den Vorschlag verworfen hat (Story E3-S4). */
   verwerf_grund: string | null;
   /** Fehlende oder unzulässige Pflichtangaben; nicht leer heißt: Freigeben gesperrt (Story E3-S2). */

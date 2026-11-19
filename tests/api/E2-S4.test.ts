@@ -78,6 +78,7 @@ describe('E2-S4 Dubletten und Wiederansprache erkennen', () => {
     const vs = kopie();
     const a = nach(vs, 'Kortmann');
     a.firma.name = 'Alpenstrom Netze AG'; // Gruber: Freigegeben
+    a.firma.land = 'AT';
     const b = nach(vs, 'Voss');
     b.firma.name = 'Nordwerk Fördertechnik GmbH'; // Albers: Gespräch vereinbart
     const { karte } = await lauf([a, b]);

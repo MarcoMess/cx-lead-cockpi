@@ -6,6 +6,8 @@ import type { Datenbank } from '../daten/db';
 import { liesAusgefuehrtenLauf, vorschlaegeVonLauf } from '../daten/laeufe';
 import { FachFehler } from '../fehler';
 import { liesMindestumsatz } from '../daten/profil';
+import { listeSperren } from '../daten/sperrliste';
+import { sperreFuer } from '../regeln/ausschluss';
 import { pruefeGegenBestand } from '../regeln/dubletten';
 import { fehlendePflichtangaben } from '../regeln/pflichtangaben';
 
@@ -14,6 +16,7 @@ export function ladeLauf(db: Datenbank, uhr: Uhr, id: number): LaufDetail {
   if (!lauf) throw new FachFehler(404, 'lauf_unbekannt', 'Diesen Recherchelauf gibt es nicht.');
   const bestand = liesBestand(db);
   const mindestumsatz = liesMindestumsatz(db);
+  const sperren = listeSperren(db);
   const vorschlaege = vorschlaegeVonLauf(db, id).map((v): VorschlagKarte => {
     const { bezug_ansprechpartner_id, ...rest } = v;
     // Ungeprüfte Vorschläge werden gegen den heutigen Bestand geprüft: Wer seit dem Anlegen dazugekommen ist,
@@ -38,6 +41,10 @@ export function ladeLauf(db: Datenbank, uhr: Uhr, id: number): LaufDetail {
         : null,
       bestehende_firma: firma ? { id: firma.id, name: firma.name } : null,
       hinweis_zweiter_ansprechpartner: p?.hinweis_zweiter_ansprechpartner ?? null,
+      gesperrt: (() => {
+        const g = v.zustand === 'zu_pruefen' ? sperreFuer(v.daten, sperren, uhr.heute()) : null;
+        return g ? { art: g.art, name: g.name, grund: g.grund, gesperrt_bis: g.gesperrt_bis } : null;
+      })(),
       fehlende_pflichtangaben:
         v.zustand === 'zu_pruefen' ? fehlendePflichtangaben(v.daten, mindestumsatz, uhr.heute()) : [],
     };

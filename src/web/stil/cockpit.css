@@ -504,3 +504,17 @@ input.inl.breit {
 .note {
   overflow-wrap: anywhere;
 }
+input.versteckt {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+label.btn {
+  cursor: pointer;
+  position: relative;
+}
+label.btn:focus-within {
+  outline: 2px solid var(--mint);
+  outline-offset: 2px;
+}

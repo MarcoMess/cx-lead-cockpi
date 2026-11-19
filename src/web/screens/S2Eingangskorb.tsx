@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import type { LaufDetail, LaufZeile, VorschlagKarte } from '../../gemeinsam/eingangskorb';
+import type { LaufAngelegt } from '../../gemeinsam/lauf';
 import { api, ApiFehler } from '../api';
 import { useAktualisierung } from '../aktualisierung';
 import { ANLASS_TYP_TEXT, STATUS_TEXT } from '../../gemeinsam/texte';
@@ -52,6 +53,7 @@ export function S2Eingangskorb() {
       ? laufFehler
       : '';
 
+  const navigate = useNavigate();
   function geaendert(text: string) {
     setMeldung(text);
     setNeuLaden((n) => n + 1);
@@ -97,6 +99,12 @@ export function S2Eingangskorb() {
               ))}
             </tbody>
           </table>
+          <Hochladen
+            fertig={(r, text) => {
+              geaendert(text);
+              navigate(`/eingangskorb/${r.lauf_id}`);
+            }}
+          />
         </section>
         <div>
           {spaltenFehler && (
@@ -143,7 +151,7 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
   const [offen, setOffen] = useState(false);
   const [verwerfen, setVerwerfen] = useState(false);
   const [grund, setGrund] = useState<VerwerfGrund>(VERWERF_GRUENDE[0]);
-  const gesperrt = v.ist_dublette || v.fehlende_pflichtangaben.length > 0;
+  const gesperrt = v.ist_dublette || !!v.gesperrt || v.fehlende_pflichtangaben.length > 0;
 
   async function freigeben() {
     setFehler('');
@@ -181,6 +189,7 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
         {v.zustand === 'freigegeben' && <Etikett art="ok">Freigegeben</Etikett>}
         {v.zustand === 'verworfen' && <Etikett art="aus">Verworfen: {v.verwerf_grund}</Etikett>}
         {v.zustand === 'zu_pruefen' && v.ist_dublette && <Etikett art="aus">Dublette</Etikett>}
+        {v.zustand === 'zu_pruefen' && v.gesperrt && <Etikett art="aus">Gesperrt</Etikett>}
         {v.zustand === 'zu_pruefen' && v.ist_wiederansprache && <Etikett art="hypothese">Wiederansprache</Etikett>}
       </div>
       <p className="eng">
@@ -214,6 +223,14 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
         <p className="note">
           Wiederansprache: {v.bezug.name} wurde am {datum(v.bezug.geschlossen_am)} ohne Antwort geschlossen, die Sperre
           von {FRISTEN.sperreNachSchliessenMonate} Monaten ist abgelaufen und es gibt einen neuen Anlass.
+        </p>
+      )}
+      {v.zustand === 'zu_pruefen' && v.gesperrt && (
+        <p className="note fehler">
+          Gesperrt: {v.gesperrt.art === 'firma' ? 'Die Firma' : ''} {v.gesperrt.name} steht auf der Sperrliste (
+          {v.gesperrt.grund}
+          {v.gesperrt.gesperrt_bis ? `, bis ${datum(v.gesperrt.gesperrt_bis)}` : ''}). Der Vorschlag kann nicht
+          freigegeben werden.
         </p>
       )}
       {v.zustand === 'zu_pruefen' && v.hinweis_zweiter_ansprechpartner && (
@@ -273,9 +290,11 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
                 title={
                   v.ist_dublette
                     ? 'Eine Dublette lässt sich nicht freigeben.'
-                    : gesperrt
-                      ? 'Es fehlen Pflichtangaben.'
-                      : undefined
+                    : v.gesperrt
+                      ? 'Der Vorschlag steht auf der Sperrliste.'
+                      : gesperrt
+                        ? 'Es fehlen Pflichtangaben.'
+                        : undefined
                 }
               >
                 Freigeben
@@ -288,6 +307,46 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
         </div>
       )}
     </article>
+  );
+}
+
+/** »Ergebnisdatei hochladen« (Story E2-S5): liest die Datei im Browser und schickt den Lauf an den Server. */
+function Hochladen({ fertig }: { fertig: (r: LaufAngelegt, text: string) => void }) {
+  const [fehler, setFehler] = useState('');
+  async function gewaehlt(e: React.ChangeEvent<HTMLInputElement>) {
+    const datei = e.target.files?.[0];
+    e.target.value = '';
+    if (!datei) return;
+    setFehler('');
+    let inhalt: unknown;
+    try {
+      inhalt = JSON.parse(await datei.text());
+    } catch {
+      setFehler(`Die Datei »${datei.name}« lässt sich nicht lesen: Sie enthält kein gültiges JSON.`);
+      return;
+    }
+    try {
+      const r = await api<LaufAngelegt>('POST', '/laeufe/upload', inhalt);
+      const zurueck = r.zurueckgewiesen.length
+        ? ` ${r.zurueckgewiesen.length} zurückgewiesen: ${r.zurueckgewiesen.map((z) => `Nr. ${z.index + 1} ${z.meldung}`).join(' ')}`
+        : '';
+      fertig(r, `Ergebnisdatei hochgeladen: ${r.angelegt} Vorschläge im Eingangskorb.${zurueck}`);
+    } catch (x) {
+      setFehler(x instanceof ApiFehler ? x.message : 'Das Hochladen hat nicht geklappt.');
+    }
+  }
+  return (
+    <div className="aktionen">
+      <label className="btn">
+        Ergebnisdatei hochladen
+        <input type="file" accept=".json,application/json" className="versteckt" onChange={gewaehlt} />
+      </label>
+      {fehler && (
+        <p className="hinweis fehler" role="alert">
+          {fehler}
+        </p>
+      )}
+    </div>
   );
 }
 

@@ -50,10 +50,13 @@ export function liesFirmenname(db: Datenbank, id: number): string | undefined {
 }
 
 /** Alle Firmen mit Name und Domain, für die Dublettenprüfung. */
-export function listeFirmenFuerAbgleich(db: Datenbank): { id: number; name: string; domain: string | null }[] {
-  return db.prepare(`SELECT id, name, domain FROM firma`).all() as unknown as {
+export function listeFirmenFuerAbgleich(
+  db: Datenbank,
+): { id: number; name: string; domain: string | null; land: string | null }[] {
+  return db.prepare(`SELECT id, name, domain, land FROM firma`).all() as unknown as {
     id: number;
     name: string;
     domain: string | null;
+    land: string | null;
   }[];
 }

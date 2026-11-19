@@ -16,6 +16,8 @@ import { FachFehler } from '../fehler';
 import { liesMindestumsatz } from '../daten/profil';
 import { fehlendePflichtangaben } from '../regeln/pflichtangaben';
 import { liesBestand } from '../daten/bestand';
+import { listeSperren } from '../daten/sperrliste';
+import { sperreFuer } from '../regeln/ausschluss';
 import { darfWiederangesprochenWerden, normalisiereFirmenname, pruefeGegenBestand } from '../regeln/dubletten';
 
 export interface Freigabe {
@@ -44,6 +46,15 @@ export function gibVorschlagFrei(db: Datenbank, uhr: Uhr, vorschlagId: number): 
         422,
         'dublette',
         `${d.person.vorname} ${d.person.nachname} steht schon in deinen Kontakten. Eine Dublette kannst du nicht freigeben; verwirf sie mit »bereits bekannt«.`,
+      );
+    }
+
+    const sperre = sperreFuer(d, listeSperren(db), heute);
+    if (sperre) {
+      throw new FachFehler(
+        422,
+        'gesperrt',
+        `${sperre.art === 'firma' ? 'Die Firma' : ''} ${sperre.name} steht auf der Sperrliste (${sperre.grund}). Einen gesperrten Vorschlag kannst du nicht freigeben.`.trim(),
       );
     }
 

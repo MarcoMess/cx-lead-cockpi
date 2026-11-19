@@ -133,7 +133,10 @@ export function pruefeGegenBestand(v: VorschlagDaten, bestand: Bestand, heute: s
   const norm = normalisiereFirmenname(v.firma.name);
   const domain = v.firma.domain ? normalisiereDomain(v.firma.domain) : null;
   const firma =
-    bestand.firmen.find((f) => normalisiereFirmenname(f.name) === norm) ??
+    // Gleicher Stammname in einem anderen Land ist eine andere Gesellschaft (Prüfung E2-S4 Runde 2, Hinweis).
+    bestand.firmen.find(
+      (f) => normalisiereFirmenname(f.name) === norm && (!f.land || !v.firma.land || f.land === v.firma.land),
+    ) ??
     (domain ? bestand.firmen.find((f) => f.domain && normalisiereDomain(f.domain) === domain) : undefined) ??
     null;
   const url = v.person.linkedin_url ? normalisiereLinkedinUrl(v.person.linkedin_url) : null;
