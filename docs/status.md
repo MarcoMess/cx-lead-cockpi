@@ -29,7 +29,7 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | #9 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | #10 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | #11 | Wartet auf Entscheidung (Prüfung 1: nur Kriterium 5 nicht prüfbar, Nachweis mit E5-S3) | 0 von 2 |
-| 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | #12 | In Prüfung | 0 von 2 |
+| 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | #12 | Bestanden (Runde 1), wartet auf #11 | 0 von 2 |
 | 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | – | Offen | 0 von 2 |
 
 Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
@@ -55,6 +55,7 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 | E5-S1 | Kriterium 7 nennt Bernasconi, der auf »Nachgefasst« steht und keine Ansprache hat; Vorschlag: »ein freigegebener Kontakt ohne Anlass (Reto Ammann aus dem Lauf vom 19.11.2026)« | Frage an Marco |
 | E5-S1 | Kriterium 5 (Fassung »von Marco geändert«) setzt das Protokollieren voraus, das erst E5-S3 baut; E5-S3 enthält die Servertests »E5-S1 #5« für beide Fälle | Marco nimmt die Verschiebung an? |
 | E5-S1 | Änderungen an Betreff und Text gehen verloren, wenn Marco die Ansprache ohne Markieren verlässt (A3 Schritt 2 »speichert die Fassung«) | Frage an Marco |
+| E5-S2 | Kopier-Bestätigung bleibt nach weiterem Bearbeiten stehen; Test kopiert den Betreff nur unverändert; leeres Feld wird »kopiert« bestätigt | Pflege vor dem Halt |
 | E4-S2 | Meldung `filter_ungueltig` ohne Handlungshinweis; »Dr.« fehlt in der Meldung `person_bekannt` | Pflege vor dem Halt |
 | Konzept | 21-Tage-Schließvorschlag für Reinhardts Altdaten | Entscheidung mit E6-S5 |
 | Konzept | Rechtliches (UWG E-Mail, InMail) und Datenschutz | Frage an Marco vor dem Echtbetrieb |
