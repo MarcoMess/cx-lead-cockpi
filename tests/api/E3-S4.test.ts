@@ -52,6 +52,7 @@ describe('E3-S4 Vorschlag verwerfen', () => {
       name: 'Seehotel-Gruppe Bodan AG',
       gesperrt_bis: null,
       neu: true,
+      verlaengert: false,
     });
     expect(sperren()).toEqual([
       {
@@ -118,13 +119,40 @@ describe('E3-S4 Vorschlag verwerfen', () => {
     expect(sperren()).toHaveLength(2);
   });
 
-  it('gültiger Eintrag vorhanden: kein zweiter (neu: false), auch bei Rechtsform und zerlegtem Umlaut', async () => {
+  it('Prüfung E3-S4 Runde 2: eine noch gültige, aber kürzere Personensperre wird bis zur neuen Frist verlängert', async () => {
+    const { verwirf, sperren } = await laufVom19();
+    db.prepare(
+      `INSERT INTO sperreintrag (art, name, firma_name, grund, herkunft, gesperrt_bis, erstellt_am)
+       VALUES ('person', 'Sabine Kortmann', 'Kranbau Oberhavel GmbH', 'Anlass zu schwach', 'verworfen', '2026-12-03', '2026-06-03')`,
+    ).run();
+    const r = await verwirf('Kortmann', 'Kontakt nicht belegt');
+    expect(r.json().sperreintrag).toMatchObject({ neu: false, verlaengert: true, gesperrt_bis: '2027-05-19' });
+    const s = sperren() as { gesperrt_bis: string; grund: string }[];
+    expect(s).toHaveLength(1);
+    expect(s[0]).toMatchObject({ gesperrt_bis: '2027-05-19', grund: 'Kontakt nicht belegt' });
+  });
+
+  it('eine längere oder dauerhafte Personensperre bleibt, die Antwort nennt ihr tatsächliches Ende', async () => {
+    const { verwirf, sperren } = await laufVom19();
+    db.prepare(
+      `INSERT INTO sperreintrag (art, name, firma_name, grund, herkunft, gesperrt_bis, erstellt_am)
+       VALUES ('person', 'Sabine Kortmann', NULL, 'Von Marco gesperrt', 'von_marco', NULL, '2026-11-01')`,
+    ).run();
+    const r = await verwirf('Kortmann', 'Anlass zu schwach');
+    expect(r.json().sperreintrag).toMatchObject({ neu: false, verlaengert: false, gesperrt_bis: null });
+    expect(sperren()).toEqual([]);
+    expect(db.prepare(`SELECT gesperrt_bis FROM sperreintrag WHERE name = 'Sabine Kortmann'`).all()).toEqual([
+      { gesperrt_bis: null },
+    ]);
+  });
+
+  it('gültiger Eintrag vorhanden: kein zweiter (neu: false), auch bei Rechtsform', async () => {
     const { verwirf, sperren } = await laufVom19();
     db.prepare(
       `INSERT INTO sperreintrag (art, name, grund, herkunft, erstellt_am) VALUES ('firma', 'Seehotel-Gruppe Bodan', 'x', 'von_marco', '2026-11-01')`,
     ).run();
     const r = await verwirf('Ammann', 'passt nicht ins Zielbild');
-    expect(r.json().sperreintrag).toMatchObject({ art: 'firma', neu: false });
+    expect(r.json().sperreintrag).toMatchObject({ art: 'firma', neu: false, name: 'Seehotel-Gruppe Bodan' });
     expect(sperren()).toEqual([]);
   });
 });
