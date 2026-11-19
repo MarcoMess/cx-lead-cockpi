@@ -5,17 +5,16 @@ import type { Uhr } from '../anbindungen/uhr';
 import { transaktion, type Datenbank } from '../daten/db';
 import {
   fuegeAnlassHinzu,
-  findeNachLinkedin,
   legeAnsprechpartnerAn,
   liesStatus,
   oeffneZurWiederansprache,
   setzeErstnachricht,
 } from '../daten/ansprechpartner';
-import { findeFirmaNachNormname, legeFirmaAn } from '../daten/firmen';
+import { legeFirmaAn } from '../daten/firmen';
 import { liesVorschlag, markiereFreigegeben, zaehleFreigabe } from '../daten/laeufe';
 import { FachFehler } from '../fehler';
-import { normalisiereFirmenname } from '../regeln/dubletten';
-import { darfWiederangesprochenWerden } from '../regeln/dubletten';
+import { liesBestand } from '../daten/bestand';
+import { darfWiederangesprochenWerden, normalisiereFirmenname, pruefeGegenBestand } from '../regeln/dubletten';
 
 export interface Freigabe {
   ansprechpartner_id: number;
@@ -34,20 +33,27 @@ export function gibVorschlagFrei(db: Datenbank, uhr: Uhr, vorschlagId: number): 
         'Dieser Vorschlag ist schon geprüft und lässt sich nicht erneut freigeben.',
       );
     }
-    if (v.ist_dublette) {
-      throw new FachFehler(
-        409,
-        'dublette',
-        'Dieser Vorschlag ist eine Dublette: Die Person steht schon in deinen Kontakten. Verwirf ihn mit »bereits bekannt«.',
-      );
-    }
     const d = JSON.parse(v.daten) as VorschlagDaten;
     const heute = uhr.heute();
+    // Prüfung gegen den heutigen Bestand: Wer seit dem Anlegen dazugekommen ist, wird nicht doppelt angelegt.
+    const p = pruefeGegenBestand(d, liesBestand(db), heute);
+    if ((v.ist_dublette && !p.ist_wiederansprache) || p.ist_dublette) {
+      throw new FachFehler(
+        422,
+        'dublette',
+        `${d.person.vorname} ${d.person.nachname} steht schon in deinen Kontakten. Eine Dublette kannst du nicht freigeben; verwirf sie mit »bereits bekannt«.`,
+      );
+    }
 
     let ansprechpartnerId: number;
     let firmaId: number | null = null;
-    if (v.ist_wiederansprache) {
-      const bisher = v.bezug_ansprechpartner_id ? liesStatus(db, v.bezug_ansprechpartner_id) : undefined;
+    const bezugId = v.ist_wiederansprache
+      ? v.bezug_ansprechpartner_id
+      : p.ist_wiederansprache
+        ? p.bezug_ansprechpartner_id
+        : null;
+    if (v.ist_wiederansprache || p.ist_wiederansprache) {
+      const bisher = bezugId ? liesStatus(db, bezugId) : undefined;
       if (!bisher || !darfWiederangesprochenWerden(bisher)) {
         throw new FachFehler(
           409,
@@ -55,17 +61,10 @@ export function gibVorschlagFrei(db: Datenbank, uhr: Uhr, vorschlagId: number): 
           'Diesen Kontakt kannst du nicht wieder ansprechen: Wiederansprache gibt es nur für Kontakte, die ohne Antwort geschlossen wurden.',
         );
       }
-      ansprechpartnerId = v.bezug_ansprechpartner_id!;
+      ansprechpartnerId = bezugId!;
       oeffneZurWiederansprache(db, ansprechpartnerId, 'freigegeben');
     } else {
-      if (d.person.linkedin_url && findeNachLinkedin(db, d.person.linkedin_url)) {
-        throw new FachFehler(
-          409,
-          'person_bekannt',
-          `${d.person.vorname} ${d.person.nachname} steht mit demselben LinkedIn-Profil schon in deinen Kontakten und wird nicht ein zweites Mal angelegt.`,
-        );
-      }
-      firmaId = findeOderLegeFirmaAn(db, d.firma);
+      firmaId = p.firma_id ?? legeFirmaFuerVorschlagAn(db, d.firma);
       ansprechpartnerId = legeAnsprechpartnerAn(db, {
         firma_id: firmaId,
         anrede: pflicht(d.person.anrede, 'person.anrede'),
@@ -107,17 +106,18 @@ export function gibVorschlagFrei(db: Datenbank, uhr: Uhr, vorschlagId: number): 
     }
     markiereFreigegeben(db, v.id, ansprechpartnerId);
     zaehleFreigabe(db, v.recherchelauf_id);
-    return { ansprechpartner_id: ansprechpartnerId, firma_id: firmaId, wiederansprache: !!v.ist_wiederansprache };
+    return {
+      ansprechpartner_id: ansprechpartnerId,
+      firma_id: firmaId,
+      wiederansprache: !!(v.ist_wiederansprache || p.ist_wiederansprache),
+    };
   });
 }
 
-function findeOderLegeFirmaAn(db: Datenbank, f: VorschlagDaten['firma']): number {
-  const norm = normalisiereFirmenname(f.name);
-  const vorhanden = findeFirmaNachNormname(db, norm);
-  if (vorhanden) return vorhanden.id;
+function legeFirmaFuerVorschlagAn(db: Datenbank, f: VorschlagDaten['firma']): number {
   return legeFirmaAn(db, {
     name: f.name.trim(),
-    name_norm: norm,
+    name_norm: normalisiereFirmenname(f.name),
     domain: f.domain || null,
     branche: pflicht(f.branche, 'firma.branche'),
     land: pflicht(f.land, 'firma.land'),

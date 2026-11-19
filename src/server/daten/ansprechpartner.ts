@@ -196,3 +196,13 @@ export function listeBekannteKontakte(db: Datenbank): BekannterKontakt[] {
     .prepare(`SELECT id, firma_id, vorname, nachname, titel, linkedin_url, status, geschlossen_am FROM ansprechpartner`)
     .all() as unknown as BekannterKontakt[];
 }
+
+/** Anlass-Beschreibungen je Ansprechpartner. */
+export function anlassBeschreibungen(db: Datenbank): Map<number, string[]> {
+  const zeilen = db
+    .prepare(`SELECT ansprechpartner_id AS id, beschreibung FROM anlass WHERE beschreibung IS NOT NULL`)
+    .all() as { id: number; beschreibung: string }[];
+  const m = new Map<number, string[]>();
+  for (const z of zeilen) m.set(z.id, [...(m.get(z.id) ?? []), z.beschreibung]);
+  return m;
+}

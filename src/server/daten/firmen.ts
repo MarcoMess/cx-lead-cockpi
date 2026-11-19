@@ -49,11 +49,11 @@ export function liesFirmenname(db: Datenbank, id: number): string | undefined {
   return (db.prepare(`SELECT name FROM firma WHERE id = ?`).get(id) as { name: string } | undefined)?.name;
 }
 
-/** Alle Firmen mit normalisiertem Namen, für die Dublettenprüfung. */
-export function listeFirmenNormnamen(db: Datenbank): { id: number; name: string; name_norm: string }[] {
-  return db.prepare(`SELECT id, name, name_norm FROM firma`).all() as unknown as {
+/** Alle Firmen mit Name und Domain, für die Dublettenprüfung. */
+export function listeFirmenFuerAbgleich(db: Datenbank): { id: number; name: string; domain: string | null }[] {
+  return db.prepare(`SELECT id, name, domain FROM firma`).all() as unknown as {
     id: number;
     name: string;
-    name_norm: string;
+    domain: string | null;
   }[];
 }

@@ -484,3 +484,7 @@ td.rechts {
 input.inl.breit {
   width: 240px;
 }
+.note.fehler {
+  border-left-color: var(--err);
+  background: var(--errbg);
+}
