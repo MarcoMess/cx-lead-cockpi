@@ -133,10 +133,7 @@ export function pruefeGegenBestand(v: VorschlagDaten, bestand: Bestand, heute: s
   const norm = normalisiereFirmenname(v.firma.name);
   const domain = v.firma.domain ? normalisiereDomain(v.firma.domain) : null;
   const firma =
-    // Gleicher Stammname in einem anderen Land ist eine andere Gesellschaft (Prüfung E2-S4 Runde 2, Hinweis).
-    bestand.firmen.find(
-      (f) => normalisiereFirmenname(f.name) === norm && (!f.land || !v.firma.land || f.land === v.firma.land),
-    ) ??
+    bestand.firmen.find((f) => normalisiereFirmenname(f.name) === norm) ??
     (domain ? bestand.firmen.find((f) => f.domain && normalisiereDomain(f.domain) === domain) : undefined) ??
     null;
   const url = v.person.linkedin_url ? normalisiereLinkedinUrl(v.person.linkedin_url) : null;
@@ -161,4 +158,22 @@ export function pruefeGegenBestand(v: VorschlagDaten, bestand: Bestand, heute: s
     bezug_ansprechpartner_id: person?.id ?? null,
     hinweis_zweiter_ansprechpartner: person ? null : hinweisZweiterAnsprechpartner(andere),
   };
+}
+
+/**
+ * Sind zwei Vorschläge dieselbe Person? Über die LinkedIn-Adresse oder über den Namen bei derselben Firma
+ * (gleicher normalisierter Name oder gleiche Domain). Gilt für den Abgleich mit offenen Vorschlägen beim Anlegen
+ * eines Laufs, auch innerhalb derselben Datei (Prüfung E2-S5, Befund 1).
+ */
+export function gleichePerson(a: VorschlagDaten, b: VorschlagDaten): boolean {
+  const ua = a.person.linkedin_url ? normalisiereLinkedinUrl(a.person.linkedin_url) : null;
+  const ub = b.person.linkedin_url ? normalisiereLinkedinUrl(b.person.linkedin_url) : null;
+  if (ua && ub && ua === ub) return true;
+  const gleicherName =
+    normalisierePersonenname(a.person.vorname, a.person.nachname) ===
+    normalisierePersonenname(b.person.vorname, b.person.nachname);
+  if (!gleicherName) return false;
+  const gleicheDomain =
+    !!a.firma.domain && !!b.firma.domain && normalisiereDomain(a.firma.domain) === normalisiereDomain(b.firma.domain);
+  return gleicheDomain || normalisiereFirmenname(a.firma.name) === normalisiereFirmenname(b.firma.name);
 }

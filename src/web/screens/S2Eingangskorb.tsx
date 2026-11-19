@@ -100,6 +100,7 @@ export function S2Eingangskorb() {
             </tbody>
           </table>
           <Hochladen
+            beginnt={() => setMeldung('')}
             fertig={(r, text) => {
               geaendert(text);
               navigate(`/eingangskorb/${r.lauf_id}`);
@@ -123,6 +124,18 @@ export function S2Eingangskorb() {
                   <dd>{lauf.anzahl_freigegeben}</dd>
                   <dt>Abdeckungsgrenzen</dt>
                   <dd>{lauf.abdeckungsgrenzen || '–'}</dd>
+                  {lauf.einlese_hinweise.length > 0 && (
+                    <>
+                      <dt>Beim Einlesen</dt>
+                      <dd>
+                        <ul className="einlese-hinweise" aria-label="Beim Einlesen">
+                          {lauf.einlese_hinweise.map((h) => (
+                            <li key={h}>{h}</li>
+                          ))}
+                        </ul>
+                      </dd>
+                    </>
+                  )}
                 </dl>
               </section>
               {lauf.vorschlaege.map((v) => (
@@ -318,27 +331,65 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
   );
 }
 
+/** Entfernt einen Markdown-Codeblock um das JSON, wie ihn Chat-Antworten oft liefern (Prüfung E2-S5, Hinweis 14). */
+export function ohneCodeblock(text: string): string {
+  const t = text.trim();
+  const m = /^```[a-zA-Z]*\s*\n([\s\S]*?)\n?```$/.exec(t);
+  return m ? m[1] : t;
+}
+
+const anzahl = (n: number, eins: string, mehr: string) => `${n} ${n === 1 ? eins : mehr}`;
+
+/** Rückmeldung nach dem Hochladen; Einzelheiten stehen am Lauf unter »Beim Einlesen«. */
+export function rueckmeldungHochladen(r: LaufAngelegt): string {
+  const teile = [
+    `Ergebnisdatei eingelesen: ${anzahl(r.angelegt, 'Vorschlag liegt', 'Vorschläge liegen')} zum Prüfen bereit.`,
+  ];
+  if (r.bereits_vorhanden.length) {
+    const n = r.bereits_vorhanden.length;
+    teile.push(
+      n === 1
+        ? '1 Vorschlag war schon im Eingangskorb und wurde nicht noch einmal angelegt.'
+        : `${n} Vorschläge waren schon im Eingangskorb und wurden nicht noch einmal angelegt.`,
+    );
+  }
+  if (r.zurueckgewiesen.length)
+    teile.push(`${anzahl(r.zurueckgewiesen.length, 'Vorschlag', 'Vorschläge')} zurückgewiesen.`);
+  if (r.bereits_vorhanden.length || r.zurueckgewiesen.length)
+    teile.push('Die Gründe stehen am Lauf unter »Beim Einlesen«.');
+  return teile.join(' ');
+}
+
 /** »Ergebnisdatei hochladen« (Story E2-S5): liest die Datei im Browser und schickt den Lauf an den Server. */
-function Hochladen({ fertig }: { fertig: (r: LaufAngelegt, text: string) => void }) {
+function Hochladen({ beginnt, fertig }: { beginnt: () => void; fertig: (r: LaufAngelegt, text: string) => void }) {
   const [fehler, setFehler] = useState('');
   async function gewaehlt(e: React.ChangeEvent<HTMLInputElement>) {
     const datei = e.target.files?.[0];
     e.target.value = '';
     if (!datei) return;
     setFehler('');
+    beginnt();
+    let text: string;
+    try {
+      // Streng als UTF-8 lesen: Eine Datei in Latin-1 würde sonst still »�« statt Umlauten liefern (Befund 5).
+      // Ein BOM am Anfang entfernt TextDecoder selbst.
+      text = new TextDecoder('utf-8', { fatal: true }).decode(await datei.arrayBuffer());
+    } catch {
+      setFehler(
+        `Die Datei »${datei.name}« ist nicht in UTF-8 gespeichert. Speichere sie als UTF-8 und lade sie erneut hoch.`,
+      );
+      return;
+    }
     let inhalt: unknown;
     try {
-      inhalt = JSON.parse(await datei.text());
+      inhalt = JSON.parse(ohneCodeblock(text));
     } catch {
       setFehler(`Die Datei »${datei.name}« lässt sich nicht lesen: Sie enthält kein gültiges JSON.`);
       return;
     }
     try {
       const r = await api<LaufAngelegt>('POST', '/laeufe/upload', inhalt);
-      const zurueck = r.zurueckgewiesen.length
-        ? ` ${r.zurueckgewiesen.length} zurückgewiesen: ${r.zurueckgewiesen.map((z) => `Nr. ${z.index + 1} ${z.meldung}`).join(' ')}`
-        : '';
-      fertig(r, `Ergebnisdatei hochgeladen: ${r.angelegt} Vorschläge im Eingangskorb.${zurueck}`);
+      fertig(r, rueckmeldungHochladen(r));
     } catch (x) {
       setFehler(x instanceof ApiFehler ? x.message : 'Das Hochladen hat nicht geklappt.');
     }

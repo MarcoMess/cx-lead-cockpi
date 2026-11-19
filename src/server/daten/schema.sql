@@ -140,7 +140,8 @@ CREATE TABLE recherchelauf (
   anzahl_freigegeben INTEGER NOT NULL DEFAULT 0,
   abdeckungsgrenzen TEXT,
   zielbild TEXT,
-  herkunft TEXT CHECK (herkunft IN ('api', 'upload'))
+  herkunft TEXT CHECK (herkunft IN ('api', 'upload')),
+  einlese_hinweise TEXT
 );
 CREATE UNIQUE INDEX recherchelauf_ein_lauf_je_tag ON recherchelauf (datum) WHERE ergebnis = 'ausgefuehrt';
 

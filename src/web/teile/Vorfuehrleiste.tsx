@@ -59,6 +59,13 @@ export function Vorfuehrleiste({ zustand, neuLaden }: { zustand: VorfuehrZustand
           />
           API für den Agenten gestört
         </label>
+        {zustand.agent.ergebnisdatei_bereit && (
+          // Vorführweg »API gestört → Ergebnisdatei hochladen« (Prüfung E2-S5, Befund 6): die Datei des Agenten holen
+          // und in S2 über »Ergebnisdatei hochladen« einlesen, wie Marco es im Echtbetrieb mit der Datei der Aufgabe tut.
+          <a href="/api/v1/sim/agent/ergebnisdatei" download="ergebnisdatei.json">
+            Ergebnisdatei herunterladen
+          </a>
+        )}
         {meldung && (
           <span className="meldung" role="status">
             {meldung}

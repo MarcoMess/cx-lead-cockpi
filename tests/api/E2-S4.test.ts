@@ -78,7 +78,6 @@ describe('E2-S4 Dubletten und Wiederansprache erkennen', () => {
     const vs = kopie();
     const a = nach(vs, 'Kortmann');
     a.firma.name = 'Alpenstrom Netze AG'; // Gruber: Freigegeben
-    a.firma.land = 'AT';
     const b = nach(vs, 'Voss');
     b.firma.name = 'Nordwerk Fördertechnik GmbH'; // Albers: Gespräch vereinbart
     const { karte } = await lauf([a, b]);
@@ -129,44 +128,56 @@ describe('E2-S4 Dubletten und Wiederansprache erkennen', () => {
     expect(b.karte('Ostermann')).toMatchObject({ ist_dublette: true, ist_wiederansprache: false });
   });
 
-  it('Prüfung E2-S4 Befund 1: dieselbe Person in zwei offenen Läufen wird nur einmal angelegt', async () => {
+  it('Prüfung E2-S4 Befund 1 / E2-S5 Befund 1: dieselbe Person, noch offen in einem früheren Lauf, wird nicht noch einmal angelegt; nach der Freigabe ist sie Dublette', async () => {
     ({ app, db } = await neueApp());
     const kopf = await alsMarco(app);
     const v = nach(kopie(), 'Kortmann');
     v.person.linkedin_url = null;
-    const laeufe: number[] = [];
-    for (const heute of ['2026-11-19', '2026-11-20']) {
-      await app.inject({ method: 'POST', url: '/api/v1/sim/datum', headers: kopf, payload: { heute } });
-      const r = await app.inject({
+    const antworten: { lauf_id: number; angelegt: number; bereits_vorhanden: unknown[] }[] = [];
+    const laufAm = async (heute: string) => {
+      await app!.inject({ method: 'POST', url: '/api/v1/sim/datum', headers: kopf, payload: { heute } });
+      const r = await app!.inject({
         method: 'POST',
         url: '/api/v1/agent/laeufe',
         headers: AGENT,
         payload: { vorschlaege: [v] },
       });
-      laeufe.push(r.json().lauf_id);
-    }
-    const karte = async (lauf: number) =>
-      (await app!.inject({ method: 'GET', url: `/api/v1/laeufe/${lauf}`, headers: kopf })).json().vorschlaege[0];
-    const k1 = await karte(laeufe[0]);
+      antworten.push(r.json());
+    };
+    const lauf = async (id: number) =>
+      (await app!.inject({ method: 'GET', url: `/api/v1/laeufe/${id}`, headers: kopf })).json();
+    await laufAm('2026-11-19');
+    await laufAm('2026-11-20');
+    expect(antworten[1]).toMatchObject({
+      angelegt: 0,
+      bereits_vorhanden: [
+        { index: 0, bezeichnung: 'Sabine Kortmann, Kranbau Oberhavel GmbH', lauf_datum: '2026-11-19' },
+      ],
+    });
+    expect((await lauf(antworten[1].lauf_id)).einlese_hinweise).toEqual([
+      'Nr. 1 (Sabine Kortmann, Kranbau Oberhavel GmbH) nicht noch einmal angelegt: liegt schon ungeprüft im Lauf vom 19.11.2026.',
+    ]);
+    const k1 = (await lauf(antworten[0].lauf_id)).vorschlaege[0];
     expect(
       (await app.inject({ method: 'POST', url: `/api/v1/vorschlaege/${k1.id}/freigabe`, headers: kopf })).statusCode,
     ).toBe(200);
-    const k2 = await karte(laeufe[1]);
-    expect(k2).toMatchObject({ ist_dublette: true, bezug: { name: 'Sabine Kortmann' } });
-    const r = await app.inject({ method: 'POST', url: `/api/v1/vorschlaege/${k2.id}/freigabe`, headers: kopf });
+    await laufAm('2026-11-23');
+    const k3 = (await lauf(antworten[2].lauf_id)).vorschlaege[0];
+    expect(k3).toMatchObject({ ist_dublette: true, bezug: { name: 'Sabine Kortmann' } });
+    const r = await app.inject({ method: 'POST', url: `/api/v1/vorschlaege/${k3.id}/freigabe`, headers: kopf });
     expect(r.statusCode).toBe(422);
     expect(r.json().fehler.code).toBe('dublette');
     expect(db.prepare(`SELECT COUNT(*) n FROM ansprechpartner WHERE nachname = 'Kortmann'`).get()).toEqual({ n: 1 });
   });
 
-  it('Prüfung E2-S4 Befund 1: dieselbe Person zweimal im selben Lauf, LinkedIn mit www. und Schrägstrich', async () => {
+  it('Prüfung E2-S4 Befund 1 / E2-S5 Befund 1: dieselbe Person zweimal in einer Datei (LinkedIn mit www. und Schrägstrich) wird einmal angelegt', async () => {
     const a = nach(kopie(), 'Voss');
     const b = nach(kopie(), 'Voss');
     b.person.linkedin_url = 'https://www.linkedin.com/in/miriam-voss-beispiel/';
     ({ app, db } = await neueApp());
     const kopf = await alsMarco(app);
     await app.inject({ method: 'POST', url: '/api/v1/sim/datum', headers: kopf, payload: { heute: '2026-11-19' } });
-    const lauf = (
+    const r = (
       await app.inject({
         method: 'POST',
         url: '/api/v1/agent/laeufe',
@@ -174,17 +185,11 @@ describe('E2-S4 Dubletten und Wiederansprache erkennen', () => {
         payload: { vorschlaege: [a, b] },
       })
     ).json();
-    const karten = async () =>
-      (await app!.inject({ method: 'GET', url: `/api/v1/laeufe/${lauf.lauf_id}`, headers: kopf })).json().vorschlaege;
-    const [k1, k2] = await karten();
-    expect(
-      (await app.inject({ method: 'POST', url: `/api/v1/vorschlaege/${k1.id}/freigabe`, headers: kopf })).statusCode,
-    ).toBe(200);
-    expect((await karten())[1].ist_dublette).toBe(true);
-    expect(
-      (await app.inject({ method: 'POST', url: `/api/v1/vorschlaege/${k2.id}/freigabe`, headers: kopf })).statusCode,
-    ).toBe(422);
-    expect(db.prepare(`SELECT COUNT(*) n FROM ansprechpartner WHERE nachname = 'Voss'`).get()).toEqual({ n: 1 });
+    expect(r).toMatchObject({
+      angelegt: 1,
+      bereits_vorhanden: [{ index: 1, bezeichnung: 'Miriam Voss, Hansemarkt Handels SE', lauf_datum: null }],
+    });
+    expect(db.prepare(`SELECT COUNT(*) n FROM vorschlag WHERE recherchelauf_id = ?`).get(r.lauf_id)).toEqual({ n: 1 });
   });
 
   it('Prüfung E2-S4 Sollte: Firma über die Domain; gleicher alter Anlass ist keine Wiederansprache', async () => {

@@ -120,7 +120,7 @@ Benennung: Fachbegriffe deutsch wie im Konzept, ohne Umlaute, in `snake_case`. A
 
 **sperrzeit**: von, bis, bezeichnung. Alle Pflicht, bis nicht vor von.
 
-**recherchelauf**: datum, ergebnis (ausgefuehrt, uebersprungen, uebertragung_fehlgeschlagen), grund (pausiert, sperrzeit, obergrenze), grund_text, anzahl_vorschlaege, anzahl_freigegeben, abdeckungsgrenzen, zielbild (JSON), herkunft (api, upload). Höchstens ein ausgeführter Lauf je Datum. Die beiden Zähler werden geführt, weil die drei Beispielläufe keine Vorschläge mitbringen.
+**recherchelauf**: datum, ergebnis (ausgefuehrt, uebersprungen, uebertragung_fehlgeschlagen), grund (pausiert, sperrzeit, obergrenze), grund_text, anzahl_vorschlaege, anzahl_freigegeben, abdeckungsgrenzen, zielbild (JSON), herkunft (api, upload), einlese_hinweise (JSON-Liste: zurückgewiesene und schon offene Vorschläge, je ein Satz). Höchstens ein ausgeführter Lauf je Datum. Die beiden Zähler werden geführt, weil die drei Beispielläufe keine Vorschläge mitbringen.
 
 **vorschlag** (gehört zu einem recherchelauf): zustand (zu_pruefen, freigegeben, verworfen), daten (JSON mit firma, person, anlass, nachricht genau wie geliefert), ist_dublette (0/1), ist_wiederansprache (0/1), bezug_ansprechpartner_id, fehlende_pflichtangaben (Liste), verwerf_grund, ansprechpartner_id (nach Freigabe). Der Hinweis »Zweiter Ansprechpartner« wird beim Lesen berechnet, nicht gespeichert.
 
@@ -194,7 +194,7 @@ Antwort: `{ "lauf_id": 5, "angelegt": 4, "zurueckgewiesen": [] }`.
 | Kennzahlen | `GET /kennzahlen?tage=30` | tage: 7, 30, 90 | vorschlaege, freigegeben, angeschrieben, antworten, positive, gespraeche, sap_uebergaben, median_tage, ueberfaellige, quoten (leer unter 20) | 400 |
 | Aufschlüsselung | `GET /kennzahlen/aufschluesselung?tage=30&merkmal=kanal` | merkmal: branche, land, rolle, kanal, email_grundlage, aufhaenger | zeilen mit wert, angeschrieben, antworten, gespraeche | 400 |
 | Läufe | `GET /laeufe`, `GET /laeufe/:id` | – | Lauf mit Vorschlägen samt Hinweisen und fehlenden Pflichtangaben | 404 |
-| Ergebnisdatei hochladen | `POST /laeufe/upload` | Datei im Format von »Lauf anlegen« | wie »Lauf anlegen« | 400, 422 |
+| Ergebnisdatei hochladen | `POST /laeufe/upload` | Datei im Format von »Lauf anlegen« (UTF-8; die Oberfläche prüft das und entfernt BOM und einen Markdown-Codeblock) | wie »Lauf anlegen«, dazu `bereits_vorhanden` | 400 unlesbar, 409 heute schon ein Lauf, 413 zu groß, 415 kein JSON, 422 `nichts_neu` (kein neuer Vorschlag, kein Lauf) |
 | Freigeben | `POST /vorschlaege/:id/freigabe` | – | ansprechpartner_id | 409 (schon geprüft), 422 (Dublette, Pflichtangabe) |
 | Verwerfen | `POST /vorschlaege/:id/verwerfung` | grund (einer der fünf) | sperreintrag | 400, 409 |
 | Firmen | `GET /firmen?suche=&branche=`, `GET /firmen/:id` | – | Liste, Detail mit Ansprechpartnern | 404 |
@@ -353,7 +353,7 @@ Jeder Test trägt die Story und die Nummer des Kriteriums im Namen, zum Beispiel
 - **Erlaubte Aktionen kommen vom Server.** `GET /kontakte/:id` liefert `erlaubte_aktionen`; die Oberfläche zeigt oder sperrt Schaltflächen danach und wiederholt keine Bedingung.
 - **Fehler:** Dienste werfen `FachFehler(code, meldung, feld)`. Ein zentraler Handler in `api` macht daraus das Fehlerformat. Die Oberfläche zeigt `meldung` als Hinweis; Meldungen sind deutsch, in Du-Form, und sagen, was zu tun ist.
 - **Zeit:** Niemand ruft `new Date()` außerhalb von `uhr.ts` auf.
-- **Datenbank:** Schemaänderungen nur in `schema.sql`; der Prototyp kennt keine Migrationen, `npm run reset` baut neu. Schreibende Dienste laufen in `transaktion()`. Sie ist verschachtelbar (Sicherungspunkte) und nur für synchrone Funktionen. SQL steht nur in `daten`, auch für Einstellungen (`daten/einstellungen.ts`).
+- **Datenbank:** Schemaänderungen nur in `schema.sql`; der Prototyp kennt keine Migrationen, `npm run reset` baut neu. Ausnahme seit Konzept 1.3 (Echtbetrieb): Neu hinzugefügte Spalten mit NULL als Vorgabe trägt `db.ts` beim Öffnen einer bestehenden Datei nach (`NACHZUZIEHEN`), damit `data/echt.sqlite` ein Update übersteht; andere Änderungen am Schema brauchen eine Entscheidung. Schreibende Dienste laufen in `transaktion()`. Sie ist verschachtelbar (Sicherungspunkte) und nur für synchrone Funktionen. SQL steht nur in `daten`, auch für Einstellungen (`daten/einstellungen.ts`).
 - **Oberfläche:** Jeder Screen zeigt seine ID (S1 bis S9) im Kopf. Texte, Reihenfolge und Etiketten folgen dem Clickdummy; wo das Konzept 1.2 vom Dummy abweicht, gilt das Konzept. Leere Zustände haben immer einen Satz.
 - **Keine neuen Abhängigkeiten** ohne Eintrag in Abschnitt 12 dieser Datei.
 - **Fertig ist eine Story, wenn:** jedes Akzeptanzkriterium einen benannten Test hat, `npm test` grün ist, `npm run reset` und `npm run dev` funktionieren und nichts außerhalb der Story gebaut wurde.
@@ -370,7 +370,7 @@ Jeder Test trägt die Story und die Nummer des Kriteriums im Namen, zum Beispiel
 | E2-S2 Ausschlussliste | api, dienste, regeln | `ausschluss.ts`; 6-Monats-Frist über die Uhr |
 | E2-S3 Lauf anlegen | api, dienste, daten, gemeinsam | Schema des Laufs in `gemeinsam`; wird vom Upload wiederverwendet |
 | E2-S4 Dubletten | regeln, dienste | `dubletten.ts`; läuft im Dienst von E2-S3 |
-| E2-S5 Upload | api, dienste, web, simulator | gleicher Dienst wie E2-S3 mit `herkunft: upload` |
+| E2-S5 Upload | api, dienste, regeln, web, simulator | gleicher Dienst wie E2-S3 mit `herkunft: upload`; Abgleich mit offenen Vorschlägen (`regeln/dubletten.ts` `gleichePerson`), Sperrliste (`regeln/ausschluss.ts` `sperreFuer`); Vorführleiste bietet die Ergebnisdatei des Simulators zum Herunterladen |
 | E2-S6 Claude-Aufgabe | simulator, agent/ | erweitert den Agenten-Simulator aus E1-S3 um Laufauftrag und Ausschlussliste; Kriterien 1–4 und 6 werden gegen den Agenten-Simulator geprüft, Kriterium 5 durch Durchsicht von `agent/claude-aufgabe.md`. Die echte Aufgabe richtet Marco später ein |
 | E3-S1 Eingangskorb | web, api, dienste | Screen S2 |
 | E3-S2 Angaben und Pflichtangaben | regeln, dienste, web | `pflichtangaben.ts`; Ergebnis steht am Vorschlag |

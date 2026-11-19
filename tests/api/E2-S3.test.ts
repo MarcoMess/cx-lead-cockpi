@@ -114,8 +114,13 @@ describe('E2-S3 Recherchelauf anlegen', () => {
     expect(r.statusCode).toBe(201);
     expect(r.json().angelegt).toBe(2);
     expect(r.json().zurueckgewiesen).toEqual([
-      { index: 1, feld: 'person.nachname', meldung: 'Das Feld »person.nachname« fehlt.' },
-      { index: 3, feld: 'firma.name', meldung: 'Der Firmenname fehlt.' },
+      {
+        index: 1,
+        feld: 'person.nachname',
+        meldung: 'Das Feld »person.nachname« fehlt.',
+        bezeichnung: 'Miriam, Hansemarkt Handels SE',
+      },
+      { index: 3, feld: 'firma.name', meldung: 'Der Firmenname fehlt.', bezeichnung: 'Reto Ammann' },
     ]);
     const namen = (
       db.prepare(`SELECT daten FROM vorschlag WHERE recherchelauf_id = ? ORDER BY id`).all(r.json().lauf_id) as {

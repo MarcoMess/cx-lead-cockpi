@@ -14,5 +14,5 @@ export function ladeLaufHoch(db: Datenbank, uhr: Uhr, inhalt: unknown): LaufAnge
       'Die Datei lässt sich nicht lesen: Erwartet wird ein Lauf im JSON-Format mit der Liste »vorschlaege«.',
     );
   }
-  return legeLaufAn(db, uhr, inhalt, 'upload');
+  return legeLaufAn(db, uhr, inhalt, { herkunft: 'upload', ohneNeueAbweisen: true });
 }
