@@ -23,7 +23,7 @@ test('E3-S4 #1 #2 #5 Ammann verwerfen: Gründe, Sperrliste, Karte »Verworfen«'
   await gruppe.getByLabel('Grund').selectOption('passt nicht ins Zielbild');
   await gruppe.getByRole('button', { name: 'Verwerfen bestätigen' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'verworfen' })).toHaveText(
-    'Reto Ammann verworfen (passt nicht ins Zielbild). Die Firma Seehotel-Gruppe Bodan AG steht jetzt auf der Sperrliste.',
+    'Reto Ammann verworfen (passt nicht ins Zielbild). Die Firma Seehotel-Gruppe Bodan AG ist für den Agenten gesperrt.',
   );
   await expect(karte.locator('.tag').filter({ hasText: 'Verworfen' })).toHaveText(
     'Verworfen: passt nicht ins Zielbild',
@@ -38,7 +38,7 @@ test('E3-S4 #1 #2 #5 Ammann verwerfen: Gründe, Sperrliste, Karte »Verworfen«'
   await expect(zeile.locator('td')).toHaveText([
     'Seehotel-Gruppe Bodan AG',
     'Firma',
-    'passt nicht ins Zielbild',
+    'Verworfen: passt nicht ins Zielbild',
     '19.11.2026',
     'Entfernen',
   ]);
@@ -51,14 +51,14 @@ test('E3-S4 #4 Kortmann »Anlass zu schwach«: Person bis 19.05.2027 gesperrt', 
   await karte.getByLabel('Grund').selectOption('Anlass zu schwach');
   await karte.getByRole('button', { name: 'Verwerfen bestätigen' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'verworfen' })).toHaveText(
-    'Sabine Kortmann verworfen (Anlass zu schwach). Sabine Kortmann ist bis 19.05.2027 gesperrt.',
+    'Sabine Kortmann verworfen (Anlass zu schwach). Sabine Kortmann ist bis 19.05.2027 für den Agenten gesperrt.',
   );
   await page.goto('/einstellungen');
   const zeile = page.getByRole('region', { name: 'Sperrliste' }).locator('tbody tr').filter({ hasText: 'Kortmann' });
   await expect(zeile.locator('td')).toHaveText([
     'Sabine Kortmann (Kranbau Oberhavel GmbH)',
     'Person',
-    'Anlass zu schwach – gesperrt bis 19.05.2027',
+    'Verworfen: Anlass zu schwach – gesperrt bis 19.05.2027',
     '19.11.2026',
     'Entfernen',
   ]);

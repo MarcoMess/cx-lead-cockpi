@@ -107,4 +107,24 @@ describe('E3-S4 Vorschlag verwerfen', () => {
     });
     expect(fremd.statusCode).toBe(403);
   });
+  it('Prüfung E3-S4 Befund 1: nach Ablauf der Personensperre entsteht beim erneuten Verwerfen ein neuer Eintrag', async () => {
+    const { verwirf, sperren } = await laufVom19();
+    db.prepare(
+      `INSERT INTO sperreintrag (art, name, firma_name, grund, herkunft, gesperrt_bis, erstellt_am)
+       VALUES ('person', 'Sabine Kortmann', 'Kranbau Oberhavel GmbH', 'Anlass zu schwach', 'verworfen', '2026-11-18', '2026-05-18')`,
+    ).run();
+    const r = await verwirf('Kortmann', 'Kontakt nicht belegt');
+    expect(r.json().sperreintrag).toMatchObject({ neu: true, gesperrt_bis: '2027-05-19' });
+    expect(sperren()).toHaveLength(2);
+  });
+
+  it('gültiger Eintrag vorhanden: kein zweiter (neu: false), auch bei Rechtsform und zerlegtem Umlaut', async () => {
+    const { verwirf, sperren } = await laufVom19();
+    db.prepare(
+      `INSERT INTO sperreintrag (art, name, grund, herkunft, erstellt_am) VALUES ('firma', 'Seehotel-Gruppe Bodan', 'x', 'von_marco', '2026-11-01')`,
+    ).run();
+    const r = await verwirf('Ammann', 'passt nicht ins Zielbild');
+    expect(r.json().sperreintrag).toMatchObject({ art: 'firma', neu: false });
+    expect(sperren()).toEqual([]);
+  });
 });

@@ -4,9 +4,9 @@ import { VerwerfEingabe, type Verworfen } from '../../gemeinsam/verwerfen';
 import type { Uhr } from '../anbindungen/uhr';
 import { transaktion, type Datenbank } from '../daten/db';
 import { liesVorschlag, markiereVerworfen } from '../daten/laeufe';
-import { legeSperreAn, namenDerArt } from '../daten/sperrliste';
+import { legeSperreAn, listeSperren } from '../daten/sperrliste';
 import { FachFehler } from '../fehler';
-import { sperrfolgeVerwerfen, sperrSchluessel } from '../regeln/ausschluss';
+import { gueltigeSperre, sperrfolgeVerwerfen } from '../regeln/ausschluss';
 
 export function verwirfVorschlag(db: Datenbank, uhr: Uhr, vorschlagId: number, eingabe: unknown): Verworfen {
   return transaktion(db, () => {
@@ -28,9 +28,13 @@ export function verwirfVorschlag(db: Datenbank, uhr: Uhr, vorschlagId: number, e
       { firma: d.firma.name, vorname: d.person.vorname, nachname: d.person.nachname },
       uhr.heute(),
     );
-    // Steht die Firma oder Person schon auf der Sperrliste, bleibt es bei diesem Eintrag.
-    const schluessel = sperrSchluessel(folge.name);
-    const vorhanden = namenDerArt(db, folge.art).some((z) => sperrSchluessel(z.name) === schluessel);
+    // Steht die Firma oder Person schon mit einem gültigen Eintrag auf der Sperrliste, bleibt es bei diesem Eintrag;
+    // ein abgelaufener Eintrag zählt nicht, dann entsteht ein neuer.
+    const vorhanden = gueltigeSperre(
+      listeSperren(db),
+      { art: folge.art, name: folge.name, firma_name: folge.art === 'person' ? folge.firma_name : null },
+      uhr.heute(),
+    );
     if (!vorhanden) {
       legeSperreAn(db, {
         art: folge.art,
