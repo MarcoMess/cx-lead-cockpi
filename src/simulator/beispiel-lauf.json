@@ -1,0 +1,144 @@
+{
+  "abdeckungsgrenzen": "Nur 4 belegte Treffer statt 10, Lücke benannt; 1 Profil ohne verifizierte URL",
+  "vorschlaege": [
+    {
+      "firma": {
+        "name": "Kranbau Oberhavel GmbH",
+        "branche": "Maschinenbau",
+        "land": "DE",
+        "umsatz_wert": 121,
+        "umsatz_waehrung": "EUR",
+        "umsatz_jahr": 2025,
+        "umsatz_bezug": "konzern",
+        "umsatz_quelle_url": "https://example.com/geschaeftsbericht-kranbau-oberhavel"
+      },
+      "person": {
+        "anrede": "Frau",
+        "titel": "",
+        "vorname": "Sabine",
+        "nachname": "Kortmann",
+        "funktion": "Leiterin After-Sales Service",
+        "rolle": "Service/After-Sales",
+        "quelle_url": "https://example.com/team-sabine-kortmann",
+        "linkedin_url": "linkedin.com/in/sabine-kortmann-beispiel"
+      },
+      "anlass": {
+        "typ": "unternehmensanlass",
+        "beschreibung": "Pressemitteilung: Kundenportal für Ersatzteile angekündigt",
+        "ereignis_datum": "2026-11-12",
+        "quelle_url": "https://example.com/quelle-kranbau-ersatzteilportal",
+        "hypothese": "Ein Ersatzteilportal verändert vermutlich Anfrage- und Serviceabläufe im After-Sales.",
+        "gespraechsziel": "Einordnen, welche Serviceabläufe mitwachsen sollten."
+      },
+      "nachricht": {
+        "betreff": "Ersatzteilportal und Serviceprozesse",
+        "text": "Hallo Frau Kortmann, Kranbau Oberhavel hat vor Kurzem ein Kundenportal für Ersatzteile angekündigt. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen einordnen, welche Abläufe im After-Sales Service dabei mitwachsen sollten. Wäre ein kurzes Gespräch dazu für Sie interessant?\nBeste Grüße\nMarco",
+        "sprache": "de"
+      }
+    },
+    {
+      "firma": {
+        "name": "Hansemarkt Handels SE",
+        "branche": "Retail",
+        "land": "DE",
+        "umsatz_wert": 1400,
+        "umsatz_waehrung": "EUR",
+        "umsatz_jahr": 2025,
+        "umsatz_bezug": "konzern",
+        "umsatz_quelle_url": "https://example.com/geschaeftsbericht-hansemarkt-handels-se"
+      },
+      "person": {
+        "anrede": "Frau",
+        "titel": "",
+        "vorname": "Miriam",
+        "nachname": "Voss",
+        "funktion": "Leiterin Kundenbindung",
+        "rolle": "Kundenbindung",
+        "quelle_url": "https://example.com/team-miriam-voss",
+        "linkedin_url": "linkedin.com/in/miriam-voss-beispiel"
+      },
+      "anlass": {
+        "typ": "unternehmensanlass",
+        "beschreibung": "Pressemitteilung: Kundenkarte künftig auch im Onlineshop einlösbar",
+        "ereignis_datum": "2026-11-10",
+        "quelle_url": "https://example.com/quelle-hansemarkt-kundenkarte",
+        "hypothese": "Die Kundenkarte im Onlineshop verbindet Kundenbindung und Commerce enger.",
+        "gespraechsziel": "Prüfen, ob Kundenbindung über beide Kanäle ein Gesprächsthema ist."
+      },
+      "nachricht": {
+        "betreff": "Kundenkarte im Onlineshop",
+        "text": "Hallo Frau Voss, Hansemarkt macht die Kundenkarte künftig auch im Onlineshop einlösbar. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen einordnen, welche Abläufe in der Kundenbindung dabei über beide Kanäle zusammenpassen müssen. Wäre ein kurzes Gespräch dazu für Sie interessant?\nBeste Grüße\nMarco",
+        "sprache": "de"
+      }
+    },
+    {
+      "firma": {
+        "name": "Nordwerk Fördertechnik GmbH",
+        "branche": "Maschinenbau",
+        "land": "DE",
+        "umsatz_wert": 182,
+        "umsatz_waehrung": "EUR",
+        "umsatz_jahr": 2025,
+        "umsatz_bezug": "konzern",
+        "umsatz_quelle_url": "https://example.com/geschaeftsbericht-nordwerk-foerdertechnik-gmbh"
+      },
+      "person": {
+        "anrede": "Frau",
+        "titel": "Dr.",
+        "vorname": "Katrin",
+        "nachname": "Albers",
+        "funktion": "Leiterin Customer Service & After-Sales",
+        "rolle": "Service/After-Sales",
+        "quelle_url": "https://example.com/team-katrin-albers",
+        "linkedin_url": "linkedin.com/in/katrin-albers-beispiel"
+      },
+      "anlass": {
+        "typ": "unternehmensanlass",
+        "beschreibung": "Pressemitteilung: neues Servicezentrum für Ersatzteile in Bremen",
+        "ereignis_datum": "2026-11-04",
+        "quelle_url": "https://example.com/quelle-1",
+        "hypothese": "",
+        "gespraechsziel": ""
+      },
+      "nachricht": { "betreff": "", "text": "", "sprache": "de" }
+    },
+    {
+      "firma": {
+        "name": "Seehotel-Gruppe Bodan AG",
+        "branche": "Hospitality",
+        "land": "CH",
+        "umsatz_wert": 88,
+        "umsatz_waehrung": "CHF",
+        "umsatz_jahr": 2025,
+        "umsatz_bezug": "konzern",
+        "umsatz_quelle_url": "https://example.com/geschaeftsbericht-seehotel-gruppe-bodan",
+        "wechselkurs": 1.06,
+        "wechselkurs_quelle_url": "https://example.com/wechselkurs-chf-eur",
+        "umsatz_eur": 93.3
+      },
+      "person": {
+        "anrede": "Herr",
+        "titel": "",
+        "vorname": "Reto",
+        "nachname": "Ammann",
+        "funktion": "Leiter Gästeservice & CRM",
+        "rolle": "CRM",
+        "quelle_url": "https://example.com/team-reto-ammann",
+        "linkedin_url": null
+      },
+      "anlass": {
+        "typ": "kein_anlass",
+        "beschreibung": "Kein belastbarer aktueller Anlass gefunden",
+        "ereignis_datum": null,
+        "quelle_url": null,
+        "hypothese": "Keine anlassbezogene Hypothese. Die Ansprache stützt sich nur auf die Rolle.",
+        "gespraechsziel": "Relevanz prüfen."
+      },
+      "nachricht": {
+        "betreff": "Gästeservice und CRM",
+        "text": "Hallo Herr Ammann, als Leiter Gästeservice & CRM der Seehotel-Gruppe Bodan verantworten Sie viele Kontaktpunkte mit Ihren Gästen. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen prüfen, ob es dazu ein Thema gibt, bei dem ein kurzes Gespräch für Sie nützlich wäre. Wäre das für Sie interessant?\nBeste Grüße\nMarco",
+        "sprache": "de"
+      }
+    }
+  ]
+}
