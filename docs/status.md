@@ -30,12 +30,12 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | #10 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | #11 | Wartet auf Entscheidung (Prüfung 1: nur Kriterium 5 nicht prüfbar, Nachweis mit E5-S3) | 0 von 2 |
 | 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | #12 | In Prüfung | 0 von 2 |
-| 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | – | Offen | 0 von 2 |
+| 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | #13 | In Prüfung | 0 von 2 |
 
 Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
 
 ## Nächster Schritt
-E5-S3 Versand protokollieren umsetzen; Prüfungen von E5-S1 und E5-S2 abwarten.
+Kernweg gebaut. Prüfungen von E5-S2 und E5-S3 abwarten, dann Halt zum Durchklicken (Marco entscheidet über E5-S1 Kriterium 5 und 7).
 
 ## Offene Punkte aus den Prüfungen
 Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der Story erledigt, die den Bereich ohnehin anfasst, spätestens in einer Pflege vor dem Halt.
