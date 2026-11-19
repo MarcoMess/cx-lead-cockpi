@@ -68,7 +68,9 @@ export type LaufErgebnis = (typeof LAUF_ERGEBNIS)[number];
 export const VORSCHLAG_ZUSTAND = ['zu_pruefen', 'freigegeben', 'verworfen'] as const;
 export type VorschlagZustand = (typeof VORSCHLAG_ZUSTAND)[number];
 export const SPERRE_ART = ['firma', 'person'] as const;
+export type SperreArt = (typeof SPERRE_ART)[number];
 export const SPERRE_HERKUNFT = ['startbestand', 'verworfen', 'opt_out', 'von_marco', 'geloescht'] as const;
+export type SperreHerkunft = (typeof SPERRE_HERKUNFT)[number];
 export const LAENDER = ['DE', 'AT', 'CH'] as const;
 export const WAEHRUNGEN = ['EUR', 'CHF'] as const;
 export const UMSATZ_BEZUG = ['konzern', 'einzelgesellschaft'] as const;
@@ -103,6 +105,7 @@ export const VERWERF_GRUENDE = [
   'Anlass zu schwach',
   'wird von Kollegen betreut',
 ] as const;
+export type VerwerfGrund = (typeof VERWERF_GRUENDE)[number];
 
 /** Fristen aus Abschnitt 9 des Konzepts. In S8 nur angezeigt, nicht änderbar. */
 export const FRISTEN = {

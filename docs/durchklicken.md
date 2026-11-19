@@ -31,4 +31,4 @@ Voraussetzung: Node.js 22.22 oder neuer. Passwort: der Wert von `COCKPIT_PASSWOR
 
 ## Was noch nicht da ist (kommt mit späteren Stories)
 
-Dashboard (S1), Firmen (S3), Wiedervorlagen (S6), SAP-Übergabe (S7), Einstellungen (S8), Agent-Steuerung (S9) zeigen einen Platzhalter. In der Akte fehlen noch die Aktionen Antwort erfassen, Schließen, Wieder öffnen, Sperren, Löschen, An SAP übergeben. In der Ansprache sind E-Mail und Nachfassen erkennbar deaktiviert. Verwerfen im Eingangskorb fehlt noch (E3-S4).
+Dashboard (S1), Firmen (S3), Wiedervorlagen (S6), SAP-Übergabe (S7), Einstellungen (S8), Agent-Steuerung (S9) zeigen einen Platzhalter. In der Akte fehlen noch die Aktionen Antwort erfassen, Schließen, Wieder öffnen, Sperren, Löschen, An SAP übergeben. In der Ansprache sind E-Mail und Nachfassen erkennbar deaktiviert.
