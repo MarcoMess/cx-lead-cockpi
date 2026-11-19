@@ -36,9 +36,10 @@ export function entferneSperre(db: Datenbank, id: number): boolean {
   return db.prepare(`DELETE FROM sperreintrag WHERE id = ?`).run(id).changes > 0;
 }
 
-/** Eintrag gleicher Art mit demselben Namen (ohne Groß- und Kleinschreibung), falls vorhanden. */
-export function findeSperre(db: Datenbank, art: SperreArt, name: string): { id: number } | undefined {
-  return db
-    .prepare(`SELECT id FROM sperreintrag WHERE art = ? AND lower(trim(name)) = lower(trim(?))`)
-    .get(art, name) as { id: number } | undefined;
+/** Alle Einträge einer Art (Name und ID), für den Abgleich auf doppelte Einträge. */
+export function namenDerArt(db: Datenbank, art: SperreArt): { id: number; name: string }[] {
+  return db.prepare(`SELECT id, name FROM sperreintrag WHERE art = ?`).all(art) as unknown as {
+    id: number;
+    name: string;
+  }[];
 }

@@ -2,8 +2,9 @@
 import { SperreEingabe, type SperrZeile } from '../../gemeinsam/sperrliste';
 import type { Uhr } from '../anbindungen/uhr';
 import { transaktion, type Datenbank } from '../daten/db';
-import { entferneSperre, findeSperre, legeSperreAn, listeSperren } from '../daten/sperrliste';
+import { entferneSperre, legeSperreAn, listeSperren, namenDerArt } from '../daten/sperrliste';
 import { FachFehler } from '../fehler';
+import { sperrSchluessel } from '../regeln/ausschluss';
 
 export function ladeSperrliste(db: Datenbank): SperrZeile[] {
   return listeSperren(db);
@@ -16,11 +17,12 @@ export function fuegeSperreHinzu(db: Datenbank, uhr: Uhr, eingabe: unknown): Spe
     throw new FachFehler(422, 'eingabe_ungueltig', f.message, String(f.path[0] ?? ''));
   }
   return transaktion(db, () => {
-    if (findeSperre(db, e.data.art, e.data.name)) {
+    const schluessel = sperrSchluessel(e.data.name);
+    if (namenDerArt(db, e.data.art).some((z) => sperrSchluessel(z.name) === schluessel)) {
       throw new FachFehler(
         409,
         'schon_gesperrt',
-        `»${e.data.name}« steht schon auf der Sperrliste. Pass den bestehenden Eintrag an, statt einen zweiten anzulegen.`,
+        `»${e.data.name}« steht schon auf der Sperrliste. Ein zweiter Eintrag ist nicht nötig.`,
         'name',
       );
     }

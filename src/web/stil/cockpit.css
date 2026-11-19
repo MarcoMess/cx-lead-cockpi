@@ -487,3 +487,11 @@ input.inl.breit {
 .kv.angaben {
   margin: 10px 0;
 }
+.btn.d {
+  border-color: var(--err);
+  color: var(--err);
+  background: #fff;
+}
+.btn.d:hover {
+  background: var(--errbg);
+}

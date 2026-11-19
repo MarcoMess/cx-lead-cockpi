@@ -69,14 +69,17 @@ export function liesAusgefuehrtenLauf(db: Datenbank, id: number): LaufZeile | un
     LaufZeile | undefined;
 }
 
-export type VorschlagRoh = Pick<VorschlagKarte, 'id' | 'zustand' | 'daten' | 'ist_dublette' | 'ist_wiederansprache'> & {
+export type VorschlagRoh = Pick<
+  VorschlagKarte,
+  'id' | 'zustand' | 'daten' | 'ist_dublette' | 'ist_wiederansprache' | 'verwerf_grund'
+> & {
   bezug_ansprechpartner_id: number | null;
 };
 
 export function vorschlaegeVonLauf(db: Datenbank, laufId: number): VorschlagRoh[] {
   const zeilen = db
     .prepare(
-      `SELECT id, zustand, daten, ist_dublette, ist_wiederansprache, bezug_ansprechpartner_id
+      `SELECT id, zustand, daten, ist_dublette, ist_wiederansprache, bezug_ansprechpartner_id, verwerf_grund
        FROM vorschlag WHERE recherchelauf_id = ? ORDER BY id`,
     )
     .all(laufId) as {
@@ -86,6 +89,7 @@ export function vorschlaegeVonLauf(db: Datenbank, laufId: number): VorschlagRoh[
     ist_dublette: number;
     ist_wiederansprache: number;
     bezug_ansprechpartner_id: number | null;
+    verwerf_grund: string | null;
   }[];
   return zeilen.map((z) => ({
     id: z.id,
@@ -94,6 +98,7 @@ export function vorschlaegeVonLauf(db: Datenbank, laufId: number): VorschlagRoh[
     ist_dublette: z.ist_dublette === 1,
     ist_wiederansprache: z.ist_wiederansprache === 1,
     bezug_ansprechpartner_id: z.bezug_ansprechpartner_id,
+    verwerf_grund: z.verwerf_grund,
   }));
 }
 
@@ -120,6 +125,14 @@ export function markiereFreigegeben(db: Datenbank, vorschlagId: number, ansprech
   db.prepare(`UPDATE vorschlag SET zustand = ?, ansprechpartner_id = ? WHERE id = ?`).run(
     'freigegeben' satisfies VorschlagZustand,
     ansprechpartnerId,
+    vorschlagId,
+  );
+}
+
+export function markiereVerworfen(db: Datenbank, vorschlagId: number, grund: string): void {
+  db.prepare(`UPDATE vorschlag SET zustand = ?, verwerf_grund = ? WHERE id = ?`).run(
+    'verworfen' satisfies VorschlagZustand,
+    grund,
     vorschlagId,
   );
 }

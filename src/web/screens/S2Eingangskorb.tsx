@@ -4,6 +4,8 @@ import type { LaufDetail, LaufZeile, VorschlagKarte } from '../../gemeinsam/eing
 import { api, ApiFehler } from '../api';
 import { useAktualisierung } from '../aktualisierung';
 import { ANLASS_TYP_TEXT, STATUS_TEXT } from '../../gemeinsam/texte';
+import type { Verworfen } from '../../gemeinsam/verwerfen';
+import { VERWERF_GRUENDE, type VerwerfGrund } from '../../gemeinsam/werte';
 import { datum, personName, umsatz } from '../format';
 import { Etikett } from '../teile/Etikett';
 import { ScreenKopf } from '../teile/ScreenKopf';
@@ -139,6 +141,8 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
   const { firma, person, anlass } = v.daten;
   const [fehler, setFehler] = useState('');
   const [offen, setOffen] = useState(false);
+  const [verwerfen, setVerwerfen] = useState(false);
+  const [grund, setGrund] = useState<VerwerfGrund>(VERWERF_GRUENDE[0]);
   const gesperrt = v.ist_dublette || v.fehlende_pflichtangaben.length > 0;
 
   async function freigeben() {
@@ -153,6 +157,21 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
     }
   }
 
+  async function verwerfenBestaetigen() {
+    setFehler('');
+    try {
+      const r = await api<Verworfen>('POST', `/vorschlaege/${v.id}/verwerfung`, { grund });
+      const s = r.sperreintrag;
+      const sperre =
+        s.art === 'firma'
+          ? `Die Firma ${s.name} steht jetzt auf der Sperrliste.`
+          : `${s.name} ist bis ${datum(s.gesperrt_bis)} gesperrt.`;
+      geaendert(`${personName(person)} verworfen (${grund}). ${s.neu ? sperre : `${s.name} war schon gesperrt.`}`);
+    } catch (e) {
+      setFehler(e instanceof ApiFehler ? e.message : 'Das Verwerfen hat nicht geklappt.');
+    }
+  }
+
   const ohneAnlass = !anlass || anlass.typ === 'kein_anlass';
   return (
     <article className="box" aria-label={`Vorschlag ${personName(person)}`}>
@@ -160,7 +179,7 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
         <h3>{personName(person)}</h3>
         <span>{person.funktion}</span>
         {v.zustand === 'freigegeben' && <Etikett art="ok">Freigegeben</Etikett>}
-        {v.zustand === 'verworfen' && <Etikett art="aus">Verworfen</Etikett>}
+        {v.zustand === 'verworfen' && <Etikett art="aus">Verworfen: {v.verwerf_grund}</Etikett>}
         {v.zustand === 'zu_pruefen' && v.ist_dublette && <Etikett art="aus">Dublette</Etikett>}
         {v.zustand === 'zu_pruefen' && v.ist_wiederansprache && <Etikett art="hypothese">Wiederansprache</Etikett>}
       </div>
@@ -211,28 +230,63 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
           {fehler}
         </p>
       )}
-      <div className="aktionen">
-        <button className="btn klein" type="button" aria-expanded={offen} onClick={() => setOffen(!offen)}>
-          {offen ? 'Angaben ausblenden' : 'Angaben und Quellen prüfen'}
-        </button>
-        {v.zustand === 'zu_pruefen' && (
-          <button
-            className="btn p"
-            type="button"
-            onClick={freigeben}
-            disabled={gesperrt}
-            title={
-              v.ist_dublette
-                ? 'Eine Dublette lässt sich nicht freigeben.'
-                : gesperrt
-                  ? 'Es fehlen Pflichtangaben.'
-                  : undefined
-            }
-          >
-            Freigeben
+      {verwerfen && v.zustand === 'zu_pruefen' ? (
+        <div className="aktionen" role="group" aria-label="Verwerfen">
+          <label>
+            Grund{' '}
+            <select
+              className="inl"
+              aria-label="Grund"
+              value={grund}
+              onChange={(e) => setGrund(e.target.value as VerwerfGrund)}
+            >
+              {VERWERF_GRUENDE.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="btn d" type="button" onClick={verwerfenBestaetigen}>
+            Verwerfen bestätigen
           </button>
-        )}
-      </div>
+          <button className="btn" type="button" onClick={() => setVerwerfen(false)}>
+            Abbrechen
+          </button>
+          <span className="muted">
+            »passt nicht ins Zielbild« und »wird von Kollegen betreut« sperren die Firma, die anderen Gründe nur die
+            Person für 6 Monate.
+          </span>
+        </div>
+      ) : (
+        <div className="aktionen">
+          <button className="btn klein" type="button" aria-expanded={offen} onClick={() => setOffen(!offen)}>
+            {offen ? 'Angaben ausblenden' : 'Angaben und Quellen prüfen'}
+          </button>
+          {v.zustand === 'zu_pruefen' && (
+            <>
+              <button
+                className="btn p"
+                type="button"
+                onClick={freigeben}
+                disabled={gesperrt}
+                title={
+                  v.ist_dublette
+                    ? 'Eine Dublette lässt sich nicht freigeben.'
+                    : gesperrt
+                      ? 'Es fehlen Pflichtangaben.'
+                      : undefined
+                }
+              >
+                Freigeben
+              </button>
+              <button className="btn" type="button" onClick={() => setVerwerfen(true)}>
+                Verwerfen
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </article>
   );
 }

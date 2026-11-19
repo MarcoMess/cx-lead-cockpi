@@ -105,6 +105,7 @@ export const VERWERF_GRUENDE = [
   'Anlass zu schwach',
   'wird von Kollegen betreut',
 ] as const;
+export type VerwerfGrund = (typeof VERWERF_GRUENDE)[number];
 
 /** Fristen aus Abschnitt 9 des Konzepts. In S8 nur angezeigt, nicht änderbar. */
 export const FRISTEN = {

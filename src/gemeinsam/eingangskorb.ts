@@ -24,6 +24,8 @@ export interface VorschlagKarte {
   bestehende_firma: { id: number; name: string } | null;
   /** Hinweis, wenn bei der Firma schon eine Ansprache läuft. */
   hinweis_zweiter_ansprechpartner: string | null;
+  /** Grund, wenn Marco den Vorschlag verworfen hat (Story E3-S4). */
+  verwerf_grund: string | null;
   /** Fehlende oder unzulässige Pflichtangaben; nicht leer heißt: Freigeben gesperrt (Story E3-S2). */
   fehlende_pflichtangaben: string[];
 }
