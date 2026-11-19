@@ -28,14 +28,14 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 7 | E3-S3 Freigeben | story/E3-S3-freigeben | #8 | Zusammengeführt (Runde 1 bestanden; Nachtrag in der Prüfung von E4-S2 mitgeprüft) | 0 von 2 |
 | 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | #9 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | #10 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
-| 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | #11 | Wartet auf Entscheidung (Prüfung 1: nur Kriterium 5 nicht prüfbar, Nachweis mit E5-S3) | 0 von 2 |
-| 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | #12 | In Prüfung | 0 von 2 |
-| 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | #13 | In Prüfung | 0 von 2 |
+| 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | #11 | Wartet auf Entscheidung (Kriterium 5 inzwischen in der Prüfung von E5-S3 am System erfüllt; offen: Wortlaut Kriterium 7) | 0 von 2 |
+| 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | #12 | Bestanden (Runde 1), wartet auf #11 | 0 von 2 |
+| 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | #13 | Bestanden (Runde 1), wartet auf #11 und #12 | 0 von 2 |
 
 Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
 
 ## Nächster Schritt
-Kernweg gebaut. Prüfungen von E5-S2 und E5-S3 abwarten, dann Halt zum Durchklicken (Marco entscheidet über E5-S1 Kriterium 5 und 7).
+**Halt zum Durchklicken** (vereinbart). Marco klickt den Kernweg auf `story/E5-S3-versand` durch (Anleitung: docs/durchklicken.md) und entscheidet über E5-S1 (Kriterien 5 und 7). Danach #11, #12, #13 zusammenführen und mit den übrigen 34 Stories weitermachen, zuerst eine Pflege mit den gesammelten Punkten.
 
 ## Offene Punkte aus den Prüfungen
 Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der Story erledigt, die den Bereich ohnehin anfasst, spätestens in einer Pflege vor dem Halt.
@@ -55,6 +55,8 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 | E5-S1 | Kriterium 7 nennt Bernasconi, der auf »Nachgefasst« steht und keine Ansprache hat; Vorschlag: »ein freigegebener Kontakt ohne Anlass (Reto Ammann aus dem Lauf vom 19.11.2026)« | Frage an Marco |
 | E5-S1 | Kriterium 5 (Fassung »von Marco geändert«) setzt das Protokollieren voraus, das erst E5-S3 baut; E5-S3 enthält die Servertests »E5-S1 #5« für beide Fälle | Marco nimmt die Verschiebung an? |
 | E5-S1 | Änderungen an Betreff und Text gehen verloren, wenn Marco die Ansprache ohne Markieren verlässt (A3 Schritt 2 »speichert die Fassung«) | Frage an Marco |
+| E5-S3 | Kein Regeltest für `fristWiedervorlage`; Servertest zu E5-S1 #5 ohne Fall »nur Betreff geändert«; »Als gesendet markieren« während der Anfrage nicht gesperrt; Meldungen bleiben stehen (Rückmeldung nach Neuladen, »Nachricht ist leer«, Vorführleiste); Oberflächentest heißt noch »#7 Bernasconi« | Pflege vor dem Weiterbau |
+| E5-S2 | Kopier-Bestätigung bleibt nach weiterem Bearbeiten stehen; Test kopiert den Betreff nur unverändert; leeres Feld wird »kopiert« bestätigt | Pflege vor dem Halt |
 | E4-S2 | Meldung `filter_ungueltig` ohne Handlungshinweis; »Dr.« fehlt in der Meldung `person_bekannt` | Pflege vor dem Halt |
 | Konzept | 21-Tage-Schließvorschlag für Reinhardts Altdaten | Entscheidung mit E6-S5 |
 | Konzept | Rechtliches (UWG E-Mail, InMail) und Datenschutz | Frage an Marco vor dem Echtbetrieb |
@@ -63,6 +65,7 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 | Datum | Was passiert ist |
 |---|---|
 | 18.11.2026 | Konzept 1.0, Clickdummy und Stories freigegeben; Konzept 1.1 und 1.2 mit den Ergebnissen aus Clickdummy und Stories |
+| 19.11.2026 | Kernweg gebaut und geprüft: E4-S3, E5-S2, E5-S3 bestanden, E5-S1 wartet auf Marcos Entscheidung; Pflege 1 nach zwei Korrekturschleifen in Runde 3 bestanden; #6 bis #10 zusammengeführt. Halt zum Durchklicken |
 | 19.11.2026 | Pflege 1 und E3-S1 in Runde 1 nicht bestanden (Bausteingrenzen unvollständig, Abdeckungsgrenzen nicht in der Liste), nachgebessert; E3-S1 Runde 2 bestanden; E3-S3 bestanden, zwei Sollte-Befunde gleich behoben; E4-S2 gebaut |
 | 19.11.2026 | E1-S1, E1-S2, E2-S3 bestanden und zusammengeführt; wiederkehrender Befund »Bausteingrenzen« → Pflege 1 mit Lint-Regel, Architektur 1.3, Lernnotizen angelegt |
 | 19.11.2026 | E1-S0 bestanden und zusammengeführt (5 Sollte, 5 Hinweise); Datenhaltung wegen Befund 5 auf node:sqlite umgestellt (Architektur 1.2) |
