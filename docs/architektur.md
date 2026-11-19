@@ -1,6 +1,6 @@
 # CX Lead Cockpit – Architektur
 
-Abgeleitet aus: konzept.md Version 1.2, stories.md vom 19.11.2026 · Stand: Freigegeben (Marco, 19.11.2026), Version 1.1
+Abgeleitet aus: konzept.md Version 1.2, stories.md vom 19.11.2026 · Stand: Freigegeben (Marco, 19.11.2026), Version 1.2
 
 Eine Datei `technik-vorgaben.md` lag nicht vor. Die Technik hat Marco am 18.11.2026 gewählt: »TypeScript schlank«. Die Qualitätsstufe ebenfalls: »Prototyp, simuliert«.
 
@@ -25,7 +25,7 @@ Ausdrücklich nicht gebaut werden:
 | Gestaltung | Eigenes CSS mit den Farb- und Schriftwerten aus `clickdummy.html`; keine Komponentenbibliothek | Abgeleitet aus dem freigegebenen Clickdummy | Der Dummy ist die Vorlage; eine Bibliothek würde ein anderes Aussehen erzwingen |
 | Server | Fastify 5.12 | Marcos Wahl (Node.js-Server) | Schlank, eingebaute Testschnittstelle ohne Netzwerk |
 | Eingabeprüfung | Zod 4.6, Schemas in `src/gemeinsam` | Ergänzung | Dieselben Schemas prüfen am Server und typisieren die Oberfläche |
-| Datenhaltung | SQLite, eine Datei `data/cockpit.sqlite`, Zugriff über better-sqlite3 13 mit handgeschriebenem SQL | Marcos Wahl | Kein Datenbankserver nötig; ein Nutzer, kleine Datenmengen |
+| Datenhaltung | SQLite, eine Datei `data/cockpit.sqlite`, Zugriff über das in Node.js eingebaute `node:sqlite` (`DatabaseSync`) mit handgeschriebenem SQL; Transaktionen über `transaktion()` in `src/server/daten/db.ts` | Marcos Wahl; Ausweichweg aus Abschnitt 11 seit 19.11.2026 | Kein Datenbankserver und keine Kompilierung bei der Installation; ein Nutzer, kleine Datenmengen |
 | Anmeldung | Ein Nutzer, Passwort aus der Umgebungsvariable `COCKPIT_PASSWORD`, verschlüsseltes Sitzungs-Cookie (`@fastify/secure-session` 8, Schlüssel aus `COCKPIT_SESSION_SECRET`) | `[Annahme]` für den Prototyp | Erfüllt E1-S1 ohne Abhängigkeit von der IT |
 | Tests Logik und Schnittstelle | Vitest 5, Aufrufe über `fastify.inject` | Ergänzung | Schnell, ohne Browser, jede Regel einzeln prüfbar |
 | Tests Oberfläche | Playwright 1.65 mit Chromium; ist `PLAYWRIGHT_CHANNEL=chrome` gesetzt, wird ein installiertes Chrome genutzt | Ergänzung | Klickt die Akzeptanzkriterien wörtlich nach |
@@ -412,7 +412,7 @@ Jeder Test trägt die Story und die Nummer des Kriteriums im Namen, zum Beispiel
 | Annahme | Auswirkung, wenn falsch | Wie prüfen |
 |---|---|---|
 | Marcos Rechner hat Node.js 22.22 oder neuer | `npm run einrichten` bricht ab | `node -v` vor dem ersten Start |
-| better-sqlite3 lässt sich auf Marcos Rechner ohne Build-Werkzeuge installieren | `npm run einrichten` scheitert | Im Grundgerüst testen; Ausweichweg ist das in Node.js eingebaute `node:sqlite` |
+| `node:sqlite` bleibt in Node.js 22 nutzbar; es meldet sich beim Start als experimentell | Warnung im Terminal; bei einer Änderung der Schnittstelle Anpassung in `db.ts` | Seit Node.js 22.13 ohne Schalter verfügbar; Zugriff nur über `db.ts` und die Zugriffsmodule |
 | Anmeldung mit einem Passwort reicht für den Prototyp | Nagarro-IT verlangt Unternehmens-Anmeldung schon zum Vorführen | Marco bestätigt mit der Freigabe |
 | Der Prototyp läuft nur lokal | Die echte Claude-Aufgabe in der Cloud erreicht ein lokales Cockpit nicht | Vor dem Echtbetrieb entscheiden: Cockpit erreichbar betreiben oder die Aufgabe lokal laufen lassen |
 | Der SAP-Simulator bildet die echte Schnittstelle ausreichend ab | Beim Tausch gegen die echte Anbindung ändern sich Pflichtfelder und Fehlerbilder | Mit dem API-Nutzer je Objekt einen Datensatz lesen und einen Testdatensatz anlegen, bevor `SapV2Client` gebaut wird |
@@ -428,7 +428,7 @@ Jeder Test trägt die Story und die Nummer des Kriteriums im Namen, zum Beispiel
 | TypeScript mit React, Fastify und SQLite | SAP CAP mit SAPUI5; Spring Boot mit Angular | Von Marco gewählt; kleinste Lösung für einen Ein-Nutzer-Prototyp. Ein Hausstandard lag nicht vor, eine Abweichung davon lässt sich daher nicht benennen |
 | Prototyp mit Simulatoren für SAP und Agent | Echte SAP-Anbindung von Anfang an | Von Marco gewählt; Tests bleiben wiederholbar, die echte Anbindung tauscht nur eine Klasse |
 | Fachbegriffe deutsch in Tabellen, JSON und Pfaden | Englische Pfade aus dem Entwurf in Abschnitt 11 des Konzepts | Ein Begriff je Sache vom Konzept bis zum Code; die Stories nennen dieselben Wörter. Der Entwurf im Konzept war als Annahme markiert |
-| Handgeschriebenes SQL über better-sqlite3 | ORM wie Drizzle oder Prisma | Zwölf kleine Tabellen; weniger Schichten, in denen einzeln arbeitende Agenten auseinanderlaufen |
+| Handgeschriebenes SQL über `node:sqlite` | ORM wie Drizzle oder Prisma; better-sqlite3 (im Grundgerüst zuerst genutzt, braucht bei jeder Installation Build-Werkzeuge, Befund der Prüfung E1-S0) | Zwölf kleine Tabellen; weniger Schichten, in denen einzeln arbeitende Agenten auseinanderlaufen |
 | Ein npm-Paket | Getrennte Pakete für Server und Oberfläche | Ein Befehl zum Starten und Testen, geteilte Typen ohne Veröffentlichung |
 | Eigenes CSS nach dem Clickdummy | Komponentenbibliothek | Der freigegebene Dummy ist die Vorlage |
 | Regeln als reine Funktionen mit »heute« als Parameter | Regeln in den Routen oder in der Oberfläche | Jede Regel ist einzeln und ohne Datenbank prüfbar; Vorführdatum möglich |
@@ -439,6 +439,6 @@ Jeder Test trägt die Story und die Nummer des Kriteriums im Namen, zum Beispiel
 | Passwort-Anmeldung, ein Nutzer | Microsoft Entra ID | Prototyp ohne Abhängigkeit von der IT |
 | Agenten-Simulator ruft die echte Agenten-API über HTTP | Simulator schreibt direkt in die Datenbank | Prüft dieselbe Schnittstelle, die später die Claude-Aufgabe nutzt |
 | Node.js 22 statt 24 | Node.js 24 | In der Arbeitsumgebung vorhanden; beide sind Langzeit-Versionen. Von Marco am 19.11.2026 bestätigt |
-| Aktuelle Hauptversionen (Vite 8, React Router 8, Vitest 5, better-sqlite3 13), TypeScript 5.9 | Die im Entwurf genannten älteren Hauptversionen; TypeScript 7 | Stand des npm-Verzeichnisses am 19.11.2026; TypeScript 7 wird von typescript-eslint noch nicht unterstützt |
+| Aktuelle Hauptversionen (Vite 8, React Router 8, Vitest 5), TypeScript 5.9 | Die im Entwurf genannten älteren Hauptversionen; TypeScript 7 | Stand des npm-Verzeichnisses am 19.11.2026; TypeScript 7 wird von typescript-eslint noch nicht unterstützt |
 | Namen und Pfade aus dem Repository übernommen (`.env.example`, `data/`, PR gegen `main`, `docs/`) | Die im Entwurf genannten deutschen Namen | Das Repository brachte mit `CLAUDE.md`, `.env.example` und `.gitignore` bereits Regeln mit |
 | Unbekannte Adresse liefert 404 `nicht_gefunden`; `GET /gesundheit` ohne Anmeldung | Kein Lebenszeichen | Braucht das Grundgerüst für den ersten Schnittstellentest |

@@ -3,7 +3,7 @@
 // Alle Personen und Firmen sind erfunden. Quellen zeigen auf example.com.
 import { BRANCHEN, ROLLEN } from '../../gemeinsam/werte';
 import { normalisiereFirmenname } from '../regeln/dubletten';
-import type Database from 'better-sqlite3';
+import type { DatabaseSync, SQLInputValue } from 'node:sqlite';
 
 const GRUSS = '\nBeste Grüße\nMarco';
 const ALTBESTAND = '(Wortlaut im Altbestand nicht erfasst)';
@@ -343,9 +343,10 @@ const slug = (s: string) =>
     .replace(/(^-|-$)/g, '');
 
 /** Schreibt die Startdaten in eine leere Datenbank mit fertigem Schema. */
-export function ladeStartdaten(db: Database.Database): void {
+export function ladeStartdaten(db: DatabaseSync): void {
   const d = STARTDATEN;
-  db.transaction(() => {
+  db.exec('BEGIN');
+  try {
     const firma = db.prepare(
       `INSERT INTO firma (id, name, name_norm, branche, land, umsatz_wert, umsatz_waehrung, umsatz_jahr, umsatz_bezug,
         umsatz_quelle_url, wechselkurs, wechselkurs_quelle_url, umsatz_eur) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
@@ -373,7 +374,7 @@ export function ladeStartdaten(db: Database.Database): void {
         email, email_herkunft, status, antwort_art, gespraech_termin, geschlossen_am) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     );
     for (const a of d.ansprechpartner) {
-      const x = a as Record<string, unknown>;
+      const x = a as unknown as Record<string, SQLInputValue | undefined>;
       ap.run(
         a.id,
         a.firma_id,
@@ -418,7 +419,7 @@ export function ladeStartdaten(db: Database.Database): void {
         VALUES (?,?,?,?,?,?,?,?)`,
     );
     for (const k of d.kontaktversuche) {
-      const x = k as Record<string, unknown>;
+      const x = k as unknown as Record<string, SQLInputValue | undefined>;
       const n = d.nachrichten.find((m) => m.ansprechpartner_id === x.nachricht_von);
       kv.run(
         k.ansprechpartner_id,
@@ -459,7 +460,7 @@ export function ladeStartdaten(db: Database.Database): void {
         VALUES (?,?,?,?,?,?,?,?)`,
     );
     for (const l of d.rechercheLaeufe) {
-      const x = l as Record<string, unknown>;
+      const x = l as unknown as Record<string, SQLInputValue | undefined>;
       lauf.run(
         l.datum,
         l.ergebnis,
@@ -476,5 +477,9 @@ export function ladeStartdaten(db: Database.Database): void {
     );
     for (const n of d.sperreintraege) sp.run(n);
     db.prepare(`INSERT INTO einstellung (schluessel, wert) VALUES ('signatur', ?)`).run(d.signatur);
-  })();
+    db.exec('COMMIT');
+  } catch (e) {
+    db.exec('ROLLBACK');
+    throw e;
+  }
 }
