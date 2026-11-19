@@ -63,3 +63,19 @@ test('E3-S4 #4 Kortmann »Anlass zu schwach«: Person bis 19.05.2027 gesperrt', 
     'Entfernen',
   ]);
 });
+
+test('Prüfung E3-S4 Runde 2: schon gesperrte Person – die Rückmeldung nennt den vorhandenen Eintrag', async ({
+  page,
+  request,
+}) => {
+  await request.post('/api/v1/sperrliste', { data: { art: 'person', name: 'Sabine Kortmann' } });
+  await anmelden(page, '/eingangskorb');
+  const karte = page.getByRole('article', { name: 'Vorschlag Sabine Kortmann' });
+  await karte.getByRole('button', { name: 'Verwerfen', exact: true }).click();
+  const gruppe = karte.getByRole('group', { name: 'Verwerfen' });
+  await gruppe.getByLabel('Grund').selectOption('Anlass zu schwach');
+  await gruppe.getByRole('button', { name: 'Verwerfen bestätigen' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'verworfen' })).toHaveText(
+    'Sabine Kortmann verworfen (Anlass zu schwach). Sabine Kortmann war schon auf der Sperrliste.',
+  );
+});

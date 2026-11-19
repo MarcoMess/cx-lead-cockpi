@@ -34,23 +34,46 @@ export function sperrSchluessel(name: string): string {
 }
 
 /**
- * Gibt es für diese Firma oder Person schon einen **gültigen** Eintrag? Firmen werden ohne Rechtsform verglichen,
+ * Der **gültige** Eintrag für diese Firma oder Person, sonst null. Firmen werden ohne Rechtsform verglichen,
  * Personen mit ihrer Firma; ein abgelaufener Eintrag (»gesperrt bis« vor heute) zählt nicht (Prüfung E3-S4, Befund 1).
  */
+export function findeGueltigeSperre<
+  E extends { art: 'firma' | 'person'; name: string; firma_name: string | null; gesperrt_bis: string | null },
+>(eintraege: E[], neu: { art: 'firma' | 'person'; name: string; firma_name?: string | null }, heute: string): E | null {
+  return (
+    eintraege.find((e) => {
+      if (e.art !== neu.art || (e.gesperrt_bis && e.gesperrt_bis < heute)) return false;
+      if (e.art === 'firma') return normalisiereFirmenname(e.name) === normalisiereFirmenname(neu.name);
+      const gleicheFirma =
+        !e.firma_name ||
+        !neu.firma_name ||
+        normalisiereFirmenname(e.firma_name) === normalisiereFirmenname(neu.firma_name);
+      return sperrSchluessel(e.name) === sperrSchluessel(neu.name) && gleicheFirma;
+    }) ?? null
+  );
+}
+
+/** Gibt es für diese Firma oder Person schon einen gültigen Eintrag? */
 export function gueltigeSperre(
   eintraege: { art: 'firma' | 'person'; name: string; firma_name: string | null; gesperrt_bis: string | null }[],
   neu: { art: 'firma' | 'person'; name: string; firma_name?: string | null },
   heute: string,
 ): boolean {
-  return eintraege.some((e) => {
-    if (e.art !== neu.art || (e.gesperrt_bis && e.gesperrt_bis < heute)) return false;
-    if (e.art === 'firma') return normalisiereFirmenname(e.name) === normalisiereFirmenname(neu.name);
-    const gleicheFirma =
-      !e.firma_name ||
-      !neu.firma_name ||
-      normalisiereFirmenname(e.firma_name) === normalisiereFirmenname(neu.firma_name);
-    return sperrSchluessel(e.name) === sperrSchluessel(neu.name) && gleicheFirma;
-  });
+  return findeGueltigeSperre(eintraege, neu, heute) !== null;
+}
+
+/**
+ * Was beim Verwerfen mit einem vorhandenen gültigen Eintrag geschieht: Eine befristete Personensperre, die vor der
+ * neuen Frist endet, wird bis zur neuen Frist verlängert (Prüfung E3-S4 Runde 2); sonst bleibt der Eintrag, wie er ist.
+ */
+export function sperreNachVerwerfen(
+  vorhanden: { gesperrt_bis: string | null },
+  folge: Sperrfolge,
+): { gesperrt_bis: string | null; verlaengern: boolean } {
+  if (folge.art === 'person' && vorhanden.gesperrt_bis && vorhanden.gesperrt_bis < folge.gesperrt_bis) {
+    return { gesperrt_bis: folge.gesperrt_bis, verlaengern: true };
+  }
+  return { gesperrt_bis: vorhanden.gesperrt_bis, verlaengern: false };
 }
 
 export interface Sperre {

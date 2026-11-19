@@ -175,7 +175,13 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
           ? `Die Firma ${s.name} ist für den Agenten gesperrt.`
           : `${s.name} ist bis ${datum(s.gesperrt_bis)} für den Agenten gesperrt.`;
       geaendert(
-        `${personName(person)} verworfen (${grund}). ${s.neu ? sperre : `${s.name} war schon auf der Sperrliste.`}`,
+        `${personName(person)} verworfen (${grund}). ${
+          s.neu
+            ? sperre
+            : s.verlaengert
+              ? `Die Sperre von ${s.name} gilt jetzt bis ${datum(s.gesperrt_bis)}.`
+              : `${s.name} war schon auf der Sperrliste${s.gesperrt_bis ? ` (bis ${datum(s.gesperrt_bis)})` : ''}.`
+        }`,
       );
     } catch (e) {
       setFehler(e instanceof ApiFehler ? e.message : 'Das Verwerfen hat nicht geklappt.');
