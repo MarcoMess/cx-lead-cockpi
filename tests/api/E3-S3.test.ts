@@ -221,10 +221,20 @@ describe('E3-S3 Vorschlag freigeben', () => {
     ({ app, db } = await neueApp());
     const { kopf, id } = await laufVom19(app);
     const vorher = zahl(db, 'SELECT COUNT(*) n FROM ansprechpartner');
+    // Seit E2-S4 ist Albers schon beim Anlegen als Dublette markiert.
     const r = await frei(app, kopf, id('Albers'));
-    expect(r.statusCode).toBe(409);
-    expect(r.json().fehler.code).toBe('person_bekannt');
-    expect(r.json().fehler.meldung).toContain('Katrin Albers');
+    expect(r.statusCode).toBe(422);
+    expect(r.json().fehler.code).toBe('dublette');
+    // Seit Prüfung E2-S4 prüft die Freigabe selbst gegen den heutigen Bestand: auch ohne Kennzeichnung eine Dublette.
+    // Albers kommt ohne Nachricht; für diese Probe bekommt sie eine, damit die Pflichtangaben (E3-S2) nicht vorher greifen.
+    db.prepare(
+      `UPDATE vorschlag SET ist_dublette = 0,
+         daten = json_set(daten, '$.nachricht', json_object('betreff', 'B', 'text', 'T')) WHERE id = ?`,
+    ).run(id('Albers'));
+    const r2 = await frei(app, kopf, id('Albers'));
+    expect(r2.statusCode).toBe(422);
+    expect(r2.json().fehler.code).toBe('dublette');
+    expect(r2.json().fehler.meldung).toContain('Katrin Albers');
     expect(zahl(db, 'SELECT COUNT(*) n FROM ansprechpartner')).toBe(vorher);
     expect(zahl(db, `SELECT COUNT(*) n FROM vorschlag WHERE id = ${id('Albers')} AND zustand = 'zu_pruefen'`)).toBe(1);
   });

@@ -492,6 +492,41 @@ export function ladeStartdaten(db: Datenbank): void {
   });
 }
 
+/**
+ * Grundbestand für den Echtbetrieb (Story E1-S4): Rechercheprofil, die fünf Firmen des Startbestands der Sperrliste
+ * und die Signatur – keine erfundenen Firmen, Kontakte oder Läufe.
+ */
+export function ladeGrundbestand(db: Datenbank, heute: string): void {
+  const d = STARTDATEN;
+  transaktion(db, () => {
+    const p = d.rechercheprofil;
+    db.prepare(
+      `INSERT INTO rechercheprofil (id, name, status, lauftage, anzahl, branchen, laender, mindestumsatz_mio_eur, rollen, obergrenze)
+        VALUES (1,?,?,?,?,?,?,?,?,?)`,
+    ).run(
+      p.name,
+      p.status,
+      JSON.stringify(p.lauftage),
+      p.anzahl,
+      JSON.stringify(p.branchen),
+      JSON.stringify(p.laender),
+      p.mindestumsatz_mio_eur,
+      JSON.stringify(p.rollen),
+      p.obergrenze,
+    );
+    const sp = db.prepare(
+      `INSERT INTO sperreintrag (art, name, grund, herkunft, erstellt_am) VALUES ('firma', ?, 'In früherer Ausgabe genannt', 'startbestand', ?)`,
+    );
+    for (const n of d.sperreintraege) sp.run(n, heute);
+    db.prepare(`INSERT INTO einstellung (schluessel, wert) VALUES ('signatur', ?)`).run(d.signatur);
+  });
+}
+
+/** true, wenn die Datenbank schon eingerichtet ist (Rechercheprofil vorhanden). */
+export function istEingerichtet(db: Datenbank): boolean {
+  return !!db.prepare(`SELECT 1 FROM rechercheprofil WHERE id = 1`).get();
+}
+
 /** Leere Datenbank mit Schema und Startdaten – für Tests im Speicher. */
 export function erstelleStartdatenbank(pfad = ':memory:'): Datenbank {
   const db = oeffneDatenbank(pfad);

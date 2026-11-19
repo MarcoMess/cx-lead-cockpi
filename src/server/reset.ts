@@ -9,6 +9,11 @@ import { VORFUEHR_START_DATUM } from '../gemeinsam/werte';
 
 ladeUmgebung();
 const datenbankPfad = process.env.DATABASE_PATH ?? './data/cockpit.sqlite';
+// Der Echtbestand wird nie zurückgesetzt (Story E1-S4, Kriterium 3).
+if (/(^|[\\/])echt\.sqlite$/i.test(datenbankPfad) || datenbankPfad === process.env.ECHT_DATABASE_PATH) {
+  console.error(`Abgebrochen: ${datenbankPfad} ist die Datenbank des Echtbetriebs und wird nicht zurückgesetzt.`);
+  process.exit(1);
+}
 for (const endung of ['', '-wal', '-shm']) rmSync(datenbankPfad + endung, { force: true });
 const db = oeffneDatenbank(datenbankPfad);
 const agentSchluessel = process.env.COCKPIT_AGENT_KEY || randomBytes(24).toString('hex');

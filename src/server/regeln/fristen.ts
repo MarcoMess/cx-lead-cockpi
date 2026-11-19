@@ -56,3 +56,19 @@ export function alsAnzeige(s: string): string {
 export function fristWiedervorlage(erstkontakt: string): string {
   return plusWerktage(erstkontakt, FRISTEN.wiedervorlageWerktage);
 }
+
+/** Verschiebt ein Datum um n Kalendermonate; gibt es den Tag im Zielmonat nicht, gilt dessen letzter Tag. */
+export function plusMonate(s: string, n: number): string {
+  const [j, m, t] = s.slice(0, 10).split('-').map(Number);
+  const ziel = j * 12 + (m - 1) + n;
+  const jahr = Math.floor(ziel / 12);
+  const monat = ziel - jahr * 12 + 1;
+  const letzter = new Date(Date.UTC(jahr, monat, 0)).getUTCDate();
+  const tag = Math.min(t, letzter);
+  return `${String(jahr).padStart(4, '0')}-${String(monat).padStart(2, '0')}-${String(tag).padStart(2, '0')}`;
+}
+
+/** Ende der Sperre nach dem Schließen ohne Antwort: 6 Monate (Konzept, Abschnitt 9). */
+export function sperreNachSchliessenBis(geschlossenAm: string): string {
+  return plusMonate(geschlossenAm, FRISTEN.sperreNachSchliessenMonate);
+}

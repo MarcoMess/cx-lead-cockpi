@@ -29,6 +29,9 @@ Voraussetzung: Node.js 22.22 oder neuer.
 | Starten | `npm run dev` – Oberfläche auf http://localhost:5173 |
 | Alle Tests | `npm test` |
 | Startdaten zurücksetzen | `npm run reset` |
+| **Echtbetrieb** (eigene Datenbank `data/echt.sqlite`, echtes Datum, keine Vorführleiste) | `npm run echt` |
+
+`npm run dev` startet den Vorführbestand mit erfundenen Beispieldaten. `npm run echt` startet das Cockpit mit deinen echten Daten; beim ersten Start entsteht die Datenbank mit Sperrliste und Rechercheprofil, aber ohne Beispieldaten. `npm run reset` fasst den Echtbestand nie an. Echte Kontaktdaten liegen nur auf deinem Rechner und nie im Repository (`data/` steht in `.gitignore`).
 
 ## Entwicklung
 

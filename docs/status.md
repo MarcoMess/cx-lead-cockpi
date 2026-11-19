@@ -32,10 +32,23 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | #12 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | #13 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 
-Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
+### Weg zu echten Daten (Marco, 19.11.2026)
+Marco will zuerst den echten Agenten statt des Simulators. Gewählt: Die geplante Claude-Aufgabe recherchiert in der Cloud und liefert die Ergebnisdatei, Marco lädt sie im Cockpit hoch. Vorher kommt ein erster echter Lauf aus dieser Sitzung.
+
+| # | Story | Branch | PR | Stand | Korrekturschleifen |
+|---|---|---|---|---|---|
+| 13 | E10-S1 Sperrliste | story/E10-S1-sperrliste | #14 | Bestanden unter Vorbehalt (Runde 2; Kriterium 4 Teil Ausschlussliste mit E2-S2) | 1 von 2 |
+| 14 | E2-S4 Dubletten und Wiederansprache | story/E2-S4-dubletten | #15 | Bestanden (Runde 2) | 1 von 2 |
+| 15 | E3-S2 Angaben prüfen, Pflichtangaben | story/E3-S2-pflichtangaben | #16 | Bestanden (Runde 1), Sollte-Befunde behoben; wartet auf #14 und #15 | 0 von 2 |
+| 16 | E3-S4 Verwerfen | story/E3-S4-verwerfen | #17 | In Prüfung (Runde 2) | 1 von 2 |
+| 17 | E2-S5 Ergebnisdatei hochladen (mit Konzept 1.3) | story/E2-S5-upload | #18 | In Prüfung | 0 von 2 |
+| 18 | E1-S4 Echtbetrieb neben dem Vorführbestand (neu mit Konzept 1.3) | story/E1-S4-echtbetrieb | #19 | In Prüfung | 0 von 2 |
+| 19 | E2-S2 Ausschlussliste (auch Nachweis E10-S1 #4) | – | – | Offen | 0 von 2 |
+
+Danach die übrigen Stories in der Reihenfolge aus `stories.md`.
 
 ## Nächster Schritt
-**Halt zum Durchklicken** (vereinbart). Marco klickt den Kernweg auf `story/E5-S3-versand` durch (Anleitung: docs/durchklicken.md) und entscheidet über E5-S1 (Kriterien 5 und 7). Danach #11, #12, #13 zusammenführen und mit den übrigen 34 Stories weitermachen, zuerst eine Pflege mit den gesammelten Punkten.
+Marco hat durchgeklickt und den Kernweg angenommen (19.11.2026). Weiter mit dem Weg zu echten Daten. Bisher: **Halt zum Durchklicken** (vereinbart). Marco klickt den Kernweg auf `story/E5-S3-versand` durch (Anleitung: docs/durchklicken.md) und entscheidet über E5-S1 (Kriterien 5 und 7). Danach #11, #12, #13 zusammenführen und mit den übrigen 34 Stories weitermachen, zuerst eine Pflege mit den gesammelten Punkten.
 
 ## Offene Punkte aus den Prüfungen
 Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der Story erledigt, die den Bereich ohnehin anfasst, spätestens in einer Pflege vor dem Halt.
@@ -52,6 +65,7 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 | E4-S2 | Filter nach Merkmal und Tagen | E9 |
 | E4-S3 | »An SAP übergeben« wird in der Akte als Endzustand gezeigt; Tests zu #5/#7 und zu `erlaubteAktionen` unvollständig; Schiene und Filter heißen beide »Status«; `regeln/verlauf.ts` fehlt in Architektur §7/§9 | erledigt mit E5-S2 |
 | E4-S2 | Kontaktliste ohne Schutz gegen späte Antworten beim Filterwechsel; Tests zu #1 prüfen Funktion und Firma nur auf »nicht leer« | erledigt mit E5-S1 |
+| E10-S1 | Kriterium 4, Teil »fehlt in der Ausschlussliste des Agenten«: die Ausschlussliste baut E2-S2; Nachweis mit einem Test »E10-S1 #4« dort | Marco nimmt die Verschiebung an? |
 | E5-S1 | Kriterium 7 nennt Bernasconi, der auf »Nachgefasst« steht und keine Ansprache hat; Vorschlag: »ein freigegebener Kontakt ohne Anlass (Reto Ammann aus dem Lauf vom 19.11.2026)« | Frage an Marco |
 | E5-S1 | Kriterium 5 (Fassung »von Marco geändert«) setzt das Protokollieren voraus, das erst E5-S3 baut; E5-S3 enthält die Servertests »E5-S1 #5« für beide Fälle | Marco nimmt die Verschiebung an? |
 | E5-S1 | Änderungen an Betreff und Text gehen verloren, wenn Marco die Ansprache ohne Markieren verlässt (A3 Schritt 2 »speichert die Fassung«) | Frage an Marco |
