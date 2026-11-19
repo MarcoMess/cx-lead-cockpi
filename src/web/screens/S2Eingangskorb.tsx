@@ -320,7 +320,8 @@ function Hochladen({ fertig }: { fertig: (r: LaufAngelegt, text: string) => void
     setFehler('');
     let inhalt: unknown;
     try {
-      inhalt = JSON.parse(await datei.text());
+      // Ein BOM am Dateianfang (z. B. aus Windows-Editoren) gehört nicht zum JSON.
+      inhalt = JSON.parse((await datei.text()).replace(/^\uFEFF/, ''));
     } catch {
       setFehler(`Die Datei »${datei.name}« lässt sich nicht lesen: Sie enthält kein gültiges JSON.`);
       return;
