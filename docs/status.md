@@ -25,7 +25,7 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 5 | E1-S3 Agenten-Simulator | story/E1-S3-agenten-simulator | #5 | Zusammengeführt (Prüfung 1 bestanden) | 0 von 2 |
 | 5a | Pflege 1 Bausteingrenzen | pflege/bausteingrenzen | #6 | In Prüfung | 0 von 2 |
 | 6 | E3-S1 Eingangskorb | story/E3-S1-eingangskorb | #7 | In Prüfung | 0 von 2 |
-| 7 | E3-S3 Freigeben | story/E3-S3-freigeben | – | Offen | 0 von 2 |
+| 7 | E3-S3 Freigeben | story/E3-S3-freigeben | #8 | In Prüfung | 0 von 2 |
 | 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | – | Offen | 0 von 2 |
 | 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | – | Offen | 0 von 2 |
 | 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | – | Offen | 0 von 2 |
@@ -35,7 +35,7 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
 
 ## Nächster Schritt
-E3-S3 Freigeben umsetzen; Prüfungen von Pflege 1 und E3-S1 abwarten.
+E4-S2 Kontaktliste umsetzen; Prüfungen von Pflege 1, E3-S1 und E3-S3 abwarten.
 
 ## Verlauf
 | Datum | Was passiert ist |

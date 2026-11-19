@@ -53,3 +53,34 @@ export function vorschlaegeVonLauf(db: Datenbank, laufId: number): VorschlagKart
     .all(laufId) as { id: number; zustand: VorschlagKarte['zustand']; daten: string }[];
   return zeilen.map((z) => ({ id: z.id, zustand: z.zustand, daten: JSON.parse(z.daten) }));
 }
+
+export interface VorschlagZeile {
+  id: number;
+  recherchelauf_id: number;
+  zustand: VorschlagKarte['zustand'];
+  daten: string;
+  ist_dublette: number;
+  ist_wiederansprache: number;
+  bezug_ansprechpartner_id: number | null;
+}
+
+export function liesVorschlag(db: Datenbank, id: number): VorschlagZeile | undefined {
+  return db
+    .prepare(
+      `SELECT id, recherchelauf_id, zustand, daten, ist_dublette, ist_wiederansprache, bezug_ansprechpartner_id
+       FROM vorschlag WHERE id = ?`,
+    )
+    .get(id) as unknown as VorschlagZeile | undefined;
+}
+
+export function markiereFreigegeben(db: Datenbank, vorschlagId: number, ansprechpartnerId: number): void {
+  db.prepare(`UPDATE vorschlag SET zustand = ?, ansprechpartner_id = ? WHERE id = ?`).run(
+    'freigegeben',
+    ansprechpartnerId,
+    vorschlagId,
+  );
+}
+
+export function zaehleFreigabe(db: Datenbank, laufId: number): void {
+  db.prepare(`UPDATE recherchelauf SET anzahl_freigegeben = anzahl_freigegeben + 1 WHERE id = ?`).run(laufId);
+}

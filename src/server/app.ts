@@ -5,6 +5,7 @@ import type { Datenbank } from './daten/db';
 import { gesundheitRouten } from './api/gesundheit';
 import { agentRouten } from './api/agent';
 import { laeufeRouten } from './api/laeufe';
+import { vorschlaegeRouten } from './api/vorschlaege';
 import { richteZugangEin } from './api/zugang';
 import { Uhr } from './anbindungen/uhr';
 import { simRouten } from '../simulator/sim-routen';
@@ -61,6 +62,7 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
   await app.register(gesundheitRouten, { prefix: '/api/v1' });
   await app.register(agentRouten, { prefix: '/api/v1' });
   await app.register(laeufeRouten, { prefix: '/api/v1' });
+  await app.register(vorschlaegeRouten, { prefix: '/api/v1' });
   if (opt.demo) await app.register(simRouten, { prefix: '/api/v1', agentSchluessel: opt.agentSchluessel });
   return app;
 }
