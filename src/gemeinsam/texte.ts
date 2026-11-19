@@ -26,3 +26,14 @@ export function statusText(status: AnsprechpartnerStatus, antwortArt?: string | 
     ? `${basis} (${ANTWORT_ART_TEXT[antwortArt] ?? antwortArt})`
     : basis;
 }
+
+export const ANLASS_TYP_TEXT: Record<string, string> = {
+  eigener_beitrag: 'Eigener Beitrag',
+  unternehmensanlass: 'Unternehmensanlass',
+  kein_anlass: 'Kein belastbarer aktueller Anlass',
+};
+
+export const UMSATZ_BEZUG_TEXT: Record<string, string> = {
+  konzern: 'Konzern',
+  einzelgesellschaft: 'Einzelgesellschaft',
+};

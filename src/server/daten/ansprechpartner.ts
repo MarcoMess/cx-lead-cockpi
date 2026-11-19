@@ -50,8 +50,16 @@ export function oeffneZurWiederansprache(db: Datenbank, id: number, status: Ansp
   );
 }
 
-export function gibtAnsprechpartner(db: Datenbank, id: number): boolean {
-  return !!db.prepare(`SELECT 1 FROM ansprechpartner WHERE id = ?`).get(id);
+/** Status eines Ansprechpartners oder undefined, wenn es ihn nicht gibt. */
+export function liesStatus(db: Datenbank, id: number): AnsprechpartnerStatus | undefined {
+  const r = db.prepare(`SELECT status FROM ansprechpartner WHERE id = ?`).get(id) as
+    { status: AnsprechpartnerStatus } | undefined;
+  return r?.status;
+}
+
+/** Ansprechpartner mit diesem LinkedIn-Profil, falls vorhanden. */
+export function findeNachLinkedin(db: Datenbank, url: string): { id: number } | undefined {
+  return db.prepare(`SELECT id FROM ansprechpartner WHERE linkedin_url = ?`).get(url) as { id: number } | undefined;
 }
 
 export interface NeuerAnlass {

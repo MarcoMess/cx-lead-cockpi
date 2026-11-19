@@ -76,6 +76,8 @@ export async function agentMeldetSich(
   }
   const ergebnis = r.json() as LaufAngelegt;
   schreibe(app.db, GELIEFERT, '1');
+  // Der Lauf ist angekommen: Eine liegengebliebene Ergebnisdatei gilt nicht mehr (Prüfung E3-S1, Befund 4).
+  schreibe(app.db, DATEI, null);
   return {
     ergebnis: 'lauf_angelegt',
     lauf_id: ergebnis.lauf_id,

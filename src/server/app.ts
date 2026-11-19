@@ -8,7 +8,7 @@ import { laeufeRouten } from './api/laeufe';
 import { vorschlaegeRouten } from './api/vorschlaege';
 import { kontakteRouten } from './api/kontakte';
 import { richteZugangEin } from './api/zugang';
-import { Uhr } from './anbindungen/uhr';
+import { erstelleUhr, type Uhr } from './anbindungen/uhr';
 import { simRouten } from '../simulator/sim-routen';
 
 export interface AppOptionen {
@@ -32,7 +32,7 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
   app.decorate('db', opt.db);
   app.decorate('demo', opt.demo);
-  app.decorate('uhr', new Uhr(opt.db));
+  app.decorate('uhr', erstelleUhr(opt.db));
 
   app.setErrorHandler((err, _req, reply) => {
     if (err instanceof FachFehler) {

@@ -294,7 +294,7 @@ cx-lead-cockpit/
 │   │   ├── dienste/          ein Anwendungsfall je Datei, benannt nach der Aktion
 │   │   ├── regeln/           status, fristen (auch Werktag- und Datumsrechnung), laufentscheidung, dubletten, pflichtangaben, kanal, ausschluss, kennzahlen, sap-zuordnung, zugang
 │   │   ├── daten/            schema.sql, db.ts (öffnen, transaktion), ein Zugriffsmodul je Tabelle (z. B. einstellungen.ts, laeufe.ts), startdaten.ts, leeren.ts
-│   │   └── anbindungen/      sap.ts, sap-simulator.ts, uhr.ts
+│   │   └── anbindungen/      sap.ts, sap-simulator.ts, uhr.ts, uhr-simulator.ts
 │   ├── simulator/            sim-routen.ts, agent.ts, beispiel-lauf.json
 │   └── web/
 │       ├── main.tsx, App.tsx Einstieg, Navigation, Routen

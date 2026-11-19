@@ -149,5 +149,8 @@ describe('E1-S3 Nachbesserung aus Prüfung 1', () => {
     const r = await a.inject({ method: 'POST', url: '/api/v1/sim/agent/meldung', headers: kopf });
     expect(r.json()).toMatchObject({ ergebnis: 'lauf_angelegt', angelegt: 4 });
     expect(zahl(db, 'SELECT COUNT(*) n FROM vorschlag')).toBe(4);
+    // Prüfung E3-S1, Befund 4: Nach dem gelungenen Lauf liegt keine Ergebnisdatei mehr bereit.
+    const z = await a.inject({ method: 'GET', url: '/api/v1/sim/zustand', headers: kopf });
+    expect(z.json().agent.ergebnisdatei_bereit).toBe(false);
   });
 });

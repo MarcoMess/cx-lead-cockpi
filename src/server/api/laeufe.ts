@@ -1,6 +1,7 @@
 // Läufe für den Eingangskorb (nur mit Marcos Sitzung).
 import type { FastifyPluginAsync } from 'fastify';
-import { ladeLauf, ladeLaeufe } from '../dienste/eingangskorb';
+import { ladeLaeufe } from '../dienste/lade-laeufe';
+import { ladeLauf } from '../dienste/lade-lauf';
 
 export const laeufeRouten: FastifyPluginAsync = async (app) => {
   app.get('/laeufe', async () => ladeLaeufe(app.db));
