@@ -1,6 +1,6 @@
 # CX Lead Cockpit – Architektur
 
-Abgeleitet aus: konzept.md Version 1.2, stories.md vom 19.11.2026 · Stand: Freigegeben (Marco, 19.11.2026), Version 1.3
+Abgeleitet aus: konzept.md Version 1.3, stories.md vom 19.11.2026 · Stand: Freigegeben (Marco, 19.11.2026), Version 1.3 (nachgezogen für Konzept 1.3)
 
 Eine Datei `technik-vorgaben.md` lag nicht vor. Die Technik hat Marco am 18.11.2026 gewählt: »TypeScript schlank«. Die Qualitätsstufe ebenfalls: »Prototyp, simuliert«.
 

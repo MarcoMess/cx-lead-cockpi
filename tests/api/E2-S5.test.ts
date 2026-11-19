@@ -213,3 +213,44 @@ describe('E2-S5 Prüfung 1, Nachbesserung', () => {
     neu.close();
   });
 });
+
+describe('E2-S5 Prüfung 2, Sollte', () => {
+  it('Sollte 1: »1.065« bleibt 1,065, »1.234,5« wird 1234,5', async () => {
+    const { zahlAusText } = await import('../../src/gemeinsam/lauf');
+    expect(zahlAusText('1.065')).toBe(1.065);
+    expect(zahlAusText('1.234,5')).toBe(1234.5);
+    expect(zahlAusText('121')).toBe(121);
+  });
+
+  it('Sollte 2: eine Datei ohne Vorschläge belegt den Tag nicht', async () => {
+    const rufe = await marco();
+    const r = await rufe('POST', '/laeufe/upload', { vorschlaege: [] });
+    expect(r.statusCode).toBe(422);
+    expect(zahl(`SELECT COUNT(*) n FROM recherchelauf WHERE datum = '2026-11-19'`)).toBe(0);
+    expect((await rufe('POST', '/laeufe/upload', BEISPIEL)).statusCode).toBe(201);
+  });
+
+  it('Sollte 4: wird ein offener Vorschlag nach dem Anlegen zur Dublette, sperrt die Freigabe (422 dublette)', async () => {
+    const rufe = await marco();
+    const r = await rufe('POST', '/laeufe/upload', BEISPIEL);
+    const karten = (await rufe('GET', `/laeufe/${r.json().lauf_id}`)).json().vorschlaege;
+    const kortmann = karten.find(
+      (k: { daten: { person: { nachname: string } } }) => k.daten.person.nachname === 'Kortmann',
+    );
+    expect(kortmann.ist_dublette).toBe(false);
+    // Später, auf anderem Weg angelegt: Firma und Kontakt kommen nach dem Anlegen des Laufs in den Bestand.
+    db.prepare(
+      `INSERT INTO firma (name, name_norm, branche, land, umsatz_wert, umsatz_waehrung, umsatz_jahr, umsatz_bezug, umsatz_quelle_url)
+       VALUES ('Kranbau Oberhavel GmbH', 'kranbau oberhavel', 'Maschinen-/Anlagenbau', 'DE', 121, 'EUR', 2025, 'konzern', 'example.com')`,
+    ).run();
+    const firmaId = (db.prepare(`SELECT id FROM firma WHERE name_norm = 'kranbau oberhavel'`).get() as { id: number })
+      .id;
+    db.prepare(
+      `INSERT INTO ansprechpartner (firma_id, anrede, vorname, nachname, funktion, rolle, quelle_url, status)
+       VALUES (?, 'Frau', 'Sabine', 'Kortmann', 'Leiterin After-Sales Service', 'Service/After-Sales', 'example.com', 'freigegeben')`,
+    ).run(firmaId);
+    const f = await rufe('POST', `/vorschlaege/${kortmann.id}/freigabe`);
+    expect(f.statusCode).toBe(422);
+    expect(f.json().fehler.code).toBe('dublette');
+  });
+});
