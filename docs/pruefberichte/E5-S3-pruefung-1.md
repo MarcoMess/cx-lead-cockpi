@@ -1,0 +1,94 @@
+# E5-S3 – Versand protokollieren: Prüfung 1
+
+Branch: story/E5-S3-versand (Commit 57efc72, Story-Diff gegen 7e1fc9d = Stand E5-S2) · PR #13 (Kopf laut GitHub-REST 57efc72, offen, Basis `main`) · Datum: 19.11.2026 · **Urteil: Bestanden**
+
+## Tests
+Ausgeführt: 148 · Bestanden: 148 · Befehl: `PLAYWRIGHT_CHANNEL=chrome TEST_API_PORT=5300 TEST_WEB_PORT=7374 npm test` (vorher `npm run reset`), zweimal ausgeführt, beide Male Exit-Code 0
+
+- Typprüfung (`tsc --noEmit`) und ESLint mit Bausteingrenzen: ohne Befund.
+- Vitest: 20 Dateien, 115 Tests, alle bestanden (neu `tests/api/E5-S3.test.ts` mit 7 Tests).
+- Playwright: 33 Tests, alle bestanden (neu `tests/oberflaeche/E5-S3.spec.ts` mit 3 Tests).
+- Gegen 7e1fc9d wurde kein Test gelöscht, gelockert oder übersprungen. `git diff --stat 7e1fc9d..57efc72 -- tests` zeigt zwei neue und zwei geänderte Dateien. Beide Änderungen verschärfen: Hypothese und Gesprächsziel werden jetzt wörtlich geprüft (`toBe` bzw. `toContainText` mit vollem Text statt `toBeTruthy`), der API-Test #7 wurde umbenannt. `package.json`, `eslint.config.js`, `playwright.config.ts` und `vite.config.ts` sind unverändert. In `tests/` gibt es kein `.skip`, `.only` oder `fixme`.
+
+Wie gut die Tests die einzelnen Kriterien prüfen:
+- #1 #2: Der API-Test prüft den Statuscode 201, Kanal `vernetzungsanfrage`, Art, Zeitpunkt `2026-11-19 HH:MM`, Betreff, Text, Status `angeschrieben` und genau eine Wiedervorlage `2026-11-30 / Nachfassen, keine Antwort / nachfassen / erledigt 0` direkt in der Datenbank. Fehlt die Funktion, schlägt er fehl. Der Oberflächentest prüft die Rückmeldung mit 30.11.2026 wörtlich und den Verlaufseintrag.
+- #3: Die Liste `LINKEDIN_KANAELE` und die drei Optionen in der Oberfläche werden wörtlich geprüft, ebenso, dass `email` mit 422 abgewiesen wird.
+- #4: Der Test prüft die Adresse `/kontakte/3`, das Status-Etikett und genau einen Verlaufseintrag mit Kanal, Datum, Betreff und Textanfang.
+- #5: In der Oberfläche werden Betreff kopieren, Nachricht kopieren und Profil öffnen geklickt, danach steht der Status über die API weiter auf `freigegeben`. Erst nach dem Markieren steht er auf `angeschrieben`, und die Ansprache-Listen ändern sich. Der API-Test »#5« prüft dagegen etwas anderes: Ein zweiter Erstkontakt ergibt 409, ein falscher Status 409, unbekannt 404, der Agent 403.
+- #6: Am Server: 422 `text_leer` mit `feld: text`, und es wird nichts angelegt. In der Oberfläche: Hinweis wörtlich, Adresse bleibt, Status bleibt.
+- E5-S1 #5: Zwei Servertests (unverändert → `agent`, Text geändert → `von_marco_geaendert` mit gesendetem Wortlaut). Eine reine Betreffänderung ist nur im Regeltest abgedeckt, nicht am Server (Befund 2).
+
+## Akzeptanzkriterien
+Alle Prüfungen am laufenden System liefen gegen den Entwicklungsserver (`PORT=5200 API_PORT=5200 WEB_PORT=7274 npm run dev`): mit `curl` über die Schnittstelle und mit Playwright-Skripten in Chrome über die Oberfläche. Die Skripte lagen außerhalb des Repositorys. Die Datenbank wurde nur lesend über `node:sqlite` abgefragt.
+
+| Kriterium | Ergebnis | Beleg |
+|---|---|---|
+| 1 Gruber, 19.11.2026, »Vernetzungsanfrage mit Notiz«: Kontaktversuch mit Art Erstkontakt, Kanal, Zeitpunkt, gesendetem Betreff und Text | erfüllt | API: `POST /api/v1/kontakte/3/kontaktversuche` mit `{kanal: "vernetzungsanfrage", betreff, text}` ergibt 201 und `{"kontaktversuch":{"id":8,"zeitpunkt":"2026-11-19 11:50","kanal":"vernetzungsanfrage","art":"erstkontakt"},…}`. In der Tabelle `kontaktversuch`: genau eine Zeile für Gruber mit Kanal `vernetzungsanfrage`, Art `erstkontakt`, Zeitpunkt `2026-11-19 11:50`, Betreff »Kundenportal Netzanschlüsse 2027« und vollem Text (361 Zeichen, gleich dem Text der Agentenfassung). In der Oberfläche mit geändertem Text und »Vernetzungsanfrage mit Notiz« gespeichert: `kanal vernetzungsanfrage`, Text endet auf »…20 Minuten Zeit?\nBeste Grüße\nMarco«. Die Uhrzeit ist die echte Systemzeit am Vorführdatum (`Uhr.jetzt()`), wie in der Architektur vorgesehen. |
+| 2 Status »Angeschrieben«, Wiedervorlage »Nachfassen, keine Antwort« am 30.11.2026 | erfüllt | Antwort `"status":"angeschrieben","wiedervorlage":{"faellig_am":"2026-11-30","grund":"Nachfassen, keine Antwort"}`. In der Tabelle `wiedervorlage`: `{faellig_am: 2026-11-30, grund: Nachfassen, keine Antwort, art: nachfassen, erledigt: 0}`. `GET /kontakte/3` liefert danach Status `angeschrieben`, und `erlaubte_aktionen` ist ohne `ansprechen`. Zusätzlich die Werktagsrechnung: Freitag 20.11.2026 ergibt 01.12.2026, Donnerstag 24.12.2026 ergibt 04.01.2027 (nur Wochenenden, Feiertage kennt das Konzept nicht). |
+| 3 Bei LinkedIn zur Wahl: InMail, Vernetzungsanfrage mit Notiz, LinkedIn-Nachricht | erfüllt | Oberfläche »Gesendet als«: Optionen genau `['InMail', 'Vernetzungsanfrage mit Notiz', 'LinkedIn-Nachricht']`, vorausgewählt InMail (wie `openS5` im Clickdummy mit `send:'InMail'`). Alle drei Kanäle wurden am System protokolliert (`inmail`, `vernetzungsanfrage`, `linkedin_nachricht`). `email` ergibt 422 `kanal_nicht_moeglich` (kommt mit E5-S5), `brieftaube` 422 mit `feld: kanal`. |
+| 4 Nach dem Markieren: Kontaktakte S4 mit neuem Eintrag im Verlauf | erfüllt | Nach dem Klick steht die Adresse auf `/kontakte/3` bzw. `/kontakte/8`. Der Kopf zeigt »S4 Kontakte«, darüber die Rückmeldung »Versand protokolliert: Erstkontakt per Vernetzungsanfrage mit Notiz. Status »Angeschrieben«, Wiedervorlage »Nachfassen, keine Antwort« am 30.11.2026.«. In der Akte steht das Etikett »Angeschrieben«, und »Ansprechen« ist verschwunden. Im Verlauf steht statt »Noch kein Kontaktversuch.« der Eintrag »Erstkontakt per … am 19.11.2026, 11:52 Uhr / Betreff: … / <gesendeter Text>«. Ist der Betreff leer, fehlt die Zeile »Betreff:«. Nach dem Neuladen bleibt der Eintrag stehen. |
+| 5 Ohne Markieren nie »Angeschrieben«, auch nicht durch Kopieren oder Profil öffnen | erfüllt | Am Kernweg: Kortmann blieb nach Text ändern und »Nachricht kopieren« auf »Freigegeben«, erst das Markieren stellte sie um. `grep` über `src/server`: Den Status `angeschrieben` schreibt nur `protokolliereVersand` (`setzeStatus`). Daneben setzt nur `oeffneZurWiederansprache` überhaupt einen Status (für die Wiederansprache). Kopieren und Profil öffnen schicken keine Anfrage, die etwas verändert: Die einzigen POST-Anfragen der Oberfläche im Kernweg waren Anmeldung, Zurücksetzen, Datum, Agentenmeldung, Freigabe und Kontaktversuch. Eine leere Nachricht, ein unbekannter Kanal und E-Mail ändern den Status nicht (Datenbank danach: `freigegeben`, 0 Kontaktversuche, 4 Wiedervorlagen wie im Startbestand). |
+| 6 Leere Nachricht: Cockpit verweigert mit Hinweis | erfüllt | Oberfläche: Text geleert, »Als gesendet markieren« zeigt den Hinweis »Die Nachricht ist leer. Schreib oder füge den gesendeten Text ein, bevor du markierst.« (`role=alert`), die Adresse bleibt `/ansprache/3`. Bei Text nur aus Leerraum (`"   \n  "`) ebenso, der Zähler zeigt »0 Wörter, …«. API: `""` und `"   \n\t "` ergeben 422 `text_leer`, fehlender Text 422 »Die Nachricht fehlt.«, Zahl statt Text 422. In keinem Fall wird etwas angelegt. |
+
+## E5-S1 Kriterium 5 – Fassung beim Protokollieren
+Ergebnis: **erfüllt am laufenden System.** Damit ist der in der Prüfung von E5-S1 offene Nachweis erbracht. Geprüft wurde in der Oberfläche an Gruber, jeweils nach dem Zurücksetzen und am 19.11.2026. Danach wurde die Tabelle `nachricht` (Kanal linkedin, Art erstkontakt) und die Tabelle `kontaktversuch` gelesen:
+
+| Fall | `nachricht.fassung` | gespeicherter Wortlaut | Kontaktversuch |
+|---|---|---|---|
+| a) unverändert, InMail | `agent` | Betreff und Text des Agenten | InMail, gleicher Wortlaut |
+| b) nur Betreff geändert (»… – Ihre Prioritäten«), LinkedIn-Nachricht | `von_marco_geaendert` | neuer Betreff, Text des Agenten | `linkedin_nachricht`, neuer Betreff |
+| c) Text geändert (Schlusssatz »Hätten Sie in den nächsten Wochen 20 Minuten Zeit?«), Vernetzungsanfrage | `von_marco_geaendert` | gesendeter Text mit neuem Schlusssatz | `vernetzungsanfrage`, gesendeter Text, Verlauf in der Akte zeigt ihn |
+| d) Text geändert und wieder zurückgeändert | `agent` | Text des Agenten | wie a) |
+| e) Betreff geleert | `von_marco_geaendert` | Betreff `null`, Text des Agenten | Betreff `null` |
+| API: Leerraum am Rand von Betreff und Text | `agent` | getrimmt, gleich dem Text des Agenten | `linkedin_nachricht` |
+| Kernweg: Kortmann, Satz »Ich freue mich auf Ihre Rückmeldung.« eingefügt | `von_marco_geaendert` | gesendeter Text (im Verlauf sichtbar) | InMail |
+
+Die Regel (`fassungNachVersand` in `regeln/kanal.ts`) wird beim Protokollieren in derselben Transaktion angewendet wie Kontaktversuch, Status und Wiedervorlage. Wird das Protokollieren abgewiesen (leer, E-Mail), bleibt die Fassung unverändert `agent` (Fall f). Eine Anzeige der Fassung in der Oberfläche verlangt das Kriterium nicht, es gibt auch keine. Offen bleibt für die Freigabe von E5-S1 nur noch Marcos Entscheidung zum Wortlaut von Kriterium 7 (Bernasconi/Ammann, siehe `docs/status.md`).
+
+## Durchgängiger Kernweg im Browser
+Ergebnis: **läuft ohne Haken von Anfang bis Ende.** Chrome, 1440 × 1000, angemeldet mit dem Passwort aus `.env`. Es gab keinen Seitenfehler. In der Konsole standen nur 401 vor der Anmeldung und 404 für `/favicon.ico`.
+
+1. Vorführleiste »Zurücksetzen«: Datum 18.11.2026. »Nächster Werktag«: 19.11.2026. »Agent meldet sich«: Meldung »Der Agent hat 4 Vorschläge geliefert.«
+2. Eingangskorb: Karte »Vorschlag Sabine Kortmann« sichtbar. »Freigeben« ergibt »Sabine Kortmann freigegeben. Firma und Ansprechpartner sind angelegt, der Kontakt steht in der Ansprache.«
+3. Kontakte (Filter »Offene«): sechs Zeilen, zuletzt »Sabine Kortmann / Leiterin After-Sales Service / Kranbau Oberhavel GmbH / Freigegeben«.
+4. Kontaktakte `/kontakte/8`: Etikett »Freigegeben«, Schaltfläche »Ansprechen«, Anlass »Pressemitteilung: Kundenportal für Ersatzteile angekündigt (12.11.2026)«, Verlauf »Noch kein Kontaktversuch.«
+5. »Ansprechen« führt zu `/ansprache/8`: Aufhänger links, Nachricht rechts, »46 Wörter, im Zielkorridor 45–70«.
+6. Text geändert (Satz vor dem Gruß eingefügt): Zähler sofort »52 Wörter, …«. »Nachricht kopieren« ergibt »Nachricht kopiert.«, die Zwischenablage enthält genau den geänderten Text.
+7. »Gesendet als« InMail (vorausgewählt), »Als gesendet markieren« führt zu `/kontakte/8`. Rückmeldung »Versand protokolliert: Erstkontakt per InMail. Status »Angeschrieben«, Wiedervorlage »Nachfassen, keine Antwort« am 30.11.2026.« In der Liste und in der Akte steht »Angeschrieben«. Verlauf: »Erstkontakt per InMail am 19.11.2026, 11:51 Uhr / Betreff: Ersatzteilportal und Serviceprozesse / Hallo Frau Kortmann, … Ich freue mich auf Ihre Rückmeldung. Beste Grüße Marco«.
+8. Gegenprobe: In S5 steht Kortmann jetzt unter »Angeschrieben, Nachfassen möglich« (neben Reinhardt), unter »Erstkontakt offen« nur noch Gruber.
+
+Was dabei auffiel, aber den Weg nicht bricht:
+- Die Wiedervorlage am 30.11.2026 ist nur in der Rückmeldung oben auf S4 zu sehen. Die Akte selbst zeigt keine Wiedervorlagen, und S6 Wiedervorlagen und S1 Dashboard zeigen noch »Dieser Bereich wird in einer der nächsten Stories gebaut.« Das passt zum Schnitt der Stories (E6-S3 »die erzeugte Wiedervorlage wird sichtbar«). Wer beim Durchklicken die Wiedervorlage an anderer Stelle erwartet, findet sie heute noch nicht.
+- Die Rückmeldung »Versand protokolliert …« steht auch nach dem Neuladen der Akte noch da (Befund 5).
+- Die Meldung der Vorführleiste »Der Agent hat 4 Vorschläge geliefert.« bleibt im ganzen Ablauf als Statusmeldung stehen, auch in S4 und S5. Das stammt aus E1-S3 und betrifft nicht diese Story.
+
+## Zusätzlich geprüft
+- **Doppelte Ausführung:** Doppelklick auf »Als gesendet markieren« ergibt zwei Anfragen, 201 und 409. Gespeichert werden genau ein Kontaktversuch und eine Wiedervorlage, und die Oberfläche landet auf der Akte ohne Fehlermeldung. Bei einer künstlich um 1,5 s verzögerten Antwort ist der Knopf in der Wartezeit nicht gesperrt; ein zweiter Klick schickt eine zweite Anfrage (409), es entsteht aber kein zweiter Eintrag (Befund 3). Fünf gleichzeitige Anfragen über `curl` ergeben einmal 201 und sonst 409, angelegt wird genau ein Kontaktversuch.
+- **Veraltete Ansicht:** Gruber wurde in einem zweiten Tab markiert, danach im ersten Tab erneut markiert. Hinweis »Dieser Kontakt ist nicht im Status »Freigegeben«; einen Erstkontakt kannst du nur dort protokollieren.«, kein zweiter Eintrag.
+- **Browser-Zurück nach dem Markieren:** `/ansprache/3` zeigt »Dieser Kontakt ist angeschrieben. Das Nachfassen ist in diesem Stand noch nicht eingebaut.« Ein erneutes Markieren ist dort nicht möglich.
+- **Andere Status (API):** Albers, Reinhardt, Bernasconi, Ostermann, Wiesner und Hollenstein ergeben je 409 `kein_erstkontakt`, es wird nichts angelegt.
+- **Randeingaben (API):** `/kontakte/{abc,0,999}/kontaktversuche` ergibt 404 `kontakt_unbekannt`. Kein oder kein gültiges JSON ergibt 400. `[]`, `null` und ein leerer Körper mit JSON-Kopf ergeben 422 mit englischer Zod-Meldung (Befund 4). Ohne Sitzung 401, mit Agenten-Schlüssel 403 `rolle_nicht_erlaubt`.
+- **Regeln aus Konzept Abschnitt 9:** »Angeschrieben« nur durch Markieren (siehe #5). Wiedervorlage 7 Werktage (siehe #2). Kanalwahl: LinkedIn vorausgewählt, E-Mail bis E5-S5 ausdrücklich gesperrt. Ein Kontakt wird nicht gelöscht, die Agentenfassung wird überschrieben, wie es der Clickdummy (`sent`, Zeile 301) und E5-S1 #5 vorsehen.
+- **Stichprobe aus früheren Stories:** E1-S2 Zurücksetzen und Nächster Werktag, E1-S3 Agentenmeldung, E3-S1/E3-S3 Eingangskorb und Freigabe, E4-S2 Kontaktliste, E4-S3 Kontaktakte, E5-S1 Aufhänger, Nachricht und Wortzähler, E5-S2 Nachricht kopieren. Alles am Kernweg in Ordnung, die Gesamtsuite ist grün.
+- **Bausteine und Arbeitsregeln:** Die Route ruft genau einen Dienst (`protokolliereVersand`). Der Dienst enthält kein SQL; die Datumsrechnung steckt in `fristWiedervorlage` (`regeln/fristen.ts`), die Zeit kommt aus `uhr.ts`. Das SQL steht in `daten/kontaktversuche.ts` und `daten/ansprechpartner.ts`. Alles läuft in einer `transaktion()` mit synchroner Funktion. Die erlaubten Werte (`LINKEDIN_KANAELE`, `WiedervorlageArt`) stehen in `gemeinsam/werte.ts`. In `web` gibt es keine Regel: Der Knopf ist immer da, der Server entscheidet. Fehler werden als `FachFehler` geworfen, die Meldungen sind deutsch, in Du-Form und sagen, was zu tun ist. Keine neuen Abhängigkeiten. Pflegepunkt E5-S1 Hinweis 4 ist umgesetzt: `anspracheModus` leitet sich aus `erlaubteAktionen` ab.
+- **Umfang:** Nichts über die Story hinaus gebaut. E-Mail ist ausdrücklich gesperrt, Nachfassen nicht eingebaut.
+- **Sicherheit:** Im Diff stehen keine Zugangsdaten, Tokens oder echten Personendaten. Es gibt nur den bekannten Testwert `test-passwort` und Beispielnamen aus dem Konzept. `.env` ist nicht im Diff.
+- **Mitgenommene Pflegepunkte aus E5-S1:** Sollte 1 erledigt (`docs/status.md`, Zeile »E5-S1 | Kriterium 5 …«). Sollte 3 erledigt (Hypothese und Gesprächsziel werden in API und Oberfläche wörtlich geprüft). Hinweis 4 erledigt. Hinweis 5 nur zur Hälfte erledigt (Befund 6).
+
+## Befunde
+| Nr. | Stelle | Befund | Schwere | So nachvollziehen |
+|---|---|---|---|---|
+| 1 | `src/server/regeln/fristen.ts` `fristWiedervorlage`, `tests/regeln/fristen.test.ts` | Die neue Regel »Wiedervorlage 7 Werktage nach dem Erstkontakt« hat keinen Regeltest. Architektur Abschnitt 8 verlangt für jede Regel aus Konzept Abschnitt 9 einen Test mit den Beispielwerten ohne Datenbank. Heute prüft nur der API-Test einen Wert (19.11. ergibt 30.11.); ein Fall über das Wochenende (20.11. ergibt 01.12.) ist nirgends getestet. Am System stimmt die Rechnung. | Sollte | `grep -n fristWiedervorlage tests -r` findet keinen Treffer. |
+| 2 | `tests/api/E5-S3.test.ts` »E5-S1 #5 …« | Der Servertest zu E5-S1 #5 prüft nur eine Textänderung. Dass schon eine reine Betreffänderung zu `von_marco_geaendert` führt, prüft nur der Regeltest. Würde der Dienst den gesendeten Betreff nicht an die Regel geben, bliebe das unbemerkt. Am System ist es richtig (Fall b oben). | Sollte | Test lesen. |
+| 3 | `src/web/screens/S5Ansprache.tsx` `markiere()` | »Als gesendet markieren« ist während der laufenden Anfrage nicht gesperrt. Ein Doppelklick schickt zwei Anfragen. Der Server fängt das mit 409 ab, die Daten bleiben richtig. | Hinweis | Antwort verzögern, zweimal klicken: 201 und 409, ein Eintrag. |
+| 4 | `src/server/dienste/protokolliere-versand.ts`, Architektur Abschnitt 5 | Fehler im Schema (falscher Kanal, fehlender Text, Körper `[]` oder `null`) ergeben 422 `eingabe_ungueltig`. Laut der Fehlertabelle in Abschnitt 5 wäre das 400 (»Eingabe passt nicht zum Schema«); die Zeile »Versand protokollieren« nennt allerdings nur 409 und 422. Bei einem Körper, der kein Objekt ist, ist die Meldung englisch (»Invalid input: expected object, received null«). Über die Oberfläche ist das nicht erreichbar. | Hinweis | `curl -X POST …/kontakte/3/kontaktversuche -H content-type:application/json -d 'null'` |
+| 5 | `src/web/screens/S4Kontakte.tsx` (Rückmeldung aus `location.state`); `S5Ansprache.tsx` (`versandFehler`) | Die Rückmeldung »Versand protokolliert …« liegt im Verlaufszustand des Browsers und erscheint nach dem Neuladen der Akte erneut. Umgekehrt bleibt in S5 der Hinweis »Die Nachricht ist leer …« stehen, nachdem der Text wieder eingefügt wurde, bis zum nächsten Klick. | Hinweis | Markieren, dann F5 auf `/kontakte/3`. Bzw. Text leeren, markieren, Text wieder einfügen. |
+| 6 | `docs/umsetzung/E5-S3.md`, `tests/oberflaeche/E5-S1.spec.ts` Zeile 50 | Laut Übergabe ist Pflegepunkt Hinweis 5 (»Testname #7 Bernasconi«) umbenannt. Umbenannt ist aber nur der API-Test. Der Oberflächentest heißt weiter »E5-S1 #7 Bernasconi ohne Anlass …« und prüft Ammann. Das soll ohnehin nach Marcos Entscheidung zu Kriterium 7 nachgezogen werden. | Hinweis | `grep -n "#7" tests/oberflaeche/E5-S1.spec.ts` |
+| 7 | PR #13 | Der PR geht gegen `main` und enthält die noch nicht zusammengeführten Stände von E5-S1 (wartet auf Entscheidung) und E5-S2 (in Prüfung). Erst nach ihnen zusammenführen, sonst kommen sie ungeprüft bzw. ohne Entscheidung mit. | Hinweis | `gh api repos/MarcoMess/cx-lead-cockpi/pulls/13` zeigt Basis `main` und Kopf 57efc72; `git log --oneline` zeigt die Merges von E5-S1 und E5-S2 im Branch. |
+
+## Nicht geprüft
+- E-Mail als Kanal und die Grundlage: kommen mit E5-S5, hier nur geprüft, dass sie gesperrt sind.
+- Sichtbarkeit der Wiedervorlage in S6 und S1: kommt mit E6-S3 und E9-S1.
+- Die Uhrzeit des Kontaktversuchs gegen einen festen Wert: Sie kommt aus der Systemzeit. Geprüft wurde nur das Format und das Datum aus der Vorführuhr.
+- Echtes LinkedIn: im Prototyp nicht angebunden. Geprüft wurde, dass beim Kopieren und Markieren keine Anfrage nach außen geht.
+- Die Stände E5-S1 und E5-S2 selbst: E5-S2 wird gesondert geprüft. Hier liefen beide nur in der Gesamtsuite und am Kernweg mit.

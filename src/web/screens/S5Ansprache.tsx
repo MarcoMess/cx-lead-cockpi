@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import type { Ansprache } from '../../gemeinsam/ansprache';
 import type { KontaktZeile } from '../../gemeinsam/kontakte';
-import { ANLASS_TYP_TEXT, STATUS_TEXT } from '../../gemeinsam/texte';
-import { LINKEDIN_WORTE } from '../../gemeinsam/werte';
+import type { VersandProtokolliert } from '../../gemeinsam/versand';
+import { ANLASS_TYP_TEXT, KANAL_TEXT, STATUS_TEXT } from '../../gemeinsam/texte';
+import { LINKEDIN_KANAELE, LINKEDIN_WORTE } from '../../gemeinsam/werte';
 import { api } from '../api';
+import { meldeAenderung } from '../aktualisierung';
 import { useAktualisierung } from '../aktualisierung';
 import { datum, personName } from '../format';
 import { Etikett } from '../teile/Etikett';
@@ -121,6 +123,9 @@ function AnspracheKontakt({ id }: { id: string }) {
   const [betreff, setBetreff] = useState('');
   const [text, setText] = useState('');
   const [kopiert, setKopiert] = useState('');
+  const [kanal, setKanal] = useState<(typeof LINKEDIN_KANAELE)[number]>('inmail');
+  const [versandFehler, setVersandFehler] = useState('');
+  const navigate = useNavigate();
   const gueltig = /^[1-9][0-9]*$/.test(id);
 
   useEffect(() => {
@@ -181,6 +186,21 @@ function AnspracheKontakt({ id }: { id: string }) {
         </section>
       </>
     );
+  }
+
+  async function markiere() {
+    setVersandFehler('');
+    try {
+      const r = await api<VersandProtokolliert>('POST', `/kontakte/${k.id}/kontaktversuche`, { kanal, betreff, text });
+      meldeAenderung();
+      navigate(`/kontakte/${k.id}`, {
+        state: {
+          meldung: `Versand protokolliert: Erstkontakt per ${KANAL_TEXT[kanal]}. Status »Angeschrieben«, Wiedervorlage »${r.wiedervorlage.grund}« am ${datum(r.wiedervorlage.faellig_am)}.`,
+        },
+      });
+    } catch (e) {
+      setVersandFehler((e as Error).message);
+    }
   }
 
   const an = a.aufhaenger;
@@ -282,7 +302,33 @@ function AnspracheKontakt({ id }: { id: string }) {
             </p>
           )}
           <p className="muted">Du sendest selbst in LinkedIn oder im Sales Navigator. Das Cockpit sendet nichts.</p>
-          <div className="aktionen">{akte}</div>
+          <hr className="trenner" />
+          {versandFehler && (
+            <p className="hinweis fehler" role="alert">
+              {versandFehler}
+            </p>
+          )}
+          <div className="aktionen oben">
+            <label>
+              Gesendet als{' '}
+              <select
+                className="inl"
+                aria-label="Gesendet als"
+                value={kanal}
+                onChange={(e) => setKanal(e.target.value as (typeof LINKEDIN_KANAELE)[number])}
+              >
+                {LINKEDIN_KANAELE.map((x) => (
+                  <option key={x} value={x}>
+                    {KANAL_TEXT[x]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button type="button" className="btn p" onClick={markiere}>
+              Als gesendet markieren
+            </button>
+            {akte}
+          </div>
         </section>
       </div>
     </>

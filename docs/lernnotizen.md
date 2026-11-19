@@ -2,6 +2,11 @@
 
 Gilt für die ganze Kette (Konzept → Clickdummy → Stories → Architektur → Umsetzung → Prüfung). Liegt im Repository, damit sie Sitzungen überdauert.
 
+## Stufe 3 – Stories
+| Datum | Projekt | Beobachtung | Regel für künftige Läufe |
+|---|---|---|---|
+| 19.11.2026 | CX Lead Cockpit | Zwei Kriterien von E5-S1 passten nicht zur Story: eines setzte das Protokollieren aus E5-S3 voraus, eines nannte einen Beispielkontakt (Bernasconi), der im Status keine Ansprache mehr hat | Jedes Kriterium gegen die »Nicht enthalten«-Zeile und gegen den Status des genannten Beispieldatensatzes prüfen, bevor die Stories freigegeben werden |
+
 ## Stufe 4 – Architektur
 | Datum | Projekt | Beobachtung | Regel für künftige Läufe |
 |---|---|---|---|

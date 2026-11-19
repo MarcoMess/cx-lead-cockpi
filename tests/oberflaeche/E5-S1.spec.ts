@@ -30,7 +30,12 @@ test('E5-S1 #1 #2 #3 #4 Gruber: Aufhänger links, Nachricht rechts, LinkedIn vor
     'https://example.com/quelle-3',
   );
   await expect(links.locator('.tag.hypothese')).toHaveText('Hypothese');
-  await expect(links).toContainText('Gesprächsziel:');
+  await expect(links).toContainText(
+    'Hypothese Ein Kundenportal für Netzanschlüsse berührt Anfrage, Statusauskunft und Service zugleich.',
+  );
+  await expect(links).toContainText(
+    'Gesprächsziel: Einordnen, welche Kundenprozesse rund um den Netzanschluss zuerst mitwachsen sollten.',
+  );
 
   const rechts = page.getByRole('region', { name: 'Nachricht' });
   await expect(rechts.getByRole('button', { name: 'LinkedIn' })).toHaveAttribute('aria-pressed', 'true');

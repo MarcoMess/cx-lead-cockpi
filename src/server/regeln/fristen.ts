@@ -1,4 +1,5 @@
 // Reine Datumsrechnung auf Tagesbasis (JJJJ-MM-TT), ohne Systemzeit und ohne Zeitzone.
+import { FRISTEN } from '../../gemeinsam/werte';
 
 const MS_JE_TAG = 86_400_000;
 const MUSTER = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -49,4 +50,9 @@ export function plusWerktage(s: string, n: number): string {
 export function alsAnzeige(s: string): string {
   const [j, m, t] = s.slice(0, 10).split('-');
   return `${t}.${m}.${j}`;
+}
+
+/** Wiedervorlage zum Nachfassen: 7 Werktage nach dem Erstkontakt (Konzept, Abschnitt 9). */
+export function fristWiedervorlage(erstkontakt: string): string {
+  return plusWerktage(erstkontakt, FRISTEN.wiedervorlageWerktage);
 }

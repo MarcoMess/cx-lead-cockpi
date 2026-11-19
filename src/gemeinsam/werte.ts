@@ -44,6 +44,8 @@ export const ANTWORT_EINORDNUNG = ['positiv', 'neutral_spaeter', 'kein_interesse
 export type AntwortEinordnung = (typeof ANTWORT_EINORDNUNG)[number];
 export const KONTAKT_KANAL = ['inmail', 'vernetzungsanfrage', 'linkedin_nachricht', 'email'] as const;
 export type KontaktKanal = (typeof KONTAKT_KANAL)[number];
+/** Kanäle für den Versand per LinkedIn (A3 Schritt 6). */
+export const LINKEDIN_KANAELE = ['inmail', 'vernetzungsanfrage', 'linkedin_nachricht'] as const;
 export const KONTAKT_ART = ['erstkontakt', 'nachfassen'] as const;
 export type KontaktArt = (typeof KONTAKT_ART)[number];
 export const EMAIL_GRUNDLAGE = ['in_hubspot_bekannt', 'hat_geantwortet', 'andere'] as const;
@@ -57,6 +59,7 @@ export type AnspracheModus = (typeof ANSPRACHE_MODUS)[number];
 export const LINKEDIN_WORTE = { von: 45, bis: 70 } as const;
 export const ANLASS_TYP = ['eigener_beitrag', 'unternehmensanlass', 'kein_anlass'] as const;
 export const WIEDERVORLAGE_ART = ['nachfassen', 'schliessen_vorschlag', 'frei'] as const;
+export type WiedervorlageArt = (typeof WIEDERVORLAGE_ART)[number];
 export const ANREDEN = ['Frau', 'Herr'] as const;
 export const LAUF_HERKUNFT = ['api', 'upload'] as const;
 export type LaufHerkunft = (typeof LAUF_HERKUNFT)[number];

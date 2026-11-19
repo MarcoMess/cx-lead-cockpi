@@ -476,3 +476,8 @@ td.rechts {
 .aufhaenger p {
   margin: 0 0 8px;
 }
+.trenner {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 16px 0;
+}

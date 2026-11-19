@@ -174,3 +174,7 @@ export function liesNachricht(
     .prepare(`SELECT betreff, text, fassung FROM nachricht WHERE ansprechpartner_id = ? AND kanal = ? AND art = ?`)
     .get(id, kanal, art) as { betreff: string | null; text: string; fassung: NachrichtFassung } | undefined;
 }
+
+export function setzeStatus(db: Datenbank, id: number, status: AnsprechpartnerStatus): void {
+  db.prepare(`UPDATE ansprechpartner SET status = ? WHERE id = ?`).run(status, id);
+}
