@@ -3,10 +3,18 @@ import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
 
 // Bausteingrenzen aus architektur.md, Abschnitt 3 – maschinell geprüft, damit einzeln gebaute Stories zusammenpassen.
+// typescript-eslint-Variante, weil sie reine Typ-Importe getrennt erlauben kann (allowTypeImports).
 const verbiete = (...gruppen) => ({
-  'no-restricted-imports': [
+  'no-restricted-imports': 'off',
+  '@typescript-eslint/no-restricted-imports': [
     'error',
-    { patterns: gruppen.map((g) => ({ group: [g.muster, ...(g.ausser ?? [])], message: g.grund })) },
+    {
+      patterns: gruppen.map((g) => ({
+        group: [g.muster, ...(g.ausser ?? [])],
+        message: g.grund,
+        ...(g.nurTypen ? { allowTypeImports: true } : {}),
+      })),
+    },
   ],
 });
 const NICHT_API = { muster: '**/api/*', grund: 'Nur app.ts bindet Routen ein.' };
@@ -28,6 +36,13 @@ const NUR_EINSTELLUNGEN = {
   ausser: ['!**/daten/einstellungen', '!**/daten/db'],
   grund: 'Der Agenten-Simulator darf nur daten/einstellungen nutzen (architektur.md §3).',
 };
+// Den Datenbank-Typ dürfen Simulatoren für ihre Signaturen kennen, aber nichts daraus aufrufen.
+const DB_NUR_TYP = {
+  muster: '**/daten/db',
+  nurTypen: true,
+  grund: 'Aus daten/db nur den Typ Datenbank importieren (import type).',
+};
+
 // Kein dynamisches import(): Es würde die Prüfung der Bausteingrenzen umgehen.
 const KEIN_DYNAMISCHER_IMPORT = {
   'no-restricted-syntax': [
@@ -60,7 +75,7 @@ export default tseslint.config(
   },
   {
     files: ['src/server/anbindungen/**/*.ts'],
-    rules: verbiete(NICHT_API, NICHT_DIENSTE, NICHT_REGELN, NICHT_SIMULATOR, {
+    rules: verbiete(NICHT_API, NICHT_DIENSTE, NICHT_REGELN, NICHT_SIMULATOR, DB_NUR_TYP, {
       ...NICHT_DATEN,
       ausser: ['!**/daten/db'],
       grund: 'Nur die Simulatoren (anbindungen/*-simulator.ts) kennen die Datenhaltung (architektur.md §3).',
@@ -75,13 +90,18 @@ export default tseslint.config(
     files: ['src/server/api/**/*.ts'],
     rules: verbiete(NICHT_DATEN, NICHT_REGELN, NICHT_ANBINDUNGEN, NICHT_SIMULATOR),
   },
+  // Jede Datei im Simulator ist zunächst streng; die beiden Rollen aus §3 bekommen danach ihre Ausnahme.
+  {
+    files: ['src/simulator/**/*.ts'],
+    rules: verbiete(NICHT_API, NICHT_DIENSTE, NICHT_REGELN, NICHT_DATEN, NICHT_ANBINDUNGEN),
+  },
   {
     files: ['src/simulator/sim-routen.ts'],
     rules: verbiete(NICHT_API, NICHT_REGELN, NICHT_DATEN, NICHT_ANBINDUNGEN),
   },
   {
     files: ['src/simulator/agent.ts'],
-    rules: verbiete(NICHT_API, NICHT_DIENSTE, NICHT_REGELN, NICHT_ANBINDUNGEN, NUR_EINSTELLUNGEN),
+    rules: verbiete(NICHT_API, NICHT_DIENSTE, NICHT_REGELN, NICHT_ANBINDUNGEN, NUR_EINSTELLUNGEN, DB_NUR_TYP),
   },
   {
     files: ['scripts/**/*.mjs'],
