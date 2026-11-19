@@ -3,10 +3,13 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { FachFehler } from './fehler';
 import type { Datenbank } from './daten/db';
 import { gesundheitRouten } from './api/gesundheit';
+import { richteZugangEin } from './api/zugang';
 
 export interface AppOptionen {
   db: Datenbank;
   demo: boolean;
+  passwort: string;
+  sitzungsSchluessel: Buffer;
 }
 
 declare module 'fastify' {
@@ -41,6 +44,7 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
     reply.status(404).send({ fehler: { code: 'nicht_gefunden', meldung: `Die Adresse ${req.url} gibt es nicht.` } }),
   );
 
+  await richteZugangEin(app, { passwort: opt.passwort, sitzungsSchluessel: opt.sitzungsSchluessel });
   await app.register(gesundheitRouten, { prefix: '/api/v1' });
   return app;
 }
