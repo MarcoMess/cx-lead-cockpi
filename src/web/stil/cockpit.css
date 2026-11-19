@@ -481,3 +481,6 @@ td.rechts {
   border-top: 1px solid var(--line);
   margin: 16px 0;
 }
+input.inl.breit {
+  width: 240px;
+}

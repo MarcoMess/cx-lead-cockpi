@@ -8,6 +8,7 @@ import { NichtGefunden } from './screens/NichtGefunden';
 import { S2Eingangskorb } from './screens/S2Eingangskorb';
 import { S4Kontakte } from './screens/S4Kontakte';
 import { S5Ansprache } from './screens/S5Ansprache';
+import { S8Einstellungen } from './screens/S8Einstellungen';
 import type { ScreenId } from '../gemeinsam/screens';
 import { Vorfuehrleiste, type VorfuehrZustand } from './teile/Vorfuehrleiste';
 
@@ -87,6 +88,8 @@ function screenFuer(id: ScreenId) {
       return <S4Kontakte />;
     case 'S5':
       return <S5Ansprache />;
+    case 'S8':
+      return <S8Einstellungen />;
     default:
       return <Platzhalter id={id} />;
   }
