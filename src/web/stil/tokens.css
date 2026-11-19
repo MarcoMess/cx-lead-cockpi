@@ -1,0 +1,18 @@
+/* Farb- und Schriftwerte aus dem freigegebenen Clickdummy (docs/clickdummy/clickdummy.html). */
+:root {
+  --ink: #0e1b33;
+  --ink2: #1b2c4d;
+  --mint: #47d7ac;
+  --mintd: #157a5e;
+  --paper: #f4f6f5;
+  --card: #fff;
+  --line: #d7dde3;
+  --muted: #586377;
+  --warn: #8a4b00;
+  --warnbg: #fff1d6;
+  --err: #a8231c;
+  --errbg: #fce9e7;
+  --okbg: #dff6ee;
+  --head: 'Bahnschrift', 'DIN Alternate', 'Avenir Next Condensed', 'Segoe UI', sans-serif;
+  --body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}

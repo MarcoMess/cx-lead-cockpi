@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CX Lead Cockpit – Clickdummy</title>
+<style>
+:root{--ink:#0E1B33;--ink2:#1B2C4D;--mint:#47D7AC;--mintd:#157A5E;--paper:#F4F6F5;--card:#fff;--line:#D7DDE3;--muted:#586377;--warn:#8A4B00;--warnbg:#FFF1D6;--err:#A8231C;--errbg:#FCE9E7;--okbg:#DFF6EE;
+--head:"Bahnschrift","DIN Alternate","Avenir Next Condensed","Segoe UI",sans-serif;--body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font:14px/1.45 var(--body);color:var(--ink);background:var(--paper);min-width:1120px}
+h1,h2,h3{font-family:var(--head);font-weight:600;margin:0;letter-spacing:.01em}
+h1{font-size:26px}h2{font-size:18px}h3{font-size:15px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--mintd);outline-offset:2px}
+a{color:var(--mintd)}
+/* Vorführleiste */
+#demo{background:repeating-linear-gradient(135deg,#FFE8A3 0 14px,#FFDD82 14px 28px);border-bottom:2px dashed #7A5A00;padding:6px 14px;font-size:12.5px;color:#3B2C00}
+#demo .row{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+#demo .row+.row{margin-top:5px}
+#demo b{font-family:var(--head);font-size:13.5px}
+#demo button{background:#fff;border:1px solid #7A5A00;border-radius:3px;padding:2px 8px;cursor:pointer}
+#demo button:hover{background:#FFF7DD}
+#demo label{display:inline-flex;gap:4px;align-items:center}
+#demo .sid{margin-left:auto;background:#3B2C00;color:#FFE8A3;padding:2px 9px;border-radius:3px;font-family:var(--head)}
+#demo .narrow{display:none}
+@media (max-width:900px){#demo .narrow{display:block;font-weight:600}}
+/* Produkt */
+#shell{display:flex;min-height:calc(100vh - 70px)}
+aside{width:212px;flex:none;background:var(--ink);color:#fff;padding:18px 0}
+aside .brand{font-family:var(--head);font-size:19px;padding:0 18px 16px;border-bottom:1px solid var(--ink2);margin-bottom:10px}
+aside .brand span{display:block;font:12px var(--body);color:#A9B5CB;margin-top:2px}
+aside button{display:flex;justify-content:space-between;align-items:center;width:100%;background:none;border:0;border-left:4px solid transparent;color:#DCE3EF;text-align:left;padding:9px 18px 9px 14px;cursor:pointer}
+aside button:hover{background:var(--ink2)}
+aside button.on{border-left-color:var(--mint);background:var(--ink2);color:#fff;font-weight:600}
+aside button small{color:#8F9DB8;font-size:11px}
+aside .cnt{background:var(--mint);color:var(--ink);border-radius:9px;padding:0 6px;font-size:11px;font-weight:700;margin-left:6px}
+main{flex:1;padding:22px 26px 60px;min-width:0}
+.ph{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.ph .id{font-family:var(--head);color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:0 6px;font-size:13px}
+.ph p{margin:0;color:var(--muted)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px 16px;margin-bottom:14px}
+.box>h2,.box>h3{margin-bottom:10px}
+.cols{display:grid;gap:14px}
+.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:repeat(3,1fr)}.c13{grid-template-columns:340px 1fr}.c12{grid-template-columns:1fr 1.25fr}
+table{width:100%;border-collapse:collapse}
+th{font-weight:600;text-align:left;color:var(--muted);font-size:12.5px;border-bottom:2px solid var(--ink);padding:5px 8px}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.pick{cursor:pointer}tr.pick:hover td{background:#EEF3F1}tr.sel td{background:var(--okbg)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.btn{background:#fff;border:1px solid var(--ink);border-radius:3px;padding:5px 11px;cursor:pointer;text-decoration:none;color:var(--ink);display:inline-block}
+.btn:hover{background:#EEF3F1}
+.btn.p{background:var(--mint);border-color:var(--mintd);font-weight:600}
+.btn.p:hover{background:#39C79C}
+.btn.d{border-color:var(--err);color:var(--err)}
+.btn[disabled],.btn.off{opacity:.45;cursor:not-allowed;pointer-events:none}
+.btn.s{padding:2px 8px;font-size:12.5px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.tag{display:inline-block;border-radius:3px;padding:0 7px;font-size:12px;border:1px solid var(--line);background:#fff;white-space:nowrap}
+.tag.ok{background:var(--okbg);border-color:#9FDCC8;color:#0E5A45}
+.tag.w{background:var(--warnbg);border-color:#E6C078;color:var(--warn)}
+.tag.e{background:var(--errbg);border-color:#E8AAA5;color:var(--err)}
+.tag.h{background:#EDEAFB;border-color:#C5BDF0;color:#3B2F8F}
+.tag.x{background:#E9ECF0;color:var(--muted)}
+.note{border-left:4px solid var(--warn);background:var(--warnbg);padding:8px 12px;margin:10px 0;color:#4A2B00}
+.note.e{border-color:var(--err);background:var(--errbg);color:#5E1410}
+.note.ok{border-color:var(--mintd);background:var(--okbg);color:#0E4737}
+.muted{color:var(--muted)}
+.kv{display:grid;grid-template-columns:170px 1fr;gap:5px 12px;margin:0}
+.kv dt{color:var(--muted)}.kv dd{margin:0}
+.f{display:block;margin-bottom:10px}
+.f>span{display:block;color:var(--muted);font-size:12.5px;margin-bottom:3px}
+input[type=text],input[type=date],input[type=number],input[type=email],select,textarea{border:1px solid #9AA5B5;border-radius:3px;padding:5px 8px;background:#fff;width:100%}
+textarea{min-height:150px;resize:vertical;line-height:1.5}
+.inl{display:inline-block;width:auto}
+.checks{display:flex;flex-wrap:wrap;gap:4px 16px}
+.checks label{display:inline-flex;gap:5px;align-items:center}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tile{border:1px solid var(--line);border-top:4px solid var(--ink);padding:9px 12px;background:#fff}
+.tile b{display:block;font:600 27px var(--head);font-variant-numeric:tabular-nums}
+.tile span{color:var(--muted);font-size:12.5px}
+.tile em{font-style:normal;color:var(--mintd);font-weight:600;margin-left:6px;font-size:14px}
+.fun div{display:flex;align-items:center;gap:10px;margin:5px 0}
+.fun i{display:block;height:18px;background:var(--ink);min-width:3px}
+.fun div:nth-child(n+3) i{background:var(--mintd)}
+.fun span{width:150px;color:var(--muted)}
+/* Statusleiste: echte Reihenfolge der Status */
+.rail{display:flex;margin:12px 0 4px;counter-reset:r}
+.rail li{list-style:none;flex:1;font-size:12px;color:var(--muted);border-top:4px solid var(--line);padding:5px 6px 0 0;counter-increment:r}
+.rail li::before{content:counter(r) " ";font-family:var(--head)}
+.rail li.done{border-color:var(--ink);color:var(--ink)}
+.rail li.now{border-color:var(--mint);color:var(--ink);font-weight:700}
+.rail{padding:0}
+.tl{list-style:none;padding:0;margin:0}
+.tl li{border-left:3px solid var(--ink);padding:2px 0 10px 12px;margin-left:4px}
+.tl li.a{border-color:var(--mint)}
+.msg{white-space:pre-wrap;background:#F7F9F8;border:1px solid var(--line);padding:8px 10px;border-radius:3px;margin-top:4px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:4px;max-width:720px;box-shadow:0 6px 22px rgba(14,27,51,.35);border-left:5px solid var(--mint)}
+#toast:empty{display:none}
+@media (prefers-reduced-motion:no-preference){#toast{animation:up .18s ease-out}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
+</style>
+</head>
+<body>
+<div id="demo"></div>
+<div id="shell"><aside id="nav"></aside><main id="main"></main></div>
+<div id="toast" role="status"></div>
+<script>
+"use strict";
+/* ---------- Hilfen ---------- */
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const D=s=>new Date(s.slice(0,10)+'T12:00:00');
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fmt=s=>s?s.slice(0,10).split('-').reverse().join('.')+(s.length>10?', '+s.slice(11)+' Uhr':''):'–';
+const addDays=(s,n)=>{const d=D(s);d.setDate(d.getDate()+n);return iso(d)};
+const addMonths=(s,n)=>{const d=D(s);d.setMonth(d.getMonth()+n);return iso(d)};
+const isWE=s=>[0,6].includes(D(s).getDay());
+const addWork=(s,n)=>{let x=s;while(n>0){x=addDays(x,1);if(!isWE(x))n--}return x};
+const WD=['So','Mo','Di','Mi','Do','Fr','Sa'],WDL={Mo:'Montag',Di:'Dienstag',Mi:'Mittwoch',Do:'Donnerstag',Fr:'Freitag'};
+const words=t=>(String(t||'').trim().match(/\S+/g)||[]).length;
+const RAIL=['Neu','Freigegeben','Angeschrieben','Nachgefasst','Antwort erhalten','Gespräch vereinbart','An SAP übergeben'];
+const CLOSED=['Verworfen','Kein Interesse','Ohne Antwort geschlossen','Gesperrt','An SAP übergeben'];
+const BRANCHEN=['Maschinen-/Anlagenbau','Retail','Großhandel/technischer Handel','Utilities','Entsorgung','Infrastruktur','Technische Dienstleistungen','Hospitality'];
+const ROLLEN=['CIO/IT-Leitung','Digitalisierung/CDO','Customer Experience','Service/After-Sales','Vertrieb','CRM','E-Commerce','Kundenbindung'];
+const GRUENDE=['passt nicht ins Zielbild','Kontakt nicht belegt','bereits bekannt','Anlass zu schwach','wird von Kollegen betreut'];
+const SIG='Beste Grüße\nMarco';
+
+/* ---------- Ausgangszustand: Beispieldaten aus konzept.md, Abschnitt 8 ---------- */
+function init(){return{
+ today:'2026-11-18',view:'S1',toast:'',
+ firms:[
+  {id:'f1',name:'Nordwerk Fördertechnik GmbH',branche:'Maschinenbau',land:'DE',umsatz:'182 Mio. EUR, 2025, Konzern',status:'Aktiv'},
+  {id:'f2',name:'Alpenstrom Netze AG',branche:'Utilities',land:'AT',umsatz:'640 Mio. EUR, 2025, Konzern',status:'Aktiv'},
+  {id:'f3',name:'Rheintal Technikhandel AG',branche:'Technischer Handel',land:'CH',umsatz:'96 Mio. CHF, 2025, Einzelgesellschaft',status:'Aktiv'},
+  {id:'f4',name:'Hansemarkt Handels SE',branche:'Retail',land:'DE',umsatz:'1,4 Mrd. EUR, 2025, Konzern',status:'Aktiv'},
+  {id:'f5',name:'Weserland Entsorgung GmbH',branche:'Entsorgung',land:'DE',umsatz:'74 Mio. EUR, 2025, Einzelgesellschaft',status:'Aktiv'},
+  {id:'f6',name:'Bergland Sport Handels AG',branche:'Retail',land:'AT',umsatz:'310 Mio. EUR, 2025, Konzern',status:'Aktiv'},
+  {id:'f7',name:'Stadtwerke Lindental GmbH',branche:'Utilities',land:'DE',umsatz:'228 Mio. EUR, 2025, Einzelgesellschaft',status:'Aktiv'}],
+ contacts:[
+  {id:'c1',firm:'f1',anrede:'Frau',titel:'Dr.',vor:'Katrin',nach:'Albers',funktion:'Leiterin Customer Service & After-Sales',rolle:'Service/After-Sales',status:'Gespräch vereinbart',ans:'positiv',gespraech:'24.11.2026, 14:00 Uhr',li:'linkedin.com/in/katrin-albers-beispiel',mail:'',
+   anlass:{typ:'Unternehmensanlass',text:'Pressemitteilung: neues Servicezentrum für Ersatzteile in Bremen',datum:'2026-11-04',hyp:'Mit dem neuen Servicezentrum ändern sich vermutlich Abläufe rund um Ersatzteilanfragen und Serviceeinsätze.',ziel:'Einordnen, welche Kundenprozesse im Service mitwachsen sollten.'},
+   msg:{betreff:'Servicezentrum Bremen und Kundenprozesse',text:'Hallo Frau Dr. Albers, mit dem neuen Servicezentrum für Ersatzteile in Bremen ändern sich vermutlich auch Abläufe rund um Anfragen und Einsätze Ihrer Kunden. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen einordnen, welche Kundenprozesse dabei mitwachsen sollten. Wäre ein kurzes Gespräch dazu für Sie interessant?\n'+SIG,fassung:'Agent'}},
+  {id:'c2',firm:'f4',anrede:'Herr',titel:'',vor:'Tobias',nach:'Reinhardt',funktion:'Head of CRM & E-Commerce',rolle:'CRM',status:'Angeschrieben',li:'linkedin.com/in/tobias-reinhardt-beispiel',mail:'t.reinhardt@hansemarkt.example',
+   anlass:{typ:'Eigener Beitrag',text:'Interview im Fachmagazin zur Zusammenführung von Kundenkarte und Onlineshop',datum:'2026-10-28',hyp:'Wenn Kundenkarte und Onlineshop zusammenwachsen, greifen Kundenbindung und Commerce auf dieselben Kundendaten zu.',ziel:'Prüfen, ob das Zusammenspiel von Kundenbindung und Commerce ein Gesprächsthema ist.'},
+   msg:{betreff:'Kundenkarte und Onlineshop zusammenführen',text:'Hallo Herr Reinhardt, in Ihrem Interview vom 28.10. beschreiben Sie die Zusammenführung von Kundenkarte und Onlineshop. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen einordnen, wo Kundenbindung und Commerce dabei zusammenlaufen müssen. Ist das ein Thema für ein kurzes Gespräch?\n'+SIG,fassung:'Agent'}},
+  {id:'c3',firm:'f2',anrede:'Frau',titel:'',vor:'Simone',nach:'Gruber',funktion:'Chief Digital Officer',rolle:'Digitalisierung/CDO',status:'Freigegeben',li:'linkedin.com/in/simone-gruber-beispiel',mail:'',
+   anlass:{typ:'Unternehmensanlass',text:'Geschäftsbericht: Kundenportal für Netzanschlüsse als Schwerpunkt 2027',datum:'2026-09-15',hyp:'Ein Kundenportal für Netzanschlüsse berührt Anfrage, Statusauskunft und Service zugleich.',ziel:'Einordnen, welche Kundenprozesse rund um den Netzanschluss zuerst mitwachsen sollten.'},
+   msg:{betreff:'Kundenportal Netzanschlüsse 2027',text:'Hallo Frau Gruber, im Geschäftsbericht nennt Alpenstrom das Kundenportal für Netzanschlüsse als Schwerpunkt für 2027. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen einordnen, welche Kundenprozesse rund um den Netzanschluss dabei zuerst mitwachsen sollten. Wäre ein kurzes Gespräch dazu für Sie relevant?\n'+SIG,fassung:'Agent'}},
+  {id:'c4',firm:'f3',anrede:'Herr',titel:'',vor:'Luca',nach:'Bernasconi',funktion:'Leiter Vertrieb Innendienst',rolle:'Vertrieb',status:'Nachgefasst',li:'linkedin.com/in/luca-bernasconi-beispiel',mail:'',
+   anlass:{typ:'Kein belastbarer Anlass',text:'Kein belastbarer aktueller Anlass gefunden',datum:'',hyp:'Keine anlassbezogene Hypothese. Die Ansprache stützt sich nur auf die Rolle.',ziel:'Relevanz prüfen.'},
+   msg:{betreff:'Vertriebsinnendienst im technischen Handel',text:'Hallo Herr Bernasconi, als Leiter Vertrieb Innendienst bei Rheintal Technikhandel verantworten Sie viele Kundenkontakte im Tagesgeschäft. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen prüfen, ob es dazu ein Thema gibt, bei dem ein kurzes Gespräch für Sie nützlich wäre. Wäre das für Sie interessant?\n'+SIG,fassung:'Agent'}},
+  {id:'c5',firm:'f5',anrede:'Herr',titel:'',vor:'Markus',nach:'Ostermann',funktion:'Leiter Service',rolle:'Service/After-Sales',status:'Ohne Antwort geschlossen',li:'',mail:''},
+  {id:'c6',firm:'f6',anrede:'Frau',titel:'',vor:'Jana',nach:'Wiesner',funktion:'Leiterin E-Commerce',rolle:'E-Commerce',status:'Kein Interesse',ans:'kein Interesse',li:'',mail:''},
+  {id:'c7',firm:'f7',anrede:'Herr',titel:'',vor:'Peter',nach:'Hollenstein',funktion:'CIO',rolle:'CIO/IT-Leitung',status:'Antwort erhalten',ans:'neutral/später',li:'',mail:'p.hollenstein@stadtwerke-lindental.example'}],
+ touch:[
+  {c:'c1',kanal:'InMail',zeit:'2026-11-06 08:40',art:'Erstkontakt',grund:''},
+  {c:'c2',kanal:'E-Mail',zeit:'2026-11-12 09:15',art:'Erstkontakt',grund:'In HubSpot bekannt'},
+  {c:'c4',kanal:'InMail',zeit:'2026-11-03 17:05',art:'Erstkontakt',grund:''},
+  {c:'c4',kanal:'LinkedIn-Nachricht',zeit:'2026-11-12 08:20',art:'Nachfassen',grund:''},
+  {c:'c5',kanal:'InMail',zeit:'2026-10-19 08:10',art:'Erstkontakt',grund:''},
+  {c:'c6',kanal:'InMail',zeit:'2026-11-02 08:30',art:'Erstkontakt',grund:''},
+  {c:'c7',kanal:'E-Mail',zeit:'2026-11-10 09:05',art:'Erstkontakt',grund:'Andere: Kontakt vom Stadtwerke-Webinar'}],
+ answers:[
+  {c:'c1',datum:'2026-11-09',art:'Positiv',next:'Kurzes Gespräch am 24.11.2026, 14:00 Uhr'},
+  {c:'c6',datum:'2026-11-04',art:'Kein Interesse',next:'Geschlossen'},
+  {c:'c7',datum:'2026-11-13',art:'Neutral/später',next:'Wiedervorlage 15.01.2027'}],
+ follow:[
+  {id:'w1',c:'c2',faellig:'2026-11-23',grund:'Nachfassen, keine Antwort'},
+  {id:'w2',c:'c4',faellig:'2026-11-24',grund:'Ohne Antwort schließen?'},
+  {id:'w3',c:'c1',faellig:'2026-11-24',grund:'Gespräch vorbereiten'},
+  {id:'w4',c:'c7',faellig:'2027-01-15',grund:'Nach Jahreswechsel erneut melden'}],
+ agent:{name:'DACH Kernbranchen',status:'Aktiv',days:['Mo','Do'],count:10,branchen:BRANCHEN.slice(),laender:['DE','AT','CH'],min:50,rollen:ROLLEN.slice(),obergrenze:20,zusatz:false},
+ draft:null,
+ sperrzeiten:[{von:'2026-12-21',bis:'2027-01-03',name:'Weihnachtsurlaub'},{von:'2027-02-15',bis:'2027-02-19',name:'Skiurlaub'},{von:'2026-11-24',bis:'2026-11-24',name:'Webinartag'}],
+ runs:[
+  {id:'r3',datum:'2026-11-16',erg:'Ausgeführt',n:10,frei:7,grenzen:'2 Profile ohne verifizierte URL',props:[]},
+  {id:'r2',datum:'2026-11-12',erg:'Ausgeführt',n:8,frei:6,grenzen:'Nur 8 belegte Treffer, Lücke benannt',props:[]},
+  {id:'r1',datum:'2026-11-09',erg:'Ausgeführt',n:10,frei:8,grenzen:'–',props:[]},
+  {id:'r0',datum:'2026-11-05',erg:'Übersprungen: pausiert'}],
+ sperr:['Windmöller & Hölscher','BOBST','Haberkorn','HORNBACH','Energie Steiermark'].map(n=>({name:n,art:'Firma',grund:'In früherer Ausgabe genannt',datum:''})),
+ sap:[],sapErr:false,
+ set:{sig:'Beste Grüße\nMarco Messinger\nDirector Customer Experience & Innovation\nNagarro',key:'clc_••••••••8f2a',sapTest:''},
+ demo:{apiDown:false,overflow:false,kpi20:false,delivered:false,pending:null},
+ kpi:{tage:30,dim:'Branche'},
+ sel:{run:'r3',firm:null,contact:null,sap:null},
+ f3:{q:'',branche:''},f4:{status:'Offene',dim:null,val:null},
+ ui:{},s5:null,n:100
+}}
+let S=init();
+
+/* Beispiel-Lauf für A1/A2. Im Konzept fehlen ungeprüfte Vorschläge; siehe clickdummy-notizen.md */
+function demoProps(){return[
+ {id:'p1',firm:'Kranbau Oberhavel GmbH',branche:'Maschinenbau',land:'DE',umsatz:'121 Mio. EUR, 2025, Konzern',anrede:'Frau',titel:'',vor:'Sabine',nach:'Kortmann',funktion:'Leiterin After-Sales Service',rolle:'Service/After-Sales',li:'linkedin.com/in/sabine-kortmann-beispiel',mail:'',
+  anlass:{typ:'Unternehmensanlass',text:'Pressemitteilung: Kundenportal für Ersatzteile angekündigt',datum:'2026-11-12',hyp:'Ein Ersatzteilportal verändert vermutlich Anfrage- und Serviceabläufe im After-Sales.',ziel:'Einordnen, welche Serviceabläufe mitwachsen sollten.'},
+  msg:{betreff:'Ersatzteilportal und Serviceprozesse',text:'Hallo Frau Kortmann, Kranbau Oberhavel hat vor Kurzem ein Kundenportal für Ersatzteile angekündigt. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen einordnen, welche Abläufe im After-Sales Service dabei mitwachsen sollten. Wäre ein kurzes Gespräch dazu für Sie interessant?\n'+SIG,fassung:'Agent'},status:'Zu prüfen'},
+ {id:'p2',firm:'Hansemarkt Handels SE',branche:'Retail',land:'DE',umsatz:'1,4 Mrd. EUR, 2025, Konzern',anrede:'Frau',titel:'',vor:'Miriam',nach:'Voss',funktion:'Leiterin Kundenbindung',rolle:'Kundenbindung',li:'linkedin.com/in/miriam-voss-beispiel',mail:'',
+  anlass:{typ:'Unternehmensanlass',text:'Pressemitteilung: Kundenkarte künftig auch im Onlineshop einlösbar',datum:'2026-11-10',hyp:'Die Kundenkarte im Onlineshop verbindet Kundenbindung und Commerce enger.',ziel:'Prüfen, ob Kundenbindung über beide Kanäle ein Gesprächsthema ist.'},
+  msg:{betreff:'Kundenkarte im Onlineshop',text:'Hallo Frau Voss, Hansemarkt macht die Kundenkarte künftig auch im Onlineshop einlösbar. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen einordnen, welche Abläufe in der Kundenbindung dabei über beide Kanäle zusammenpassen müssen. Wäre ein kurzes Gespräch dazu für Sie interessant?\n'+SIG,fassung:'Agent'},status:'Zu prüfen'},
+ {id:'p3',firm:'Nordwerk Fördertechnik GmbH',branche:'Maschinenbau',land:'DE',umsatz:'182 Mio. EUR, 2025, Konzern',anrede:'Frau',titel:'Dr.',vor:'Katrin',nach:'Albers',funktion:'Leiterin Customer Service & After-Sales',rolle:'Service/After-Sales',li:'linkedin.com/in/katrin-albers-beispiel',mail:'',dub:true,
+  anlass:{typ:'Unternehmensanlass',text:'Pressemitteilung: neues Servicezentrum für Ersatzteile in Bremen',datum:'2026-11-04',hyp:'',ziel:''},msg:{betreff:'',text:''},status:'Zu prüfen'},
+ {id:'p4',firm:'Seehotel-Gruppe Bodan AG',branche:'Hospitality',land:'CH',umsatz:'88 Mio. CHF, 2025, Konzern',anrede:'Herr',titel:'',vor:'Reto',nach:'Ammann',funktion:'Leiter Gästeservice & CRM',rolle:'CRM',li:'',mail:'',
+  anlass:{typ:'Kein belastbarer Anlass',text:'Kein belastbarer aktueller Anlass gefunden',datum:'',hyp:'Keine anlassbezogene Hypothese. Die Ansprache stützt sich nur auf die Rolle.',ziel:'Relevanz prüfen.'},
+  msg:{betreff:'Gästeservice und CRM',text:'Hallo Herr Ammann, als Leiter Gästeservice & CRM der Seehotel-Gruppe Bodan verantworten Sie viele Kontaktpunkte mit Ihren Gästen. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen prüfen, ob es dazu ein Thema gibt, bei dem ein kurzes Gespräch für Sie nützlich wäre. Wäre das für Sie interessant?\n'+SIG,fassung:'Agent'},status:'Zu prüfen'}]}
+
+/* ---------- Abfragen ---------- */
+const firm=id=>S.firms.find(f=>f.id===id);
+const con=id=>S.contacts.find(c=>c.id===id);
+const cname=c=>[c.titel,c.vor,c.nach].filter(Boolean).join(' ');
+const touches=id=>S.touch.filter(t=>t.c===id).sort((a,b)=>a.zeit<b.zeit?-1:1);
+const first=id=>touches(id).find(t=>t.art==='Erstkontakt');
+const stat=c=>c.status+(c.status==='Antwort erhalten'&&c.ans?' ('+c.ans+')':'');
+const openProps=()=>S.runs.reduce((n,r)=>n+(r.props||[]).filter(p=>p.status==='Zu prüfen').length,0)+(S.demo.overflow?25:0);
+const openFollow=()=>S.follow.filter(w=>!w.done).sort((a,b)=>a.faellig<b.faellig?-1:1);
+const inSperr=d=>S.sperrzeiten.find(z=>z.von<=d&&d<=z.bis);
+function nextRun(){const a=S.agent;
+ if(a.status!=='Aktiv')return{text:'Kein Lauf, solange der Agent pausiert ist'};
+ if(openProps()>=a.obergrenze)return{text:'Ausgesetzt, bis im Eingangskorb weniger als '+a.obergrenze+' ungeprüfte Vorschläge liegen'};
+ let d=S.today;for(let i=0;i<120;i++){d=addDays(d,1);if(isWE(d))continue;const wd=WD[D(d).getDay()];
+  if((a.zusatz||a.days.includes(wd))&&!inSperr(d))return{datum:d,text:WDL[wd]+', '+fmt(d)+', 6:30 Uhr'+(a.zusatz&&!a.days.includes(wd)?' (Zusatzlauf)':'')};
+  if(a.zusatz&&inSperr(d))continue}
+ return{text:'Kein Lauf geplant'}}
+function tagStatus(s){const k=s.startsWith('Gespräch')||s.startsWith('An SAP')?'ok':s.startsWith('Antwort')?'h':CLOSED.includes(s.split(' (')[0])?'x':s==='Freigegeben'?'w':'';return'<span class="tag '+k+'">'+esc(s)+'</span>'}
+
+/* ---------- Aktionen ---------- */
+function toast(t){S.toast=t;clearTimeout(toast.t);toast.t=setTimeout(()=>{S.toast='';const e=document.getElementById('toast');if(e)e.textContent=''},6500)}
+function go(v){S.view=v;S.ui={};if(v==='S9')S.draft=JSON.parse(JSON.stringify(S.agent))}
+function deliver(d){let props=[],grenzen;
+ if(!S.demo.delivered){props=demoProps();S.demo.delivered=true;grenzen='Nur 4 belegte Treffer statt '+S.agent.count+', Lücke benannt; 1 Profil ohne verifizierte URL'}
+ else grenzen='Keine weiteren belegten Treffer (der Dummy enthält nur einen Beispiel-Lauf)';
+ const r={id:'r'+(S.n++),datum:d,erg:'Ausgeführt',n:props.length,frei:0,grenzen,props};S.runs.unshift(r);S.sel.run=r.id;return r}
+function openS5(id){const c=con(id);const mode=c.status==='Freigegeben'?'Erstkontakt':c.status==='Angeschrieben'?'Nachfassen':'';
+ S.s5={c:id,mode,kanal:'LinkedIn',betreff:mode==='Erstkontakt'&&c.msg?c.msg.betreff:'',text:mode==='Erstkontakt'&&c.msg?c.msg.text:'',mailB:null,mailT:null,grund:'',notiz:'',empf:c.mail||'',send:'InMail'};go('S5')}
+function mailVersion(c,text){let b=String(text).replace(/\n?Beste Grüße\s*\n\s*Marco\s*$/,'').trim().replace(/^Hallo [^,]*,\s*/,'');b=b.charAt(0).toUpperCase()+b.slice(1);
+ return'Guten Tag '+[c.anrede,c.titel,c.nach].filter(Boolean).join(' ')+',\n\n'+b+'\n\n'+S.set.sig}
+function closeFollow(id,pred){S.follow.forEach(w=>{if(w.c===id&&!w.done&&(!pred||pred(w)))w.done=true})}
+function sperre(name,art,grund){S.sperr.push({name,art,grund,datum:S.today})}
+
+const A={
+ nav:d=>{if(d.v==='S5')S.s5=null;if(d.v==='S7')S.sel.sap=null;go(d.v)},
+ reset:()=>{S=init();toast('Ausgangszustand wiederhergestellt.')},
+ flow:d=>{const f=d.f;
+  if(f==='A1'){go('S9');toast('A1: Löse in der Vorführleiste „Nächster Werktag, 6:30 Uhr“ aus. Das Laufprotokoll und der Eingangskorb zeigen das Ergebnis.')}
+  if(f==='A2'){if(!S.runs.some(r=>(r.props||[]).some(p=>p.status==='Zu prüfen'))){A.morning();}go('S1');toast('A2: Auf dem Dashboard steht der Hinweis auf den neuen Recherchelauf. Öffne ihn.')}
+  if(f==='A3'){const c=S.contacts.find(c=>c.status==='Freigegeben');if(c)openS5(c.id);else{S.s5=null;go('S5')}toast('A3: Text anpassen, kopieren, Profil öffnen, dann „Als gesendet markieren“. Für E-Mail den Kanal wechseln.')}
+  if(f==='A4'){go('S6');toast('A4: Wiedervorlage öffnen, Antwort erfassen oder nachfassen. Mit „Nächster Werktag“ werden die Einträge fällig.')}
+  if(f==='A5'){S.sel.contact='c1';go('S4');toast('A5: „An SAP übergeben“ zeigt erst die Vorschau. Der erste Versuch scheitert absichtlich, damit die Ausnahme sichtbar wird.')}
+  if(f==='A6'){go('S1');toast('A6: Zeitraum und Aufschlüsselung wählen. Eine Zeile der Aufschlüsselung öffnet die zugehörigen Kontakte.')}
+  if(f==='A7'){go('S9');toast('A7: Profil ändern und speichern, Sperrzeit eintragen oder pausieren. Der nächste Lauf wird sofort neu berechnet.')}},
+ morning:()=>{let d=addDays(S.today,1);while(isWE(d))d=addDays(d,1);S.today=d;const a=S.agent,wd=WD[D(d).getDay()],sp=inSperr(d);let g=null;
+  if(a.status!=='Aktiv')g='pausiert';else if(!(a.days.includes(wd)||a.zusatz))g='kein Lauftag';else if(sp)g='Sperrzeit „'+sp.name+'“';else if(openProps()>=a.obergrenze)g='Obergrenze ungeprüfter Vorschläge erreicht';
+  if(g){S.runs.unshift({id:'r'+(S.n++),datum:d,erg:'Übersprungen: '+g});toast(fmt(d)+', 6:30 Uhr: Agent fragt den Laufauftrag ab. Antwort des Cockpits: „Heute nicht“ ('+g+').');return}
+  a.zusatz=false;
+  if(S.demo.apiDown){S.demo.pending=d;S.runs.unshift({id:'r'+(S.n++),datum:d,erg:'Ausgeführt, Übertragung fehlgeschlagen'});toast(fmt(d)+', 6:30 Uhr: Der Agent hat recherchiert, erreicht die Cockpit-API aber nicht. Ausweichweg: Ergebnisdatei im Eingangskorb (S2) hochladen.');return}
+  const r=deliver(d);toast(fmt(d)+', 6:30 Uhr: Cockpit antwortet „Heute laufen“. Der Agent hat '+r.n+' Vorschläge geliefert, sie liegen im Eingangskorb.')},
+ upload:()=>{if(!S.demo.pending){toast('Keine Ergebnisdatei offen. Der Upload ist der Ausweichweg, wenn der Agent die API nicht erreicht.');return}
+  const d=S.demo.pending;S.demo.pending=null;S.runs=S.runs.filter(r=>!(r.datum===d&&r.erg.startsWith('Ausgeführt, Über')));const r=deliver(d);toast('Ergebnisdatei vom '+fmt(d)+' eingelesen: '+r.n+' Vorschläge liegen zum Prüfen bereit.')},
+ selRun:d=>{S.sel.run=d.id;S.ui={}},
+ propOpen:d=>{S.ui.prop=S.ui.prop===d.id?null:d.id},
+ propRej:d=>{S.ui.rej=d.id;S.ui.rejGrund=GRUENDE[0]},
+ propRejOk:d=>{const r=S.runs.find(r=>r.id===S.sel.run),p=r.props.find(p=>p.id===d.id),g=S.ui.rejGrund||GRUENDE[0];p.status='Verworfen';p.grund=g;
+  if(g===GRUENDE[0]||g===GRUENDE[4]){sperre(p.firm,'Firma','Verworfen: '+g);toast('Verworfen. Die Firma '+p.firm+' ist für den Agenten gesperrt.')}
+  else{sperre(p.vor+' '+p.nach+' ('+p.firm+')','Person','Verworfen: '+g+', gesperrt bis '+fmt(addMonths(S.today,6)));toast('Verworfen. '+p.vor+' '+p.nach+' ist für den Agenten 6 Monate gesperrt.')}
+  S.ui={}},
+ propOk:d=>{const r=S.runs.find(r=>r.id===S.sel.run),p=r.props.find(p=>p.id===d.id);let f=S.firms.find(f=>f.name===p.firm);
+  if(!f){f={id:'f'+(S.n++),name:p.firm,branche:p.branche,land:p.land,umsatz:p.umsatz,status:'Aktiv'};S.firms.push(f)}
+  const c={id:'c'+(S.n++),firm:f.id,anrede:p.anrede,titel:p.titel,vor:p.vor,nach:p.nach,funktion:p.funktion,rolle:p.rolle,status:'Freigegeben',li:p.li,mail:p.mail,anlass:p.anlass,msg:{...p.msg}};S.contacts.push(c);
+  p.status='Freigegeben';r.frei++;toast(cname(c)+' freigegeben. Firma und Ansprechpartner sind angelegt, der Kontakt steht in der Ansprache.')},
+ selFirm:d=>{S.sel.firm=d.id;S.ui={}},
+ firmEdit:()=>{S.ui.firmEdit=true},
+ firmSave:()=>{S.ui.firmEdit=false;toast('Firma gespeichert.')},
+ firmSperr:d=>{const f=firm(d.id);f.status='Gesperrt';sperre(f.name,'Firma','Von Marco gesperrt');toast(f.name+' ist gesperrt und steht auf der Sperrliste (S8).')},
+ selCon:d=>{S.sel.contact=d.id;if(S.view!=='S4')go('S4');else S.ui={}},
+ f4clear:()=>{S.f4.dim=null;S.f4.val=null},
+ s5:d=>openS5(d.id),
+ ansForm:()=>{S.ui.ans={art:'Positiv',text:'',wv:addDays(S.today,30)}},
+ ansSave:()=>{const c=con(S.sel.contact),a=S.ui.ans;if(a.art==='Neutral/später'&&!a.wv){toast('Bitte ein Datum für die Wiedervorlage wählen.');return}
+  let next='';closeFollow(c.id,w=>/Nachfassen|schließen/.test(w.grund));
+  if(a.art==='Positiv'){c.status='Antwort erhalten';c.ans='positiv';next='Gesprächsdatum eintragen'}
+  if(a.art==='Neutral/später'){c.status='Antwort erhalten';c.ans='neutral/später';S.follow.push({id:'w'+(S.n++),c:c.id,faellig:a.wv,grund:'Erneut melden (Antwort: später)'});next='Wiedervorlage '+fmt(a.wv)}
+  if(a.art==='Kein Interesse'){c.status='Kein Interesse';c.ans='kein Interesse';closeFollow(c.id);next='Geschlossen, für den Agenten dauerhaft gesperrt'}
+  if(a.art==='Bitte nicht mehr kontaktieren'){c.status='Gesperrt';closeFollow(c.id);sperre(cname(c)+' ('+firm(c.firm).name+')','Person','Opt-out: bitte nicht mehr kontaktieren');next='Gesperrt, Eintrag auf der Sperrliste (S8)'}
+  S.answers.push({c:c.id,datum:S.today,art:a.art,text:a.text,next});S.ui={};toast('Antwort erfasst. '+next+'.')},
+ meet:()=>{const c=con(S.sel.contact),v=(S.ui.meet||'').trim();if(!v){toast('Bitte Datum und Uhrzeit des Gesprächs eintragen.');return}
+  c.status='Gespräch vereinbart';c.gespraech=v;const a=S.answers.filter(a=>a.c===c.id).pop();if(a)a.next='Kurzes Gespräch am '+v;S.ui={};toast('Gespräch eingetragen. Der Kontakt kann jetzt an SAP übergeben werden.')},
+ wvForm:()=>{S.ui.wv={d:addDays(S.today,7),g:''}},
+ wvSave:()=>{const w=S.ui.wv;if(!w.d){toast('Bitte ein Datum wählen.');return}S.follow.push({id:'w'+(S.n++),c:S.sel.contact,faellig:w.d,grund:w.g||'Wiedervorlage'});S.ui={};toast('Wiedervorlage am '+fmt(w.d)+' gesetzt.')},
+ close:d=>{const c=con(d.id);c.status='Ohne Antwort geschlossen';closeFollow(c.id);toast(cname(c)+' ohne Antwort geschlossen. Verlauf und Nachrichten bleiben erhalten; für den Agenten 6 Monate gesperrt.')},
+ reopen:d=>{const c=con(d.id);c.status=touches(c.id).length?'Angeschrieben':'Freigegeben';c.ans='';toast(cname(c)+' wieder geöffnet.')},
+ conSperr:d=>{const c=con(d.id);c.status='Gesperrt';closeFollow(c.id);sperre(cname(c)+' ('+firm(c.firm).name+')','Person','Von Marco gesperrt');toast(cname(c)+' ist gesperrt und steht auf der Sperrliste (S8).')},
+ kanal:d=>{S.s5.kanal=d.k;S.s5.send=d.k==='E-Mail'?'E-Mail':'InMail'},
+ copy:d=>{const t=d.w==='b'?S.s5.betreff:d.w==='h'?d.t:S.s5.text;try{navigator.clipboard.writeText(t).catch(()=>{})}catch(e){}toast((d.w==='b'?'Betreff':d.w==='h'?'Suchhinweis':'Nachricht')+' kopiert.')},
+ profil:()=>{const c=con(S.s5.c);toast('Im echten Cockpit öffnet sich jetzt das LinkedIn-Profil ('+c.li+'). Im Dummy bleibt es bei diesem Hinweis, die Person ist erfunden.')},
+ mailGen:()=>{const c=con(S.s5.c);if(!S.s5.text.trim()){toast('Erst den Nachrichtentext schreiben, daraus entsteht die E-Mail-Fassung.');return}S.s5.mailB=S.s5.betreff;S.s5.mailT=mailVersion(c,S.s5.text);toast('E-Mail-Fassung aus der LinkedIn-Fassung erzeugt: Anrede, Betreff und Signatur ergänzt.')},
+ mailOpen:()=>{toast('Das Mailprogramm öffnet sich mit Empfänger, Betreff und Text. Gesendet ist damit noch nichts: Du sendest selbst und markierst danach den Versand.')},
+ sent:()=>{const s=S.s5,c=con(s.c),mail=s.kanal==='E-Mail';const text=mail?s.mailT:s.text,betreff=mail?s.mailB:s.betreff;
+  if(!String(text||'').trim()){toast(mail?'Erst die E-Mail-Fassung erzeugen.':'Die Nachricht ist leer.');return}
+  if(mail&&(!s.grund||(s.grund==='Andere'&&!s.notiz.trim()))){toast('Für E-Mail fehlt die geprüfte Grundlage'+(s.grund==='Andere'?' (Notiz)':'')+'.');return}
+  const grund=mail?(s.grund==='Andere'?'Andere: '+s.notiz.trim():s.grund):'';
+  S.touch.push({c:c.id,kanal:mail?'E-Mail':s.send,zeit:S.today+' 08:45',art:s.mode,grund,betreff,text});
+  if(mail&&s.empf)c.mail=s.empf;
+  if(s.mode==='Erstkontakt'){if(c.msg&&(c.msg.text!==s.text||c.msg.betreff!==s.betreff)){c.msg={betreff:s.betreff,text:s.text,fassung:'von Marco geändert'}}
+   c.status='Angeschrieben';const w=addWork(S.today,7);S.follow.push({id:'w'+(S.n++),c:c.id,faellig:w,grund:'Nachfassen, keine Antwort'});toast('Versand protokolliert. Status „Angeschrieben“, Wiedervorlage am '+fmt(w)+' (7 Werktage).')}
+  else{c.status='Nachgefasst';closeFollow(c.id,w=>/Nachfassen/.test(w.grund));const w=addDays(first(c.id).zeit,21);S.follow.push({id:'w'+(S.n++),c:c.id,faellig:w,grund:'Ohne Antwort schließen?'});toast('Nachfassen protokolliert. Status „Nachgefasst“. Am '+fmt(w)+' schlägt das Cockpit das Schließen vor.')}
+  S.sel.contact=c.id;S.s5=null;go('S4')},
+ wvDone:d=>{S.follow.find(w=>w.id===d.id).done=true;toast('Wiedervorlage erledigt.')},
+ wvMove:d=>{const v=document.getElementById('mv_'+d.id).value;if(!v){toast('Bitte ein neues Datum wählen.');return}S.follow.find(w=>w.id===d.id).faellig=v;toast('Wiedervorlage auf den '+fmt(v)+' verschoben.')},
+ sapOpen:d=>{S.sel.sap=d.id;go('S7')},
+ sapGo:()=>{const c=con(S.sel.sap),f=firm(c.firm);
+  if(!S.sapErr){S.sapErr=true;S.sap.unshift({c:c.id,zeit:S.today+' 16:10',ok:false,text:'Fehler: Pflichtfeld »Land« fehlt – nichts angelegt'});toast('SAP meldet einen Fehler. Nichts wurde als übergeben markiert.');return}
+  const neu=!f.sapId;if(neu)f.sapId='10'+(48200+S.n++);c.sapKontakt='20'+(91300+S.n++);c.sapLead='30'+(12700+S.n++);c.status='An SAP übergeben';
+  S.sap.unshift({c:c.id,zeit:S.today+' 16:12',ok:true,text:(neu?'Account angelegt':'Account verknüpft')+', Ansprechpartner angelegt, Lead angelegt',ids:[f.sapId,c.sapKontakt,c.sapLead],neu});toast('Übergabe erfolgreich. Der Kontakt ist im Cockpit abgeschlossen und bleibt lesbar.')},
+ agSave:()=>{const z=S.agent.zusatz;S.agent=JSON.parse(JSON.stringify(S.draft));S.agent.zusatz=z;S.agent.count=+S.agent.count||1;S.agent.obergrenze=+S.agent.obergrenze||1;S.agent.min=+S.agent.min||0;toast('Rechercheprofil gespeichert. Gilt ab dem nächsten Lauf: '+nextRun().text+'.')},
+ agToggle:()=>{S.agent.status=S.agent.status==='Aktiv'?'Pausiert':'Aktiv';S.draft.status=S.agent.status;toast(S.agent.status==='Aktiv'?'Agent wieder aktiv. Nächster Lauf: '+nextRun().text+'.':'Agent pausiert. Kein Lauf, bis du ihn wieder aktivierst.')},
+ agExtra:()=>{S.agent.zusatz=true;toast('Zusatzlauf vorgemerkt: '+nextRun().text+'.')},
+ spAdd:()=>{const u=S.ui.sp||{};if(!u.von||!u.bis||!u.name||u.bis<u.von){toast('Bitte Von, Bis (nicht vor Von) und eine Bezeichnung angeben.');return}S.sperrzeiten.push({von:u.von,bis:u.bis,name:u.name});S.ui={};toast('Sperrzeit eingetragen. Läufe in diesem Zeitraum werden übersprungen.')},
+ spDel:d=>{S.sperrzeiten.splice(+d.i,1)},
+ runOpen:d=>{S.sel.run=d.id;go('S2')},
+ slAdd:()=>{const u=S.ui.sl||{};if(!(u.name||'').trim()){toast('Bitte einen Namen eintragen.');return}sperre(u.name.trim(),u.art||'Firma',u.grund||'Von Marco gesperrt');S.ui={};toast('Sperreintrag hinzugefügt.')},
+ slDel:d=>{S.sperr.splice(+d.i,1);toast('Sperreintrag entfernt.')},
+ keyNew:()=>{S.set.key='clc_••••••••'+Math.random().toString(16).slice(2,6);toast('Neuer API-Schlüssel erzeugt. Der alte gilt nicht mehr; der Agent braucht den neuen.')},
+ sapTest:()=>{S.set.sapTest='Verbindung zur SAP Sales Cloud V2 steht (im Dummy simuliert), geprüft am '+fmt(S.today)+'.'},
+ csv:()=>{S.ui.csv='Name;Funktion;Firma;Branche;Land;Status\n'+S.contacts.map(c=>{const f=firm(c.firm);return[cname(c),c.funktion,f.name,f.branche,f.land,stat(c)].join(';')}).join('\n')},
+ csvCopy:()=>{try{navigator.clipboard.writeText(S.ui.csv).catch(()=>{})}catch(e){}toast('CSV kopiert.')},
+ dimRow:d=>{S.f4={status:'Alle',dim:S.kpi.dim,val:d.v};S.sel.contact=null;go('S4');S.f4.dim=S.kpi.dim;S.f4.val=d.v}
+};
+
+/* ---------- Kennzahlen ---------- */
+const DIMS={Branche:c=>firm(c.firm).branche,Land:c=>firm(c.firm).land,Rolle:c=>c.rolle,Kanal:c=>{const t=first(c.id);return t?(t.kanal==='E-Mail'?'E-Mail':'LinkedIn'):'–'},'E-Mail-Grundlage':c=>{const t=first(c.id);return t&&t.kanal==='E-Mail'?t.grund.split(':')[0]:'– (LinkedIn)'},'Art des Aufhängers':c=>c.anlass?c.anlass.typ:'Ohne Angabe'};
+function kpis(){const cut=addDays(S.today,-S.kpi.tage);
+ if(S.demo.kpi20)return{demo:true,gel:96,frei:71,an:64,antw:17,pos:9,gesp:6,sap:5,med:3,rows:[['Beispielwert A',38,11,4],['Beispielwert B',26,6,2]]};
+ const runs=S.runs.filter(r=>r.erg==='Ausgeführt'&&r.datum>=cut),cs=S.contacts.filter(c=>{const t=first(c.id);return t&&t.zeit.slice(0,10)>=cut});
+ const ans=id=>S.answers.filter(a=>a.c===id)[0];const withA=cs.filter(c=>ans(c.id));
+ const days=withA.map(c=>Math.round((D(ans(c.id).datum)-D(first(c.id).zeit))/864e5)).sort((a,b)=>a-b);
+ const g={};cs.forEach(c=>{const k=DIMS[S.kpi.dim](c);g[k]=g[k]||[k,0,0,0];g[k][1]++;if(ans(c.id))g[k][2]++;if(c.gespraech)g[k][3]++});
+ return{gel:runs.reduce((n,r)=>n+r.n,0),frei:runs.reduce((n,r)=>n+r.frei,0),an:cs.length,antw:withA.length,pos:withA.filter(c=>ans(c.id).art==='Positiv').length,gesp:cs.filter(c=>c.gespraech).length,sap:S.sap.filter(x=>x.ok&&x.zeit.slice(0,10)>=cut).length,med:days.length?days[Math.floor((days.length-1)/2)]:null,rows:Object.values(g)}}
+
+/* ---------- Screens ---------- */
+const head=(id,t,p)=>'<div class="ph"><span class="id">'+id+'</span><h1>'+t+'</h1><p>'+p+'</p></div>';
+const V={};
+V.S1=()=>{const k=kpis(),nr=nextRun(),a=S.agent,sp=inSperr(S.today),over=openProps()>=a.obergrenze;
+ const newRuns=S.runs.filter(r=>(r.props||[]).some(p=>p.status==='Zu prüfen')),fr=S.contacts.filter(c=>c.status==='Freigegeben'),wf=openFollow(),due=wf.filter(w=>w.faellig<=S.today);
+ const q=(x,y)=>k.an>=20&&y?'<em>'+Math.round(x/y*100)+' %</em>':'';const max=Math.max(k.gel,1);
+ return head('S1','Dashboard','Heute ist '+WDL[WD[D(S.today).getDay()]]+', der '+fmt(S.today)+'.')+
+ (over?'<div class="note">Der Agent setzt aus: Im Eingangskorb liegen '+openProps()+' ungeprüfte Vorschläge, die Obergrenze ist '+a.obergrenze+'. <button class="btn s" data-a="nav" data-v="S2">Eingangskorb öffnen</button></div>':'')+
+ '<div class="box"><div class="acts" style="margin:0"><h3>Agent</h3>'+(a.status==='Aktiv'?(sp?'<span class="tag w">Sperrzeit: '+esc(sp.name)+'</span>':over?'<span class="tag w">Ausgesetzt</span>':'<span class="tag ok">Aktiv</span>'):'<span class="tag e">Pausiert</span>')+'<span>Nächster Lauf: '+esc(nr.text)+'</span><button class="btn s" data-a="nav" data-v="S9">Agent-Steuerung</button></div></div>'+
+ '<div class="cols c3"><div class="box"><h3>Neue Rechercheläufe</h3>'+(newRuns.length?newRuns.map(r=>'<p>'+newRuns.length+' neuer Recherchelauf vom '+fmt(r.datum)+' mit '+r.props.filter(p=>p.status==='Zu prüfen').length+' ungeprüften Vorschlägen.</p><button class="btn p" data-a="runOpen" data-id="'+r.id+'">Lauf prüfen</button>').join(''):'<p class="muted">Kein Lauf wartet auf deine Prüfung.</p>')+'</div>'+
+ '<div class="box"><h3>Freigegeben, noch nicht angeschrieben</h3>'+(fr.length?'<table>'+fr.map(c=>'<tr class="pick" data-a="s5" data-id="'+c.id+'"><td>'+esc(cname(c))+'<br><span class="muted">'+esc(firm(c.firm).name)+'</span></td><td><button class="btn s">Ansprechen</button></td></tr>').join('')+'</table>':'<p class="muted">Alle freigegebenen Kontakte sind angeschrieben.</p>')+'</div>'+
+ '<div class="box"><h3>Wiedervorlagen</h3>'+(due.length?'<table>'+due.map(w=>'<tr class="pick" data-a="selCon" data-id="'+w.c+'"><td>'+esc(cname(con(w.c)))+'<br><span class="muted">'+esc(w.grund)+'</span></td><td>'+(w.faellig<S.today?'<span class="tag e">überfällig</span>':'<span class="tag w">heute</span>')+'</td></tr>').join('')+'</table>':'<p class="muted">Heute ist nichts fällig.'+(wf.length?' Die nächste Wiedervorlage steht am '+fmt(wf[0].faellig)+' an.':'')+'</p>')+'<div class="acts"><button class="btn s" data-a="nav" data-v="S6">Alle Wiedervorlagen</button></div></div></div>'+
+ '<div class="box"><div class="acts" style="margin:0 0 12px"><h2>Kennzahlen</h2><label>Zeitraum <select class="inl" data-b="kpi.tage" data-n="1" data-r="1">'+[[7,'Letzte 7 Tage'],[30,'Letzte 30 Tage'],[90,'Letzte 90 Tage']].map(o=>'<option value="'+o[0]+'"'+(S.kpi.tage===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label></div>'+
+ (k.demo?'<div class="note">Vorführzustand mit Beispielzahlen: So sieht das Dashboard ab 20 angeschriebenen Kontakten aus.</div>':k.an<20?'<div class="note">Quoten erscheinen erst ab 20 angeschriebenen Kontakten im Zeitraum. Aktuell sind es '+k.an+', deshalb stehen hier nur absolute Zahlen.</div>':'')+
+ '<div class="tiles"><div class="tile"><b>'+k.gel+'</b><span>Vorschläge vom Agenten</span></div><div class="tile"><b>'+k.frei+q(k.frei,k.gel)+'</b><span>Freigegeben'+(k.an>=20?' (Freigabequote)':'')+'</span></div><div class="tile"><b>'+k.an+'</b><span>Angeschrieben</span></div><div class="tile"><b>'+k.antw+q(k.antw,k.an)+'</b><span>Antworten'+(k.an>=20?' (Antwortquote)':'')+'</span></div>'+
+ '<div class="tile"><b>'+k.pos+q(k.pos,k.an)+'</b><span>Positive Antworten</span></div><div class="tile"><b>'+k.gesp+q(k.gesp,k.an)+'</b><span>Vereinbarte Gespräche'+(k.an>=20?' (Gesprächsquote)':'')+'</span></div><div class="tile"><b>'+k.sap+'</b><span>SAP-Übergaben</span></div><div class="tile"><b>'+(k.med==null?'–':k.med+' Tage')+'</b><span>Zeit bis Antwort (Median)</span></div></div>'+
+ '<div class="cols c2" style="margin-top:14px"><div><h3>Trichter</h3><div class="fun">'+[['Vorschläge',k.gel],['Freigegeben',k.frei],['Angeschrieben',k.an],['Antworten',k.antw],['Gespräche',k.gesp],['SAP-Übergaben',k.sap]].map(x=>'<div><span>'+x[0]+'</span><i style="width:'+Math.round(x[1]/max*260)+'px"></i><b class="num">'+x[1]+'</b></div>').join('')+'</div><p class="muted">Überfällige Wiedervorlagen heute: '+wf.filter(w=>w.faellig<S.today).length+'</p></div>'+
+ '<div><div class="acts" style="margin:0 0 6px"><h3>Aufschlüsselung nach</h3><select class="inl" data-b="kpi.dim" data-r="1">'+Object.keys(DIMS).map(d=>'<option'+(S.kpi.dim===d?' selected':'')+'>'+d+'</option>').join('')+'</select></div><table><tr><th>'+esc(S.kpi.dim)+'</th><th class="num">Angeschrieben</th><th class="num">Antworten</th><th class="num">Gespräche</th></tr>'+
+ (k.rows.length?k.rows.map(r=>'<tr'+(k.demo?'':' class="pick" data-a="dimRow" data-v="'+esc(r[0])+'"')+'><td>'+esc(r[0])+'</td><td class="num">'+r[1]+'</td><td class="num">'+r[2]+'</td><td class="num">'+r[3]+'</td></tr>').join(''):'<tr><td colspan="4" class="muted">Im Zeitraum wurde niemand angeschrieben.</td></tr>')+'</table>'+(k.demo?'':'<p class="muted">Eine Zeile öffnet die zugehörigen Kontakte.</p>')+'</div></div></div>'};
+
+V.S2=()=>{const runs=S.runs.filter(r=>r.erg==='Ausgeführt'),r=runs.find(r=>r.id===S.sel.run)||runs[0];
+ const card=p=>{const known=S.firms.find(f=>f.name===p.firm),second=!p.dub&&known&&S.contacts.some(c=>c.firm===known.id&&['Angeschrieben','Nachgefasst'].includes(c.status)),lauf=second&&S.contacts.find(c=>c.firm===known.id&&['Angeschrieben','Nachgefasst'].includes(c.status));
+  return'<div class="box"><div class="acts" style="margin:0"><h3>'+esc([p.titel,p.vor,p.nach].filter(Boolean).join(' '))+'</h3><span>'+esc(p.funktion)+'</span>'+(p.status==='Zu prüfen'?'':p.status==='Freigegeben'?'<span class="tag ok">Freigegeben</span>':'<span class="tag x">Verworfen: '+esc(p.grund)+'</span>')+'</div>'+
+  '<p style="margin:6px 0"><b>'+esc(p.firm)+'</b>, '+esc(p.branche)+' / '+esc(p.land)+', Umsatz '+esc(p.umsatz)+'</p>'+
+  (p.dub?'<div class="note e">Dublette: Diese Person ist bereits im Cockpit (Status „'+esc(stat(S.contacts.find(c=>c.nach===p.nach&&c.vor===p.vor)||{status:'bekannt'}))+'“). Der Vorschlag kann nicht freigegeben werden.</div>':'')+
+  (second?'<div class="note">Zweiter Ansprechpartner: Bei dieser Firma läuft bereits eine Ansprache ('+esc(cname(lauf))+', '+esc(lauf.status)+'). Freigabe ist möglich.</div>':'')+
+  '<p style="margin:6px 0">'+(p.anlass.datum?'<span class="tag">'+esc(p.anlass.typ)+'</span> '+esc(p.anlass.text)+' ('+fmt(p.anlass.datum)+') <a href="https://example.com/quelle" target="_blank" rel="noopener">Quelle öffnen</a>':'<span class="tag w">Kein belastbarer aktueller Anlass</span>')+'</p>'+
+  (S.ui.prop===p.id?'<dl class="kv" style="margin:10px 0"><dt>Umsatzquelle</dt><dd><a href="https://example.com/geschaeftsbericht" target="_blank" rel="noopener">Geschäftsbericht 2025</a> (Agent)</dd><dt>Funktion belegt durch</dt><dd><a href="https://example.com/unternehmensseite" target="_blank" rel="noopener">Unternehmenswebsite</a> (Agent)</dd><dt>LinkedIn-Profil</dt><dd>'+(p.li?esc(p.li)+' (Agent)':'<span class="tag w">nicht belegt</span> Suchhinweis: '+esc(p.vor+' '+p.nach+', '+p.firm))+'</dd><dt>Berufliche E-Mail</dt><dd><span class="tag w">nicht belegt</span></dd><dt>Anschrift der Firma</dt><dd><span class="tag w">nicht belegt</span></dd>'+(p.anlass.hyp?'<dt>Relevanzhypothese</dt><dd><span class="tag h">Hypothese</span> '+esc(p.anlass.hyp)+'</dd><dt>Gesprächsziel</dt><dd>'+esc(p.anlass.ziel)+'</dd>':'')+(p.msg.text?'<dt>Betreff</dt><dd>'+esc(p.msg.betreff)+'</dd><dt>LinkedIn-Nachricht</dt><dd><div class="msg">'+esc(p.msg.text)+'</div></dd>':'')+'</dl>':'')+
+  (S.ui.rej===p.id?'<div class="acts"><label>Grund <select class="inl" data-b="ui.rejGrund">'+GRUENDE.map(g=>'<option>'+g+'</option>').join('')+'</select></label><button class="btn d" data-a="propRejOk" data-id="'+p.id+'">Verwerfen bestätigen</button><span class="muted">„passt nicht ins Zielbild“ und „wird von Kollegen betreut“ sperren die Firma, die anderen Gründe nur die Person für 6 Monate.</span></div>':
+  '<div class="acts"><button class="btn s" data-a="propOpen" data-id="'+p.id+'">'+(S.ui.prop===p.id?'Angaben ausblenden':'Angaben und Quellen prüfen')+'</button>'+(p.status==='Zu prüfen'?'<button class="btn p" data-a="propOk" data-id="'+p.id+'"'+(p.dub?' disabled':'')+'>Freigeben</button><button class="btn" data-a="propRej" data-id="'+p.id+'">Verwerfen</button>':'')+'</div>')+'</div>'};
+ return head('S2','Eingangskorb','Rechercheläufe des Agenten prüfen, freigeben oder verwerfen.')+
+ (S.demo.pending?'<div class="note e">Der Lauf vom '+fmt(S.demo.pending)+' kam nicht über die API an. Lade die Ergebnisdatei des Agenten von Hand hoch.</div>':'')+
+ '<div class="cols c13"><div class="box"><h3>Läufe</h3><table>'+runs.map(x=>{const o=x.props.filter(p=>p.status==='Zu prüfen').length;return'<tr class="pick'+(r&&x.id===r.id?' sel':'')+'" data-a="selRun" data-id="'+x.id+'"><td>'+fmt(x.datum)+(o?' <span class="tag w">'+o+' offen</span>':'')+'<br><span class="muted">'+x.n+' Vorschläge, '+x.frei+' freigegeben</span></td></tr>'}).join('')+'</table><div class="acts"><button class="btn'+(S.demo.pending?' p':'')+'" data-a="upload">Ergebnisdatei hochladen</button></div></div>'+
+ '<div>'+(r?'<div class="box"><h2>Lauf vom '+fmt(r.datum)+'</h2><dl class="kv" style="margin-top:8px"><dt>Vorschläge</dt><dd>'+r.n+'</dd><dt>Freigegeben</dt><dd>'+r.frei+'</dd><dt>Abdeckungsgrenzen</dt><dd>'+esc(r.grenzen)+'</dd></dl></div>'+(r.props.length?r.props.map(card).join(''):'<div class="box"><p class="muted">'+(r.n?'Alle Vorschläge dieses Laufs sind geprüft. Die freigegebenen Kontakte findest du unter Kontakte (S4).':'Dieser Lauf hat keine Vorschläge geliefert.')+'</p></div>'):'')+'</div></div>'};
+
+V.S3=()=>{const q=S.f3.q.toLowerCase(),list=S.firms.filter(f=>(!q||f.name.toLowerCase().includes(q))&&(!S.f3.branche||f.branche===S.f3.branche)),f=firm(S.sel.firm);
+ return head('S3','Firmen','Alle Firmen mit Umsatz, Quellen und Ansprechpartnern.')+
+ '<div class="cols c12"><div class="box"><div class="acts" style="margin:0 0 10px"><input type="text" class="inl" placeholder="Firma suchen" data-b="f3.q" data-r="1" value="'+esc(S.f3.q)+'"><select class="inl" data-b="f3.branche" data-r="1"><option value="">Alle Branchen</option>'+[...new Set(S.firms.map(f=>f.branche))].map(b=>'<option'+(S.f3.branche===b?' selected':'')+'>'+esc(b)+'</option>').join('')+'</select></div>'+
+ '<table><tr><th>Firma</th><th>Branche / Land</th><th>Umsatz</th><th class="num">Kontakte</th><th>Status</th></tr>'+list.map(x=>'<tr class="pick'+(f&&f.id===x.id?' sel':'')+'" data-a="selFirm" data-id="'+x.id+'"><td>'+esc(x.name)+(x.sapId?' <span class="tag ok">SAP</span>':'')+'</td><td>'+esc(x.branche)+' / '+x.land+'</td><td>'+esc(x.umsatz)+'</td><td class="num">'+S.contacts.filter(c=>c.firm===x.id).length+'</td><td>'+(x.status==='Gesperrt'?'<span class="tag e">Gesperrt</span>':'<span class="tag">Aktiv</span>')+'</td></tr>').join('')+(list.length?'':'<tr><td colspan="5" class="muted">Keine Firma passt zu diesem Filter.</td></tr>')+'</table></div>'+
+ '<div class="box">'+(f?'<h2>'+esc(f.name)+'</h2><dl class="kv" style="margin-top:10px"><dt>Branche / Land</dt><dd>'+esc(f.branche)+' / '+f.land+'</dd><dt>Umsatz</dt><dd>'+esc(f.umsatz)+' <a href="https://example.com/geschaeftsbericht" target="_blank" rel="noopener">Quelle: Geschäftsbericht 2025</a></dd>'+
+ (S.ui.firmEdit?'<dt>Anschrift</dt><dd><input type="text" data-b="firmAdr" data-id="'+f.id+'" value="'+esc(f.adr||'')+'"></dd><dt>Allgemeiner Firmenkontakt</dt><dd><input type="text" data-b="firmKon" data-id="'+f.id+'" value="'+esc(f.kon||'')+'"></dd>':'<dt>Anschrift</dt><dd>'+(f.adr?esc(f.adr):'<span class="tag w">nicht belegt</span>')+'</dd><dt>Allgemeiner Firmenkontakt</dt><dd>'+(f.kon?esc(f.kon):'<span class="tag w">nicht belegt</span>')+'</dd>')+
+ '<dt>SAP-Account</dt><dd>'+(f.sapId?'<span class="tag ok">'+f.sapId+'</span>':'noch nicht übergeben')+'</dd></dl><h3 style="margin-top:14px">Ansprechpartner</h3><table>'+S.contacts.filter(c=>c.firm===f.id).map(c=>'<tr class="pick" data-a="selCon" data-id="'+c.id+'"><td>'+esc(cname(c))+'<br><span class="muted">'+esc(c.funktion)+'</span></td><td>'+tagStatus(stat(c))+'</td></tr>').join('')+'</table>'+
+ '<div class="acts">'+(S.ui.firmEdit?'<button class="btn p" data-a="firmSave">Speichern</button>':'<button class="btn" data-a="firmEdit">Bearbeiten</button>')+'<button class="btn d" data-a="firmSperr" data-id="'+f.id+'"'+(f.status==='Gesperrt'?' disabled':'')+'>Firma sperren</button>'+(f.status==='Gesperrt'?'<button class="btn s" data-a="nav" data-v="S8">Sperrliste öffnen</button>':'')+'</div>':'<p class="muted">Wähle links eine Firma, um Anschrift, Quellen und Ansprechpartner zu sehen.</p>')+'</div></div>'};
+
+V.S4=()=>{const F=S.f4,list=S.contacts.filter(c=>(F.status==='Alle'||(F.status==='Offene'?!CLOSED.includes(c.status):c.status===F.status))&&(!F.dim||DIMS[F.dim](c)===F.val)),c=con(S.sel.contact);
+ let det='<p class="muted">Wähle links einen Kontakt, um Verlauf, Anlässe und Aktionen zu sehen.</p>';
+ if(c){const f=firm(c.firm),ts=touches(c.id),an=S.answers.filter(a=>a.c===c.id),ri=RAIL.indexOf(c.status),sapOk=c.status==='Gespräch vereinbart'||(c.status==='Antwort erhalten'&&c.ans==='positiv'),u=S.ui;
+  const tl=[...ts.map(t=>({z:t.zeit,h:'<li><b>'+esc(t.art)+' per '+esc(t.kanal)+'</b> am '+fmt(t.zeit)+(t.grund?'<br>E-Mail-Grundlage: <span class="tag">'+esc(t.grund)+'</span>':'')+(t.text?'<div class="msg">'+(t.betreff?'Betreff: '+esc(t.betreff)+'\n\n':'')+esc(t.text)+'</div>':'')+'</li>'})),...an.map(a=>({z:a.datum+' 23:59',h:'<li class="a"><b>Antwort: '+esc(a.art)+'</b> am '+fmt(a.datum)+(a.text?'<div class="msg">'+esc(a.text)+'</div>':'')+(a.next?'<br>Nächster Schritt: '+esc(a.next):'')+'</li>'}))].sort((a,b)=>a.z<b.z?-1:1);
+  det='<div class="acts" style="margin:0"><h2>'+esc(cname(c))+'</h2>'+tagStatus(stat(c))+'</div><p style="margin:4px 0 0">'+esc(c.funktion)+', <a href="#" data-a="selFirm" data-id="'+f.id+'" data-go="S3">'+esc(f.name)+'</a></p>'+
+  (ri>=0?'<ol class="rail">'+RAIL.map((s,i)=>'<li class="'+(i<ri?'done':i===ri?'now':'')+'">'+s+'</li>').join('')+'</ol>':'<div class="note" style="margin-top:12px">Endzustand „'+esc(c.status)+'“. Verlauf, Anlässe und Nachrichten bleiben erhalten.</div>')+
+  '<dl class="kv" style="margin-top:12px"><dt>LinkedIn</dt><dd>'+(c.li?esc(c.li):'<span class="tag w">keine verifizierte URL</span> Suchhinweis für den Sales Navigator: '+esc(c.vor+' '+c.nach+', '+f.name))+'</dd><dt>Direktkontakt</dt><dd>'+(c.mail?esc(c.mail)+' <span class="muted">(von Marco eingetragen)</span>':'<span class="tag w">keine berufliche E-Mail hinterlegt</span>')+'</dd><dt>Firmenkontakt</dt><dd>'+(f.kon?esc(f.kon):'<span class="tag w">nicht belegt</span>')+' <span class="muted">(allgemein, kein Direktkontakt)</span></dd>'+(c.gespraech?'<dt>Gespräch</dt><dd>'+esc(c.gespraech)+'</dd>':'')+'<dt>SAP</dt><dd>'+(c.sapLead?'<span class="tag ok">Account '+f.sapId+'</span> <span class="tag ok">Kontakt '+c.sapKontakt+'</span> <span class="tag ok">Lead '+c.sapLead+'</span>':'noch nicht übergeben')+'</dd></dl>'+
+  '<h3 style="margin-top:14px">Anlass</h3>'+(c.anlass?'<p style="margin:4px 0"><span class="tag'+(c.anlass.datum?'':' w')+'">'+esc(c.anlass.typ)+'</span> '+esc(c.anlass.text)+(c.anlass.datum?' ('+fmt(c.anlass.datum)+') <a href="https://example.com/quelle" target="_blank" rel="noopener">Quelle öffnen</a>':'')+'</p><p style="margin:4px 0"><span class="tag h">Hypothese</span> '+esc(c.anlass.hyp)+'</p>':'<p class="muted">In den Beispieldaten ist für diesen Kontakt kein Anlass hinterlegt.</p>')+
+  '<h3 style="margin-top:14px">Verlauf</h3>'+(tl.length?'<ul class="tl">'+tl.map(x=>x.h).join('')+'</ul>':'<p class="muted">Noch kein Kontaktversuch.</p>')+
+  (u.ans?'<div class="box" style="margin-top:12px"><h3>Antwort erfassen</h3><label class="f"><span>Einordnung</span><select data-b="ui.ans.art" data-r="1">'+['Positiv','Neutral/später','Kein Interesse','Bitte nicht mehr kontaktieren'].map(o=>'<option'+(u.ans.art===o?' selected':'')+'>'+o+'</option>').join('')+'</select></label>'+(u.ans.art==='Neutral/später'?'<label class="f"><span>Wiedervorlage am</span><input type="date" data-b="ui.ans.wv" value="'+u.ans.wv+'"></label>':'')+(u.ans.art==='Kein Interesse'?'<p class="muted">Der Kontakt wird geschlossen und für den Agenten dauerhaft gesperrt. Du kannst ihn von Hand wieder öffnen.</p>':'')+(u.ans.art==='Bitte nicht mehr kontaktieren'?'<p class="muted">Die Person kommt sofort auf die Sperrliste.</p>':'')+'<label class="f"><span>Wortlaut (optional)</span><textarea style="min-height:70px" data-b="ui.ans.text">'+esc(u.ans.text)+'</textarea></label><div class="acts"><button class="btn p" data-a="ansSave">Antwort speichern</button></div></div>':'')+
+  (c.status==='Antwort erhalten'&&c.ans==='positiv'?'<div class="box" style="margin-top:12px"><h3>Gespräch eintragen</h3><div class="acts" style="margin:0"><input type="text" class="inl" style="width:240px" placeholder="z. B. 26.11.2026, 10:00 Uhr" data-b="ui.meet" value="'+esc(u.meet||'')+'"><button class="btn p" data-a="meet">Gespräch eintragen</button></div></div>':'')+
+  (u.wv?'<div class="box" style="margin-top:12px"><h3>Wiedervorlage setzen</h3><div class="acts" style="margin:0"><input type="date" class="inl" data-b="ui.wv.d" value="'+u.wv.d+'"><input type="text" class="inl" style="width:260px" placeholder="Grund" data-b="ui.wv.g" value="'+esc(u.wv.g)+'"><button class="btn p" data-a="wvSave">Wiedervorlage speichern</button></div></div>':'')+
+  '<div class="acts">'+(c.status==='Freigegeben'?'<button class="btn p" data-a="s5" data-id="'+c.id+'">Ansprechen</button>':'')+(c.status==='Angeschrieben'?'<button class="btn p" data-a="s5" data-id="'+c.id+'">Nachfassen</button>':'')+
+  (['Angeschrieben','Nachgefasst'].includes(c.status)||(c.status==='Antwort erhalten'&&c.ans!=='positiv')?'<button class="btn" data-a="ansForm">Antwort erfassen</button>':'')+
+  (!CLOSED.includes(c.status)?'<button class="btn" data-a="wvForm">Wiedervorlage setzen</button>':'')+
+  (['Angeschrieben','Nachgefasst'].includes(c.status)?'<button class="btn" data-a="close" data-id="'+c.id+'">Ohne Antwort schließen</button>':'')+
+  (['Ohne Antwort geschlossen','Kein Interesse'].includes(c.status)?'<button class="btn" data-a="reopen" data-id="'+c.id+'">Wieder öffnen</button>':'')+
+  (c.status!=='An SAP übergeben'?'<button class="btn'+(sapOk?' p':'')+'" data-a="sapOpen" data-id="'+c.id+'"'+(sapOk?'':' disabled title="Erst ab positiver Antwort oder vereinbartem Gespräch"')+'>An SAP übergeben</button>':'')+
+  (!['Gesperrt','An SAP übergeben'].includes(c.status)?'<button class="btn d" data-a="conSperr" data-id="'+c.id+'">Sperren</button>':'')+'</div>'+
+  (!sapOk&&!CLOSED.includes(c.status)?'<p class="muted" style="margin:8px 0 0">Die Übergabe an SAP ist erst ab positiver Antwort oder vereinbartem Gespräch möglich.</p>':'')}
+ return head('S4','Kontakte','Pipeline und Kontaktakte.')+
+ '<div class="cols c12"><div class="box"><div class="acts" style="margin:0 0 10px"><label>Status <select class="inl" data-b="f4.status" data-r="1">'+['Offene','Alle',...RAIL.slice(1),'Kein Interesse','Ohne Antwort geschlossen','Gesperrt'].map(o=>'<option'+(F.status===o?' selected':'')+'>'+o+'</option>').join('')+'</select></label>'+(F.dim?'<span class="tag h">'+esc(F.dim)+': '+esc(F.val)+'</span><button class="btn s" data-a="f4clear">Filter aufheben</button>':'')+'</div>'+
+ '<table><tr><th>Name</th><th>Firma</th><th>Status</th></tr>'+list.map(x=>'<tr class="pick'+(c&&c.id===x.id?' sel':'')+'" data-a="selCon" data-id="'+x.id+'"><td>'+esc(cname(x))+'<br><span class="muted">'+esc(x.funktion)+'</span></td><td>'+esc(firm(x.firm).name)+'</td><td>'+tagStatus(stat(x))+'</td></tr>').join('')+(list.length?'':'<tr><td colspan="3" class="muted">Kein Kontakt passt zu diesem Filter.</td></tr>')+'</table></div><div class="box">'+det+'</div></div>'};
+
+V.S5=()=>{const s=S.s5;
+ if(!s){const fr=S.contacts.filter(c=>c.status==='Freigegeben'),nf=S.contacts.filter(c=>c.status==='Angeschrieben');
+  const rows=(l,b)=>l.length?'<table>'+l.map(c=>'<tr class="pick" data-a="s5" data-id="'+c.id+'"><td>'+esc(cname(c))+'<br><span class="muted">'+esc(c.funktion)+', '+esc(firm(c.firm).name)+'</span></td><td><button class="btn s">'+b+'</button></td></tr>').join('')+'</table>':'<p class="muted">Niemand in dieser Liste.</p>';
+  return head('S5','Ansprache','Nachricht fertigstellen, selbst senden, Versand protokollieren.')+'<div class="cols c2"><div class="box"><h3>Erstkontakt offen</h3>'+rows(fr,'Ansprechen')+'</div><div class="box"><h3>Angeschrieben, Nachfassen möglich</h3>'+rows(nf,'Nachfassen')+'</div></div>'}
+ const c=con(s.c),f=firm(c.firm),mail=s.kanal==='E-Mail',an=c.anlass,erst=first(c.id);
+ if(!s.mode)return head('S5','Ansprache',esc(cname(c))+', '+esc(f.name))+'<div class="box"><p>'+(c.status==='Nachgefasst'?'Für diesen Kontakt ist die eine Nachfass-Nachricht bereits gesendet. Mehr als ein Nachfassen sieht das Cockpit nicht vor.':'Im Status „'+esc(stat(c))+'“ ist keine Ansprache vorgesehen.')+'</p><div class="acts"><button class="btn" data-a="selCon" data-id="'+c.id+'">Zur Kontaktakte</button></div></div>';
+ return head('S5',s.mode==='Erstkontakt'?'Ansprache':'Nachfassen',esc(cname(c))+', '+esc(c.funktion)+', '+esc(f.name))+
+ '<div class="cols c12"><div><div class="box"><h3>Aufhänger</h3>'+(an?'<p style="margin:0 0 8px"><span class="tag'+(an.datum?'':' w')+'">'+esc(an.datum?an.typ:'Kein belastbarer aktueller Anlass')+'</span></p>'+(an.datum?'<p style="margin:0 0 8px">'+esc(an.text)+'<br><span class="muted">Datum: '+fmt(an.datum)+'</span> <a href="https://example.com/quelle" target="_blank" rel="noopener">Quelle öffnen</a></p>':'')+'<p style="margin:0 0 8px"><span class="tag h">Hypothese</span> '+esc(an.hyp)+'</p><p style="margin:0"><b>Gesprächsziel:</b> '+esc(an.ziel)+'</p>':'<p class="muted">Kein Anlass hinterlegt.</p>')+'</div>'+
+ (s.mode==='Nachfassen'&&erst?'<div class="box"><h3>Erste Nachricht vom '+fmt(erst.zeit)+' ('+esc(erst.kanal)+')</h3><div class="msg">'+esc(erst.text||(c.msg?'Betreff: '+c.msg.betreff+'\n\n'+c.msg.text:'Wortlaut nicht hinterlegt'))+'</div></div>':'')+'</div>'+
+ '<div class="box"><div class="acts" style="margin:0 0 12px"><h3>Kanal</h3><button class="btn'+(mail?'':' p')+'" data-a="kanal" data-k="LinkedIn">LinkedIn</button><button class="btn'+(mail?' p':'')+'" data-a="kanal" data-k="E-Mail">E-Mail</button></div>'+
+ '<label class="f"><span>Betreff'+(mail?' (LinkedIn-Fassung, Grundlage der E-Mail)':'')+'</span><input type="text" data-b="s5.betreff" value="'+esc(s.betreff)+'"></label><label class="f"><span>'+(s.mode==='Nachfassen'?'Nachfass-Nachricht':'Nachricht')+'</span><textarea data-b="s5.text" placeholder="'+(s.mode==='Nachfassen'?'Kurz und freundlich nachfassen …':'')+'">'+esc(s.text)+'</textarea></label><p id="wc" class="muted" style="margin:-4px 0 10px"></p>'+
+ (!mail?'<div class="acts" style="margin-top:0"><button class="btn" data-a="copy" data-w="b">Betreff kopieren</button><button class="btn" data-a="copy" data-w="n">Nachricht kopieren</button>'+(c.li?'<button class="btn" data-a="profil">Profil öffnen</button>':'')+'</div>'+(c.li?'':'<div class="note">Keine verifizierte Profil-URL. Suchhinweis für den Sales Navigator: <b>'+esc(c.vor+' '+c.nach+', '+f.name)+'</b> <button class="btn s" data-a="copy" data-w="h" data-t="'+esc(c.vor+' '+c.nach+' '+f.name)+'">Suchhinweis kopieren</button></div>')+'<p class="muted">Du sendest selbst in LinkedIn oder im Sales Navigator. Das Cockpit sendet nichts.</p>':
+ '<div class="acts" style="margin-top:0"><button class="btn'+(s.mailT==null?' p':'')+'" data-a="mailGen">E-Mail-Fassung erzeugen</button><span class="muted">Schritt a: aus der LinkedIn-Fassung, mit Anrede und Signatur</span></div>'+
+ (s.mailT!=null?'<label class="f" style="margin-top:10px"><span>Betreff der E-Mail</span><input type="text" data-b="s5.mailB" value="'+esc(s.mailB)+'"></label><label class="f"><span>E-Mail-Text</span><textarea data-b="s5.mailT" style="min-height:210px">'+esc(s.mailT)+'</textarea></label>':'')+
+ '<h3 style="margin:14px 0 8px">Schritt b: Grundlage von Hand prüfen</h3><p class="muted" style="margin:0 0 8px">Das Cockpit entscheidet nicht, ob eine E-Mail in Ordnung ist. Prüfe es selbst, zum Beispiel in HubSpot, und wähle die Grundlage.</p>'+
+ '<label class="f"><span>Geprüfte Grundlage</span><select data-b="s5.grund" data-r="1"><option value="">Bitte wählen</option>'+['In HubSpot bekannt','Hat bereits geantwortet','Andere'].map(o=>'<option'+(s.grund===o?' selected':'')+'>'+o+'</option>').join('')+'</select></label>'+(s.grund==='Andere'?'<label class="f"><span>Notiz zur Grundlage</span><input type="text" data-b="s5.notiz" value="'+esc(s.notiz)+'"></label>':'')+
+ '<label class="f"><span>Empfänger</span><input type="email" data-b="s5.empf" value="'+esc(s.empf)+'" placeholder="name@firma.de"></label>'+(c.mail?'':'<p class="muted" style="margin:-4px 0 10px">Keine berufliche E-Mail-Adresse hinterlegt. Trage sie von Hand ein, zum Beispiel aus HubSpot. Das Cockpit rät keine Adressen.</p>')+
+ '<div class="acts" style="margin-top:0"><a class="btn" id="mailto" data-a="mailOpen">E-Mail-Entwurf öffnen</a><span id="mailhint" class="muted"></span></div>')+
+ '<hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="acts" style="margin:0"><label>Gesendet als <select class="inl" data-b="s5.send"'+(mail?' disabled':'')+'>'+(mail?['E-Mail']:['InMail','Vernetzungsanfrage mit Notiz','LinkedIn-Nachricht']).map(o=>'<option'+(s.send===o?' selected':'')+'>'+o+'</option>').join('')+'</select></label><button class="btn p" data-a="sent">Als gesendet markieren</button></div></div></div>'};
+
+V.S6=()=>{const wf=openFollow();
+ return head('S6','Wiedervorlagen','Fällige und geplante Aufgaben.')+'<div class="box"><table><tr><th>Fällig</th><th>Kontakt</th><th>Grund</th><th>Letzte Aktion</th><th>Aktionen</th></tr>'+
+ wf.map(w=>{const c=con(w.c),t=touches(c.id).pop(),nf=/^Nachfassen/.test(w.grund)&&c.status==='Angeschrieben',cl=/schließen/.test(w.grund)&&['Angeschrieben','Nachgefasst'].includes(c.status);
+  return'<tr><td>'+fmt(w.faellig)+'<br>'+(w.faellig<S.today?'<span class="tag e">überfällig</span>':w.faellig===S.today?'<span class="tag w">heute</span>':'<span class="tag">geplant</span>')+'</td><td>'+esc(cname(c))+'<br><span class="muted">'+esc(firm(c.firm).name)+'</span></td><td>'+esc(w.grund)+'</td><td>'+(t?esc(t.art+' per '+t.kanal)+'<br><span class="muted">'+fmt(t.zeit)+'</span>':'–')+'</td><td><div class="acts" style="margin:0"><button class="btn s" data-a="selCon" data-id="'+c.id+'">Kontakt öffnen</button>'+(nf?'<button class="btn s p" data-a="s5" data-id="'+c.id+'">Nachfassen</button>':'')+(cl?'<button class="btn s p" data-a="close" data-id="'+c.id+'">Ohne Antwort schließen</button>':'')+'<button class="btn s" data-a="wvDone" data-id="'+w.id+'">Erledigen</button><input type="date" class="inl" id="mv_'+w.id+'" value="'+addDays(w.faellig,7)+'" aria-label="Neues Datum"><button class="btn s" data-a="wvMove" data-id="'+w.id+'">Verschieben</button></div></td></tr>'}).join('')+
+ (wf.length?'':'<tr><td colspan="5" class="muted">Keine offenen Wiedervorlagen.</td></tr>')+'</table></div>'};
+
+V.S7=()=>{const c=con(S.sel.sap),log='<div class="box"><h3>Protokoll der Übergaben</h3>'+(S.sap.length?'<table><tr><th>Zeitpunkt</th><th>Kontakt</th><th>Ergebnis</th></tr>'+S.sap.map(x=>{const k=con(x.c);return'<tr><td>'+fmt(x.zeit)+'</td><td>'+esc(k.nach+' / '+firm(k.firm).name)+'</td><td>'+(x.ok?'<span class="tag ok">Erfolg</span> ':'<span class="tag e">Fehler</span> ')+esc(x.text)+'</td></tr>'}).join('')+'</table>':'<p class="muted">Noch keine Übergabe.</p>')+'</div>';
+ if(!c){const ok=S.contacts.filter(c=>c.status==='Gespräch vereinbart'||(c.status==='Antwort erhalten'&&c.ans==='positiv'));
+  return head('S7','SAP-Übergabe','Kontakte ab positiver Antwort an die SAP Sales Cloud V2 übergeben.')+'<div class="box"><h3>Bereit zur Übergabe</h3>'+(ok.length?'<table>'+ok.map(c=>'<tr class="pick" data-a="sapOpen" data-id="'+c.id+'"><td>'+esc(cname(c))+'<br><span class="muted">'+esc(firm(c.firm).name)+'</span></td><td>'+tagStatus(stat(c))+'</td><td><button class="btn s">Vorschau öffnen</button></td></tr>').join('')+'</table>':'<p class="muted">Kein Kontakt hat eine positive Antwort oder ein vereinbartes Gespräch.</p>')+'</div>'+log}
+ const f=firm(c.firm),done=c.status==='An SAP übergeben',last=S.sap.find(x=>x.c===c.id),ts=touches(c.id);
+ return head('S7','SAP-Übergabe',esc(cname(c))+', '+esc(f.name))+
+ (last&&!last.ok&&!done?'<div class="note e"><b>SAP meldet einen Fehler:</b> '+esc(last.text.replace('Fehler: ',''))+'. Der Kontakt ist nicht als übergeben markiert. <button class="btn s" data-a="sapGo">Erneut versuchen</button></div>':'')+
+ (done&&last?'<div class="note ok"><b>Übergabe erfolgreich.</b><br>Account '+(last.neu?'angelegt':'verknüpft')+': '+last.ids[0]+'<br>Ansprechpartner angelegt: '+last.ids[1]+'<br>Lead angelegt: '+last.ids[2]+'</div>':'')+
+ '<div class="box"><h3>Vorschau der Feldzuordnung</h3><p class="muted" style="margin:0 0 8px">Suche nach bestehendem Account „'+esc(f.name)+'“ in SAP: '+(f.sapId?'gefunden ('+f.sapId+'), wird verknüpft.':'kein Treffer, der Account wird neu angelegt.')+'</p><table><tr><th>SAP-Objekt</th><th>Aus dem Cockpit</th><th>Inhalt</th></tr>'+
+ '<tr><td>Account (Interessent)</td><td>Firma</td><td>'+esc(f.name)+', '+esc(f.branche)+', '+f.land+', Umsatz '+esc(f.umsatz)+'</td></tr><tr><td>Kontaktperson am Account</td><td>Ansprechpartner</td><td>'+esc(c.anrede+' '+cname(c))+', '+esc(c.funktion)+(c.mail?', '+esc(c.mail):'')+'</td></tr>'+
+ '<tr><td>Lead mit Notiz</td><td>Anlass, Hypothese, Verlauf</td><td>Quelle: CX Lead Cockpit<br>'+(c.anlass?esc(c.anlass.text)+(c.anlass.datum?' ('+fmt(c.anlass.datum)+')':'')+'<br>Hypothese: '+esc(c.anlass.hyp)+'<br>':'')+ts.map(t=>esc(t.art+' per '+t.kanal+' am '+fmt(t.zeit))).join('<br>')+(c.gespraech?'<br>Gespräch: '+esc(c.gespraech):'')+'</td></tr></table>'+
+ '<div class="acts">'+(done?'<button class="btn" data-a="selCon" data-id="'+c.id+'">Zur Kontaktakte</button>':'<button class="btn p" data-a="sapGo"'+(last&&!last.ok?' disabled':'')+'>Übergabe bestätigen</button><button class="btn" data-a="selCon" data-id="'+c.id+'">Abbrechen</button>')+'</div></div>'+log};
+
+V.S8=()=>{const u=S.ui.sl||{};
+ return head('S8','Einstellungen','Sperrliste, Zugänge, Fristen und Export.')+
+ '<div class="box"><h2>Sperrliste</h2><p class="muted" style="margin:0 0 8px">Der Agent schlägt diese Firmen und Personen nicht vor.</p><table><tr><th>Eintrag</th><th>Art</th><th>Grund</th><th>Seit</th><th></th></tr>'+S.sperr.map((x,i)=>'<tr><td>'+esc(x.name)+'</td><td>'+x.art+'</td><td>'+esc(x.grund)+'</td><td>'+(x.datum?fmt(x.datum):'Startbestand')+'</td><td><button class="btn s" data-a="slDel" data-i="'+i+'">Entfernen</button></td></tr>').join('')+'</table>'+
+ '<div class="acts"><input type="text" class="inl" style="width:240px" placeholder="Firma oder Person" data-b="ui.sl.name" value="'+esc(u.name||'')+'"><select class="inl" data-b="ui.sl.art"><option>Firma</option><option'+(u.art==='Person'?' selected':'')+'>Person</option></select><input type="text" class="inl" style="width:240px" placeholder="Grund" data-b="ui.sl.grund" value="'+esc(u.grund||'')+'"><button class="btn" data-a="slAdd">Eintrag hinzufügen</button></div></div>'+
+ '<div class="cols c2"><div class="box"><h2>Zugänge</h2><dl class="kv"><dt>API-Schlüssel des Agenten</dt><dd>'+esc(S.set.key)+' <button class="btn s" data-a="keyNew">Schlüssel erneuern</button></dd><dt>SAP Sales Cloud V2</dt><dd>API-Nutzer hinterlegt <button class="btn s" data-a="sapTest">Verbindung testen</button>'+(S.set.sapTest?'<div class="note ok">'+esc(S.set.sapTest)+'</div>':'')+'</dd></dl></div>'+
+ '<div class="box"><h2>Fristen</h2><dl class="kv"><dt>Wiedervorlage nach Erstkontakt</dt><dd>7 Werktage</dd><dt>Nachfass-Nachrichten</dt><dd>höchstens eine</dd><dt>Vorschlag „Ohne Antwort schließen“</dt><dd>21 Tage nach Erstkontakt</dd><dt>Sperre nach dem Schließen</dt><dd>6 Monate, danach Wiederansprache mit neuem Anlass</dd></dl></div></div>'+
+ '<div class="cols c2"><div class="box"><h2>E-Mail-Signatur</h2><label class="f"><span>Wird an jede erzeugte E-Mail-Fassung angehängt</span><textarea style="min-height:100px" data-b="set.sig">'+esc(S.set.sig)+'</textarea></label></div>'+
+ '<div class="box"><h2>Export</h2><div class="acts" style="margin:0"><button class="btn" data-a="csv">CSV-Export der Kontakte</button></div>'+(S.ui.csv?'<label class="f" style="margin-top:10px"><span>'+S.contacts.length+' Kontakte, Trennzeichen Semikolon</span><textarea readonly style="min-height:120px">'+esc(S.ui.csv)+'</textarea></label><div class="acts" style="margin:0"><button class="btn s" data-a="csvCopy">CSV kopieren</button>'+(window.self===window.top?'<a class="btn s" download="kontakte.csv" href="data:text/csv;charset=utf-8,'+encodeURIComponent('\ufeff'+S.ui.csv)+'">Als Datei laden</a>':'')+'</div>':'')+'</div></div>'};
+
+V.S9=()=>{if(!S.draft)S.draft=JSON.parse(JSON.stringify(S.agent));const d=S.draft,a=S.agent,nr=nextRun(),u=S.ui.sp||{},over=openProps()>=a.obergrenze;
+ const chk=(arr,vals,lab)=>'<div class="checks">'+vals.map(v=>'<label><input type="checkbox" data-arr="'+arr+'" value="'+esc(v)+'"'+(d[arr].includes(v)?' checked':'')+'>'+esc(lab?lab[v]:v)+'</label>').join('')+'</div>';
+ const sp=S.sperrzeiten.map((z,i)=>({...z,i})).sort((x,y)=>x.von<y.von?-1:1);
+ return head('S9','Agent-Steuerung','Takt, Menge und Zielbild des Recherche-Agenten.')+
+ (over?'<div class="note">Der Agent setzt aus: '+openProps()+' ungeprüfte Vorschläge im Eingangskorb, Obergrenze '+a.obergrenze+'.</div>':'')+
+ '<div class="box"><div class="acts" style="margin:0"><h2>'+esc(a.name)+'</h2>'+(a.status==='Aktiv'?'<span class="tag ok">Aktiv</span>':'<span class="tag e">Pausiert</span>')+'<span><b>Nächster Lauf:</b> '+esc(nr.text)+'</span><button class="btn" data-a="agToggle">'+(a.status==='Aktiv'?'Pausieren':'Aktivieren')+'</button><button class="btn" data-a="agExtra"'+(a.zusatz||a.status!=='Aktiv'?' disabled':'')+'>Zusatzlauf anfordern</button>'+(a.zusatz?'<span class="tag w">Zusatzlauf vorgemerkt</span>':'')+'</div></div>'+
+ '<div class="cols c12"><div class="box"><h2>Rechercheprofil</h2><label class="f"><span>Name</span><input type="text" data-b="draft.name" value="'+esc(d.name)+'"></label><div class="f"><span>Lauftage</span>'+chk('days',['Mo','Di','Mi','Do','Fr'],WDL)+'</div>'+
+ '<div class="cols c3"><label class="f"><span>Uhrzeit (fest)</span><input type="text" value="6:30 Uhr" disabled></label><label class="f"><span>Vorschläge je Lauf</span><input type="number" min="1" max="50" data-b="draft.count" value="'+d.count+'"></label><label class="f"><span>Obergrenze ungeprüft</span><input type="number" min="1" data-b="draft.obergrenze" value="'+d.obergrenze+'"></label></div>'+
+ '<div class="f"><span>Branchen</span>'+chk('branchen',BRANCHEN)+'</div><div class="f"><span>Länder</span>'+chk('laender',['DE','AT','CH'],{DE:'Deutschland',AT:'Österreich',CH:'Schweiz'})+'</div><label class="f"><span>Mindestumsatz in Mio. EUR (keine Obergrenze)</span><input type="number" min="0" class="inl" style="width:120px" data-b="draft.min" value="'+d.min+'"></label><div class="f"><span>Rollen</span>'+chk('rollen',ROLLEN)+'</div>'+
+ '<div class="acts"><button class="btn p" data-a="agSave">Profil speichern</button><span class="muted">Änderungen gelten ab dem nächsten Lauf.</span></div></div>'+
+ '<div><div class="box"><h2>Sperrzeiten</h2><table><tr><th>Von</th><th>Bis</th><th>Bezeichnung</th><th></th></tr>'+sp.map(z=>'<tr><td>'+fmt(z.von)+'</td><td>'+fmt(z.bis)+'</td><td>'+esc(z.name)+'</td><td><button class="btn s" data-a="spDel" data-i="'+z.i+'">Löschen</button></td></tr>').join('')+'</table><div class="acts"><input type="date" class="inl" aria-label="Von" data-b="ui.sp.von" value="'+(u.von||'')+'"><input type="date" class="inl" aria-label="Bis" data-b="ui.sp.bis" value="'+(u.bis||'')+'"><input type="text" class="inl" style="width:150px" placeholder="Bezeichnung" data-b="ui.sp.name" value="'+esc(u.name||'')+'"><button class="btn" data-a="spAdd">Sperrzeit anlegen</button></div></div>'+
+ '<div class="box"><h2>Laufprotokoll</h2><table><tr><th>Datum</th><th>Ergebnis</th><th class="num">Vorschläge</th><th class="num">Freigegeben</th><th>Abdeckungsgrenzen</th></tr>'+(nr.datum?'<tr><td>'+fmt(nr.datum)+'</td><td><span class="tag">Geplant</span></td><td class="num">–</td><td class="num">–</td><td>–</td></tr>':'')+
+ S.runs.map(r=>'<tr><td>'+fmt(r.datum)+'</td><td>'+(r.erg==='Ausgeführt'?'<span class="tag ok">Ausgeführt</span> <button class="btn s" data-a="runOpen" data-id="'+r.id+'">Lauf öffnen</button>':'<span class="tag '+(r.erg.startsWith('Ausgeführt')?'e':'x')+'">'+esc(r.erg)+'</span>')+'</td><td class="num">'+(r.n??'–')+'</td><td class="num">'+(r.frei??'–')+'</td><td>'+esc(r.grenzen||'–')+'</td></tr>').join('')+'</table></div></div></div>'};
+
+/* ---------- Rahmen ---------- */
+const NAV=[['S1','Dashboard'],['S2','Eingangskorb'],['S3','Firmen'],['S4','Kontakte'],['S5','Ansprache'],['S6','Wiedervorlagen'],['S7','SAP-Übergabe'],['S9','Agent-Steuerung'],['S8','Einstellungen']];
+function render(){
+ const cnt={S2:S.runs.reduce((n,r)=>n+(r.props||[]).filter(p=>p.status==='Zu prüfen').length,0),S5:S.contacts.filter(c=>c.status==='Freigegeben').length,S6:openFollow().filter(w=>w.faellig<=S.today).length};
+ document.getElementById('demo').innerHTML='<div class="row"><b>Vorführleiste</b><span>gehört nicht zum Produkt</span><span>Perspektive: Marco (einzige Rolle mit Oberfläche)</span><span>Datum im Dummy: '+fmt(S.today)+'</span><span class="sid">Screen '+S.view+'</span><button data-a="reset">Zurücksetzen</button></div>'+
+ '<div class="row"><span>Abläufe:</span>'+[['A1','Lauf übernehmen'],['A2','Prüfen und freigeben'],['A3','Ansprechen'],['A4','Antwort und Nachfassen'],['A5','An SAP übergeben'],['A6','Wirkung prüfen'],['A7','Agent einstellen']].map(f=>'<button data-a="flow" data-f="'+f[0]+'">'+f[0]+' '+f[1]+'</button>').join('')+'</div>'+
+ '<div class="row"><span>Ereignisse:</span><button data-a="morning">Nächster Werktag, 6:30 Uhr: Agent meldet sich</button><label><input type="checkbox" data-b="demo.apiDown" data-r="1"'+(S.demo.apiDown?' checked':'')+'>Cockpit-API für den Agenten nicht erreichbar</label><label><input type="checkbox" data-b="demo.overflow" data-r="1"'+(S.demo.overflow?' checked':'')+'>25 ungeprüfte Vorschläge im Eingangskorb</label><label><input type="checkbox" data-b="demo.kpi20" data-r="1"'+(S.demo.kpi20?' checked':'')+'>Kennzahlen ab 20 Kontakten zeigen</label></div><div class="row narrow">Das Cockpit ist nur für den Desktop gedacht. Am Handy bitte seitlich scrollen oder am Rechner öffnen.</div>';
+ document.getElementById('nav').innerHTML='<div class="brand">CX Lead Cockpit<span>Nagarro Customer Experience</span></div>'+NAV.map(n=>'<button data-a="nav" data-v="'+n[0]+'"'+(S.view===n[0]?' class="on" aria-current="page"':'')+'><span>'+n[1]+(cnt[n[0]]?'<span class="cnt">'+cnt[n[0]]+'</span>':'')+'</span><small>'+n[0]+'</small></button>').join('');
+ document.getElementById('main').innerHTML=V[S.view]();
+ document.getElementById('toast').textContent=S.toast;
+ live()}
+function live(){const s=S.s5;if(S.view!=='S5'||!s||!s.mode)return;const wc=document.getElementById('wc');
+ if(wc){const n=words(s.text);wc.textContent=n+' Wörter'+(s.mode==='Erstkontakt'?(n>=45&&n<=70?', im Zielkorridor 45–70':', Zielkorridor für LinkedIn ist 45–70'):'')}
+ const m=document.getElementById('mailto');if(m){const why=s.mailT==null?'Erst die E-Mail-Fassung erzeugen.':!s.grund?'Erst die geprüfte Grundlage wählen.':s.grund==='Andere'&&!s.notiz.trim()?'Bei „Andere“ fehlt die Notiz.':!/.+@.+\..+/.test(s.empf)?'Empfängeradresse fehlt.':'';
+  m.classList.toggle('off',!!why);if(why){m.removeAttribute('href');m.setAttribute('aria-disabled','true')}else{m.removeAttribute('aria-disabled');m.href='mailto:'+encodeURIComponent(s.empf)+'?subject='+encodeURIComponent(s.mailB)+'&body='+encodeURIComponent(s.mailT)}
+  document.getElementById('mailhint').textContent=why||'Öffnet dein Mailprogramm an '+s.empf+'. Gesendet wird erst dort.'}}
+function setPath(p,v){const k=p.split('.');let o=S;for(let i=0;i<k.length-1;i++){if(o[k[i]]==null)o[k[i]]={};o=o[k[i]]}o[k[k.length-1]]=v}
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled||el.classList.contains('off'))return;
+ if(el.tagName==='A'&&el.getAttribute('href')==='#')e.preventDefault();const d=el.dataset;
+ if(d.go){S.view=d.go;S.ui={}}A[d.a](d);render()});
+function bind(e){const el=e.target;
+ if(el.dataset.arr){const a=S.draft[el.dataset.arr],i=a.indexOf(el.value);if(el.checked&&i<0)a.push(el.value);if(!el.checked&&i>=0)a.splice(i,1);return}
+ const p=el.dataset.b;if(!p)return;let v=el.type==='checkbox'?el.checked:el.value;if(el.dataset.n)v=+v;
+ if(p==='firmAdr'){firm(el.dataset.id).adr=v;return}if(p==='firmKon'){firm(el.dataset.id).kon=v;return}
+ setPath(p,v);if(el.dataset.r&&(e.type==='change'||el.type==='text'))render();else live();
+ if(el.dataset.r&&el.type==='text'){const n=document.querySelector('[data-b="'+p+'"]');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}}}
+document.addEventListener('input',bind);document.addEventListener('change',e=>{if(e.target.tagName==='SELECT'||e.target.type==='checkbox'||e.target.type==='date')bind(e)});
+render();
+</script>
+</body>
+</html>

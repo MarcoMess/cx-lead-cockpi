@@ -8,10 +8,11 @@ Ansprache (LinkedIn und E-Mail) und übergibt Kontakte bei Antwort per Knopfdruc
 
 Vor jeder Arbeit lesen, in dieser Reihenfolge:
 
-1. `docs/konzept.md` – freigegebenes Konzept v1.0 (18.11.2026)
-2. `docs/clickdummy/` – freigegebener Clickdummy (Look and Feel, Abläufe)
+1. `docs/konzept.md` – freigegebenes Konzept v1.2 (18.11.2026)
+2. `docs/clickdummy/` – freigegebener Clickdummy (Look and Feel, Abläufe); wo er vom Konzept 1.2 abweicht, gilt das Konzept
 3. `docs/stories.md` – freigegebene Epics und User Stories mit Akzeptanzkriterien
-4. `docs/architektur.md` – technische Architektur (Entwurf, wird vor dem Bau freigegeben)
+4. `docs/architektur.md` – technische Architektur v1.1 (freigegeben 19.11.2026)
+5. `docs/status.md` – Stand der Umsetzung je Story
 
 Wenn etwas im Code den Dokumenten widerspricht, gelten die Dokumente. Wenn die Dokumente
 unklar oder widersprüchlich sind: nachfragen, nicht raten.

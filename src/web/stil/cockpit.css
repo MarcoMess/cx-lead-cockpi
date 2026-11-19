@@ -1,0 +1,126 @@
+/* Grundgestaltung nach dem Clickdummy. Nur Desktop (Mindestbreite 1120 px). */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+body {
+  font: 14px/1.45 var(--body);
+  color: var(--ink);
+  background: var(--paper);
+  min-width: 1120px;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--head);
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+h1 {
+  font-size: 26px;
+}
+h2 {
+  font-size: 18px;
+}
+h3 {
+  font-size: 15px;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--mintd);
+  outline-offset: 2px;
+}
+a {
+  color: var(--mintd);
+}
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+.nav {
+  width: 212px;
+  flex: none;
+  background: var(--ink);
+  color: #fff;
+  padding: 18px 0;
+}
+.nav .marke {
+  font-family: var(--head);
+  font-size: 19px;
+  padding: 0 18px 16px;
+  border-bottom: 1px solid var(--ink2);
+  margin-bottom: 10px;
+}
+.nav .marke span {
+  display: block;
+  font: 12px var(--body);
+  color: #a9b5cb;
+  margin-top: 2px;
+}
+.nav a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #dce3ef;
+  text-decoration: none;
+  border-left: 4px solid transparent;
+  padding: 9px 18px 9px 14px;
+}
+.nav a:hover {
+  background: var(--ink2);
+}
+.nav a.active {
+  border-left-color: var(--mint);
+  background: var(--ink2);
+  color: #fff;
+  font-weight: 600;
+}
+.nav a small {
+  color: #8f9db8;
+  font-size: 11px;
+}
+main {
+  flex: 1;
+  padding: 22px 26px 60px;
+  min-width: 0;
+}
+.kopf {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.kopf .id {
+  font-family: var(--head);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0 6px;
+  font-size: 13px;
+}
+.kopf p {
+  margin: 0;
+  color: var(--muted);
+}
+.box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.muted {
+  color: var(--muted);
+}

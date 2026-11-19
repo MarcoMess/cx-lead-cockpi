@@ -1,0 +1,47 @@
+{
+  "name": "cx-lead-cockpit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CX Lead Cockpit – CRM Light für Nagarro CX DACH (Prototyp mit simulierten Anbindungen)",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "einrichten": "npm install && node scripts/einrichten.mjs",
+    "dev": "concurrently -k -n server,web -c blue,green \"tsx watch src/server/start.ts\" \"vite\"",
+    "reset": "tsx src/server/daten/reset.ts",
+    "test": "npm run typecheck && npm run lint && npm run test:logik && npm run test:oberflaeche",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test:logik": "vitest run",
+    "test:oberflaeche": "playwright test",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "better-sqlite3": "13.2.0",
+    "fastify": "5.12.8",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router": "8.5.2",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.65.1",
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "concurrently": "10.0.7",
+    "eslint": "10.15.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "prettier": "3.10.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.73.0",
+    "vite": "8.3.8",
+    "vitest": "5.1.1"
+  }
+}
