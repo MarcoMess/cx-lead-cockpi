@@ -28,7 +28,7 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 7 | E3-S3 Freigeben | story/E3-S3-freigeben | #8 | Zusammengeführt (Runde 1 bestanden; Nachtrag in der Prüfung von E4-S2 mitgeprüft) | 0 von 2 |
 | 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | #9 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | #10 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
-| 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | #11 | Wartet auf Entscheidung (Prüfung 1: nur Kriterium 5 nicht prüfbar, Nachweis mit E5-S3) | 0 von 2 |
+| 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | #11 | Zusammengeführt (Marco nimmt Kriterium 5 und neuen Wortlaut von 7 an) | 0 von 2 |
 | 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | – | Offen | 0 von 2 |
 | 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | – | Offen | 0 von 2 |
 
