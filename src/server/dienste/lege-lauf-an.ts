@@ -1,11 +1,19 @@
-// Anwendungsfall »Recherchelauf anlegen« (A1 Schritt 5, Story E2-S3). Wird auch vom Upload genutzt (E2-S5).
+// Anwendungsfall »Recherchelauf anlegen« (A1 Schritt 5, Stories E2-S3 und E2-S4). Wird auch vom Upload genutzt (E2-S5).
 import type { z } from 'zod';
-import { LaufEingabe, VorschlagEingabe, type LaufAngelegt, type Zurueckgewiesen } from '../../gemeinsam/lauf';
+import {
+  LaufEingabe,
+  VorschlagEingabe,
+  type LaufAngelegt,
+  type VorschlagDaten,
+  type Zurueckgewiesen,
+} from '../../gemeinsam/lauf';
 import type { LaufHerkunft } from '../../gemeinsam/werte';
 import type { Uhr } from '../anbindungen/uhr';
 import { transaktion, type Datenbank } from '../daten/db';
+import { liesBestand } from '../daten/bestand';
 import { fuegeLaufEin, fuegeVorschlagEin, gibtAusgefuehrtenLaufAm } from '../daten/laeufe';
 import { FachFehler } from '../fehler';
+import { pruefeGegenBestand } from '../regeln/dubletten';
 
 export function legeLaufAn(db: Datenbank, uhr: Uhr, eingabe: unknown, herkunft: LaufHerkunft): LaufAngelegt {
   const lauf = LaufEingabe.safeParse(eingabe);
@@ -22,7 +30,7 @@ export function legeLaufAn(db: Datenbank, uhr: Uhr, eingabe: unknown, herkunft: 
     throw new FachFehler(409, 'bereits_gelaufen', 'Für heute gibt es schon einen ausgeführten Recherchelauf.');
   }
 
-  const gueltig: unknown[] = [];
+  const gueltig: VorschlagDaten[] = [];
   const zurueckgewiesen: Zurueckgewiesen[] = [];
   lauf.data.vorschlaege.forEach((roh, index) => {
     const v = VorschlagEingabe.safeParse(roh);
@@ -39,7 +47,12 @@ export function legeLaufAn(db: Datenbank, uhr: Uhr, eingabe: unknown, herkunft: 
       herkunft,
       anzahl_vorschlaege: gueltig.length,
     });
-    for (const v of gueltig) fuegeVorschlagEin(db, id, v);
+    // Dublettenprüfung beim Anlegen (A1 Schritt 5, Story E2-S4).
+    const bestand = liesBestand(db);
+    for (const v of gueltig) {
+      const p = pruefeGegenBestand(v, bestand, heute);
+      fuegeVorschlagEin(db, id, v, p);
+    }
     return id;
   });
   return { lauf_id: laufId, angelegt: gueltig.length, zurueckgewiesen };

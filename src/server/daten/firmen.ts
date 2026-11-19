@@ -44,3 +44,16 @@ export function legeFirmaAn(db: Datenbank, f: NeueFirma): number {
     );
   return Number(r.lastInsertRowid);
 }
+
+export function liesFirmenname(db: Datenbank, id: number): string | undefined {
+  return (db.prepare(`SELECT name FROM firma WHERE id = ?`).get(id) as { name: string } | undefined)?.name;
+}
+
+/** Alle Firmen mit normalisiertem Namen, für die Dublettenprüfung. */
+export function listeFirmenNormnamen(db: Datenbank): { id: number; name: string; name_norm: string }[] {
+  return db.prepare(`SELECT id, name, name_norm FROM firma`).all() as unknown as {
+    id: number;
+    name: string;
+    name_norm: string;
+  }[];
+}

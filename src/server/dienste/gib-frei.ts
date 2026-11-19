@@ -34,6 +34,13 @@ export function gibVorschlagFrei(db: Datenbank, uhr: Uhr, vorschlagId: number): 
         'Dieser Vorschlag ist schon geprüft und lässt sich nicht erneut freigeben.',
       );
     }
+    if (v.ist_dublette) {
+      throw new FachFehler(
+        409,
+        'dublette',
+        'Dieser Vorschlag ist eine Dublette: Die Person steht schon in deinen Kontakten. Verwirf ihn mit »bereits bekannt«.',
+      );
+    }
     const d = JSON.parse(v.daten) as VorschlagDaten;
     const heute = uhr.heute();
 

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router';
 import type { LaufDetail, LaufZeile, VorschlagKarte } from '../../gemeinsam/eingangskorb';
 import { api, ApiFehler } from '../api';
 import { useAktualisierung } from '../aktualisierung';
-import { ANLASS_TYP_TEXT } from '../../gemeinsam/texte';
+import { ANLASS_TYP_TEXT, STATUS_TEXT } from '../../gemeinsam/texte';
 import { datum, personName, umsatz } from '../format';
 import { Etikett } from '../teile/Etikett';
 import { ScreenKopf } from '../teile/ScreenKopf';
@@ -159,6 +159,8 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
         <span>{person.funktion}</span>
         {v.zustand === 'freigegeben' && <Etikett art="ok">Freigegeben</Etikett>}
         {v.zustand === 'verworfen' && <Etikett art="aus">Verworfen</Etikett>}
+        {v.zustand === 'zu_pruefen' && v.ist_dublette && <Etikett art="aus">Dublette</Etikett>}
+        {v.zustand === 'zu_pruefen' && v.ist_wiederansprache && <Etikett art="hypothese">Wiederansprache</Etikett>}
       </div>
       <p className="eng">
         <b>{firma.name}</b>, {firma.branche ?? 'Branche nicht belegt'} / {firma.land ?? '–'}, Umsatz {umsatz(firma)}
@@ -178,6 +180,24 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
           </>
         )}
       </p>
+      {v.zustand === 'zu_pruefen' && v.bestehende_firma && (
+        <p className="eng muted">Bestehende Firma: {v.bestehende_firma.name}</p>
+      )}
+      {v.zustand === 'zu_pruefen' && v.ist_dublette && v.bezug && (
+        <p className="note">
+          Steht schon in deinen Kontakten: {v.bezug.name} ({STATUS_TEXT[v.bezug.status]}). Eine Dublette kannst du nicht
+          freigeben.
+        </p>
+      )}
+      {v.zustand === 'zu_pruefen' && v.ist_wiederansprache && v.bezug && (
+        <p className="note">
+          Wiederansprache: {v.bezug.name} wurde am {datum(v.bezug.geschlossen_am)} ohne Antwort geschlossen, die Sperre
+          von 6 Monaten ist abgelaufen und es gibt einen neuen Anlass.
+        </p>
+      )}
+      {v.zustand === 'zu_pruefen' && v.hinweis_zweiter_ansprechpartner && (
+        <p className="note">{v.hinweis_zweiter_ansprechpartner}</p>
+      )}
       {fehler && (
         <p className="hinweis fehler" role="alert">
           {fehler}
@@ -185,7 +205,13 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
       )}
       {v.zustand === 'zu_pruefen' && (
         <div className="aktionen">
-          <button className="btn p" type="button" onClick={freigeben}>
+          <button
+            className="btn p"
+            type="button"
+            onClick={freigeben}
+            disabled={v.ist_dublette}
+            title={v.ist_dublette ? 'Eine Dublette lässt sich nicht freigeben.' : undefined}
+          >
             Freigeben
           </button>
         </div>
