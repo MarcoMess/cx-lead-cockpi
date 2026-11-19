@@ -4,13 +4,13 @@ import { SCREENS } from '../gemeinsam/screens';
 import { api } from './api';
 import { Anmeldung } from './screens/Anmeldung';
 import { Platzhalter } from './screens/Platzhalter';
-import { Vorfuehrleiste } from './teile/Vorfuehrleiste';
+import { Vorfuehrleiste, type VorfuehrZustand } from './teile/Vorfuehrleiste';
 
 type Zustand = 'pruefe' | 'abgemeldet' | 'angemeldet';
 
 export function App() {
   const [zustand, setZustand] = useState<Zustand>('pruefe');
-  const [vorfuehrdatum, setVorfuehrdatum] = useState<string | null>(null);
+  const [vorfuehrung, setVorfuehrung] = useState<VorfuehrZustand | null>(null);
 
   useEffect(() => {
     api('GET', '/ich').then(
@@ -19,13 +19,15 @@ export function App() {
     );
   }, []);
 
-  useEffect(() => {
-    if (zustand !== 'angemeldet') return;
-    // Die Vorführleiste gibt es nur, wenn der Server die Vorführ-Adressen anbietet (COCKPIT_DEMO=1).
-    api<{ heute: string }>('GET', '/sim/zustand').then(
-      (z) => setVorfuehrdatum(z.heute),
-      () => setVorfuehrdatum(null),
+  // Die Vorführleiste gibt es nur, wenn der Server die Vorführ-Adressen anbietet (COCKPIT_DEMO=1).
+  const ladeVorfuehrung = () =>
+    api<VorfuehrZustand>('GET', '/sim/zustand').then(
+      (z) => setVorfuehrung(z),
+      () => setVorfuehrung(null),
     );
+
+  useEffect(() => {
+    if (zustand === 'angemeldet') void ladeVorfuehrung();
   }, [zustand]);
 
   async function abmelden() {
@@ -38,7 +40,7 @@ export function App() {
 
   return (
     <>
-      {vorfuehrdatum && <Vorfuehrleiste heute={vorfuehrdatum} setHeute={setVorfuehrdatum} />}
+      {vorfuehrung && <Vorfuehrleiste zustand={vorfuehrung} neuLaden={ladeVorfuehrung} />}
       <div className="shell">
         <nav className="nav" aria-label="Hauptnavigation">
           <div className="marke">

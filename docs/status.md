@@ -22,7 +22,7 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 2 | E1-S1 Zugang | story/E1-S1-zugang | #2 | In Prüfung | 0 von 2 |
 | 3 | E1-S2 Vorführdatum, Zurücksetzen | story/E1-S2-vorfuehrdatum | #3 | In Prüfung | 0 von 2 |
 | 4 | E2-S3 Lauf anlegen | story/E2-S3-lauf-anlegen | #4 | In Prüfung | 0 von 2 |
-| 5 | E1-S3 Agenten-Simulator | story/E1-S3-agenten-simulator | – | Offen | 0 von 2 |
+| 5 | E1-S3 Agenten-Simulator | story/E1-S3-agenten-simulator | #5 | In Prüfung | 0 von 2 |
 | 6 | E3-S1 Eingangskorb | story/E3-S1-eingangskorb | – | Offen | 0 von 2 |
 | 7 | E3-S3 Freigeben | story/E3-S3-freigeben | – | Offen | 0 von 2 |
 | 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | – | Offen | 0 von 2 |
@@ -34,7 +34,7 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
 
 ## Nächster Schritt
-E1-S3 Agenten-Simulator umsetzen; Prüfungen von E1-S1, E1-S2 und E2-S3 abwarten.
+Pflege nach den Prüfungen (Bausteingrenzen), danach E3-S1 Eingangskorb.
 
 ## Verlauf
 | Datum | Was passiert ist |
