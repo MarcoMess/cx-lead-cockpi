@@ -2,9 +2,9 @@
 import { SperreEingabe, type SperrZeile } from '../../gemeinsam/sperrliste';
 import type { Uhr } from '../anbindungen/uhr';
 import { transaktion, type Datenbank } from '../daten/db';
-import { entferneSperre, legeSperreAn, listeSperren, namenDerArt } from '../daten/sperrliste';
+import { entferneSperre, legeSperreAn, listeSperren } from '../daten/sperrliste';
 import { FachFehler } from '../fehler';
-import { sperrSchluessel } from '../regeln/ausschluss';
+import { gueltigeSperre } from '../regeln/ausschluss';
 
 export function ladeSperrliste(db: Datenbank): SperrZeile[] {
   return listeSperren(db);
@@ -17,8 +17,7 @@ export function fuegeSperreHinzu(db: Datenbank, uhr: Uhr, eingabe: unknown): Spe
     throw new FachFehler(422, 'eingabe_ungueltig', f.message, String(f.path[0] ?? ''));
   }
   return transaktion(db, () => {
-    const schluessel = sperrSchluessel(e.data.name);
-    if (namenDerArt(db, e.data.art).some((z) => sperrSchluessel(z.name) === schluessel)) {
+    if (gueltigeSperre(listeSperren(db), { art: e.data.art, name: e.data.name }, uhr.heute())) {
       throw new FachFehler(
         409,
         'schon_gesperrt',

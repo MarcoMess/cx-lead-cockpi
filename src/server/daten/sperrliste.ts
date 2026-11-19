@@ -35,11 +35,3 @@ export function legeSperreAn(
 export function entferneSperre(db: Datenbank, id: number): boolean {
   return db.prepare(`DELETE FROM sperreintrag WHERE id = ?`).run(id).changes > 0;
 }
-
-/** Alle Einträge einer Art (Name und ID), für den Abgleich auf doppelte Einträge. */
-export function namenDerArt(db: Datenbank, art: SperreArt): { id: number; name: string }[] {
-  return db.prepare(`SELECT id, name FROM sperreintrag WHERE art = ?`).all(art) as unknown as {
-    id: number;
-    name: string;
-  }[];
-}

@@ -59,6 +59,11 @@ describe('E10-S1 Sperrliste verwalten', () => {
     expect(r.json().fehler).toMatchObject({ code: 'schon_gesperrt', feld: 'name' });
     expect(db.prepare(`SELECT COUNT(*) n FROM sperreintrag`).get()).toEqual({ n: 5 });
     expect((await rufe('POST', '/sperrliste', { art: 'person', name: 'BOBST', grund: 'x' })).statusCode).toBe(201);
+    // zerlegter Umlaut (o + Trema) und Rechtsform zählen nicht als Unterschied
+    expect(
+      (await rufe('POST', '/sperrliste', { art: 'firma', name: 'Windmo\u0308ller & Ho\u0308lscher' })).statusCode,
+    ).toBe(409);
+    expect((await rufe('POST', '/sperrliste', { art: 'firma', name: 'Haberkorn GmbH' })).statusCode).toBe(409);
   });
 
   it('Anfrage ohne Inhalt: 422 mit deutscher Meldung', async () => {
