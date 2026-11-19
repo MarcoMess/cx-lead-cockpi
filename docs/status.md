@@ -40,7 +40,7 @@ Marco will zuerst den echten Agenten statt des Simulators. Gewählt: Die geplant
 | 13 | E10-S1 Sperrliste | story/E10-S1-sperrliste | #14 | In Prüfung (Runde 2) | 1 von 2 |
 | 14 | E2-S4 Dubletten und Wiederansprache | story/E2-S4-dubletten | #15 | In Prüfung (Runde 2) | 1 von 2 |
 | 15 | E3-S2 Angaben prüfen, Pflichtangaben | story/E3-S2-pflichtangaben | #16 | Bestanden (Runde 1), Sollte-Befunde behoben; wartet auf #14 und #15 | 0 von 2 |
-| 16 | E3-S4 Verwerfen | story/E3-S4-verwerfen | – | Offen | 0 von 2 |
+| 16 | E3-S4 Verwerfen | story/E3-S4-verwerfen | #17 | In Prüfung | 0 von 2 |
 | 17 | E2-S5 Ergebnisdatei hochladen | story/E2-S5-upload | – | Offen | 0 von 2 |
 | 18 | Echtbetrieb neben dem Vorführbestand (neu, kommt mit Konzept 1.3) | – | – | Offen | – |
 | 19 | E2-S2 Ausschlussliste (auch Nachweis E10-S1 #4) | – | – | Offen | 0 von 2 |
