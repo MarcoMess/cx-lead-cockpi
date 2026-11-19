@@ -19,10 +19,11 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | Nr. | Story | Branch | PR | Stand | Korrekturrunden |
 |---|---|---|---|---|---|
 | 1 | E1-S0 Grundgerüst | story/E1-S0-grundgeruest | #1 | Zusammengeführt (Prüfung 1 bestanden) | 0 von 2 |
-| 2 | E1-S1 Zugang | story/E1-S1-zugang | #2 | In Prüfung | 0 von 2 |
-| 3 | E1-S2 Vorführdatum, Zurücksetzen | story/E1-S2-vorfuehrdatum | #3 | In Prüfung | 0 von 2 |
-| 4 | E2-S3 Lauf anlegen | story/E2-S3-lauf-anlegen | #4 | In Prüfung | 0 von 2 |
+| 2 | E1-S1 Zugang | story/E1-S1-zugang | #2 | Zusammengeführt (Prüfung 1 bestanden) | 0 von 2 |
+| 3 | E1-S2 Vorführdatum, Zurücksetzen | story/E1-S2-vorfuehrdatum | #3 | Zusammengeführt (Prüfung 1 bestanden) | 0 von 2 |
+| 4 | E2-S3 Lauf anlegen | story/E2-S3-lauf-anlegen | #4 | Zusammengeführt (Prüfung 1 bestanden) | 0 von 2 |
 | 5 | E1-S3 Agenten-Simulator | story/E1-S3-agenten-simulator | #5 | In Prüfung | 0 von 2 |
+| 5a | Pflege 1 Bausteingrenzen | pflege/bausteingrenzen | #6 | In Prüfung | 0 von 2 |
 | 6 | E3-S1 Eingangskorb | story/E3-S1-eingangskorb | – | Offen | 0 von 2 |
 | 7 | E3-S3 Freigeben | story/E3-S3-freigeben | – | Offen | 0 von 2 |
 | 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | – | Offen | 0 von 2 |
@@ -34,11 +35,12 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
 
 ## Nächster Schritt
-Pflege nach den Prüfungen (Bausteingrenzen), danach E3-S1 Eingangskorb.
+E3-S1 Eingangskorb umsetzen; Prüfungen von E1-S3 und Pflege 1 abwarten.
 
 ## Verlauf
 | Datum | Was passiert ist |
 |---|---|
 | 18.11.2026 | Konzept 1.0, Clickdummy und Stories freigegeben; Konzept 1.1 und 1.2 mit den Ergebnissen aus Clickdummy und Stories |
+| 19.11.2026 | E1-S1, E1-S2, E2-S3 bestanden und zusammengeführt; wiederkehrender Befund »Bausteingrenzen« → Pflege 1 mit Lint-Regel, Architektur 1.3, Lernnotizen angelegt |
 | 19.11.2026 | E1-S0 bestanden und zusammengeführt (5 Sollte, 5 Hinweise); Datenhaltung wegen Befund 5 auf node:sqlite umgestellt (Architektur 1.2) |
 | 19.11.2026 | Architektur 1.1 freigegeben (TypeScript schlank, Prototyp simuliert, Node.js 22); Wegbereiter E1-S0, E1-S2, E1-S3 aufgenommen; unabhängige Prüfung je Story durch einen separaten Agenten vereinbart; Halt nach dem Kernweg vereinbart |

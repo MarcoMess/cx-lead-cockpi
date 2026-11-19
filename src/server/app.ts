@@ -5,7 +5,7 @@ import type { Datenbank } from './daten/db';
 import { gesundheitRouten } from './api/gesundheit';
 import { agentRouten } from './api/agent';
 import { richteZugangEin } from './api/zugang';
-import { Uhr } from './anbindungen/uhr';
+import { erstelleUhr, type Uhr } from './anbindungen/uhr';
 import { simRouten } from '../simulator/sim-routen';
 
 export interface AppOptionen {
@@ -29,7 +29,7 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
   app.decorate('db', opt.db);
   app.decorate('demo', opt.demo);
-  app.decorate('uhr', new Uhr(opt.db));
+  app.decorate('uhr', erstelleUhr(opt.db));
 
   app.setErrorHandler((err, _req, reply) => {
     if (err instanceof FachFehler) {
@@ -37,9 +37,14 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
     }
     const e = err as { validation?: unknown; statusCode?: number; message: string };
     if (e.validation || e.statusCode === 400) {
-      return reply
-        .status(400)
-        .send({ fehler: { code: 'eingabe_ungueltig', meldung: 'Die Eingabe ist ungültig: ' + e.message } });
+      return reply.status(400).send({
+        fehler: {
+          code: 'eingabe_ungueltig',
+          meldung: /json/i.test(e.message)
+            ? 'Die Anfrage enthält kein gültiges JSON.'
+            : 'Die Eingabe ist ungültig. Bitte prüfe die Angaben.',
+        },
+      });
     }
     app.log.error(err);
     return reply

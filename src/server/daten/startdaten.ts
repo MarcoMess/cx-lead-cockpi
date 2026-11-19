@@ -2,17 +2,23 @@
 // Nachrichten, Hypothesen, Profil-Links und Adressen aus dem freigegebenen Clickdummy.
 // Alle Personen und Firmen sind erfunden. Quellen zeigen auf example.com.
 import { BRANCHEN, ROLLEN } from '../../gemeinsam/werte';
-import { normalisiereFirmenname } from '../regeln/dubletten';
-import type { DatabaseSync, SQLInputValue } from 'node:sqlite';
+import type { SQLInputValue } from 'node:sqlite';
+import { oeffneDatenbank, transaktion, type Datenbank } from './db';
 
 const GRUSS = '\nBeste Grüße\nMarco';
 const ALTBESTAND = '(Wortlaut im Altbestand nicht erfasst)';
+const SIGNATUR = 'Beste Grüße\nMarco Messinger\nDirector Customer Experience & Innovation\nNagarro';
+// Erstkontakt Reinhardt lief per E-Mail: E-Mail-Fassung der LinkedIn-Nachricht (Vorlage aus Konzept 1.2, Abschnitt 8).
+const EMAIL_REINHARDT =
+  'Guten Tag Herr Reinhardt,\n\nin Ihrem Interview vom 28.10. beschreiben Sie die Zusammenführung von Kundenkarte und Onlineshop. Ich verantworte bei Nagarro Customer Experience & Innovation und würde gern mit Ihnen einordnen, wo Kundenbindung und Commerce dabei zusammenlaufen müssen. Ist das ein Thema für ein kurzes Gespräch?\n\n' +
+  SIGNATUR;
 
 export const STARTDATEN = {
   firmen: [
     {
       id: 1,
       name: 'Nordwerk Fördertechnik GmbH',
+      name_norm: 'nordwerk fördertechnik',
       branche: 'Maschinenbau',
       land: 'DE',
       umsatz_wert: 182,
@@ -23,6 +29,7 @@ export const STARTDATEN = {
     {
       id: 2,
       name: 'Alpenstrom Netze AG',
+      name_norm: 'alpenstrom netze',
       branche: 'Utilities',
       land: 'AT',
       umsatz_wert: 640,
@@ -33,6 +40,7 @@ export const STARTDATEN = {
     {
       id: 3,
       name: 'Rheintal Technikhandel AG',
+      name_norm: 'rheintal technikhandel',
       branche: 'Technischer Handel',
       land: 'CH',
       umsatz_wert: 96,
@@ -45,6 +53,7 @@ export const STARTDATEN = {
     {
       id: 4,
       name: 'Hansemarkt Handels SE',
+      name_norm: 'hansemarkt handels',
       branche: 'Retail',
       land: 'DE',
       umsatz_wert: 1400,
@@ -55,6 +64,7 @@ export const STARTDATEN = {
     {
       id: 5,
       name: 'Weserland Entsorgung GmbH',
+      name_norm: 'weserland entsorgung',
       branche: 'Entsorgung',
       land: 'DE',
       umsatz_wert: 74,
@@ -65,6 +75,7 @@ export const STARTDATEN = {
     {
       id: 6,
       name: 'Bergland Sport Handels AG',
+      name_norm: 'bergland sport handels',
       branche: 'Retail',
       land: 'AT',
       umsatz_wert: 310,
@@ -75,6 +86,7 @@ export const STARTDATEN = {
     {
       id: 7,
       name: 'Stadtwerke Lindental GmbH',
+      name_norm: 'stadtwerke lindental',
       branche: 'Utilities',
       land: 'DE',
       umsatz_wert: 228,
@@ -244,6 +256,7 @@ export const STARTDATEN = {
       art: 'erstkontakt',
       zeitpunkt: '2026-11-12 09:15',
       nachricht_von: 2,
+      text: EMAIL_REINHARDT,
       email_grundlage: 'in_hubspot_bekannt',
     },
     { ansprechpartner_id: 4, kanal: 'inmail', art: 'erstkontakt', zeitpunkt: '2026-11-03 17:05', nachricht_von: 4 },
@@ -329,7 +342,7 @@ export const STARTDATEN = {
     },
   ],
   sperreintraege: ['Windmöller & Hölscher', 'BOBST', 'Haberkorn', 'HORNBACH', 'Energie Steiermark'],
-  signatur: 'Beste Grüße\nMarco Messinger\nDirector Customer Experience & Innovation\nNagarro',
+  signatur: SIGNATUR,
 } as const;
 
 const slug = (s: string) =>
@@ -343,10 +356,9 @@ const slug = (s: string) =>
     .replace(/(^-|-$)/g, '');
 
 /** Schreibt die Startdaten in eine leere Datenbank mit fertigem Schema. */
-export function ladeStartdaten(db: DatabaseSync): void {
+export function ladeStartdaten(db: Datenbank): void {
   const d = STARTDATEN;
-  db.exec('BEGIN');
-  try {
+  transaktion(db, () => {
     const firma = db.prepare(
       `INSERT INTO firma (id, name, name_norm, branche, land, umsatz_wert, umsatz_waehrung, umsatz_jahr, umsatz_bezug,
         umsatz_quelle_url, wechselkurs, wechselkurs_quelle_url, umsatz_eur) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
@@ -356,7 +368,7 @@ export function ladeStartdaten(db: DatabaseSync): void {
       firma.run(
         f.id,
         f.name,
-        normalisiereFirmenname(f.name),
+        f.name_norm,
         f.branche,
         f.land,
         f.umsatz_wert,
@@ -427,7 +439,7 @@ export function ladeStartdaten(db: DatabaseSync): void {
         k.art,
         k.zeitpunkt,
         n?.betreff ?? null,
-        n?.text ?? ALTBESTAND,
+        (x.text as string | undefined) ?? n?.text ?? ALTBESTAND,
         x.email_grundlage ?? null,
         x.email_grundlage_notiz ?? null,
       );
@@ -477,9 +489,12 @@ export function ladeStartdaten(db: DatabaseSync): void {
     );
     for (const n of d.sperreintraege) sp.run(n);
     db.prepare(`INSERT INTO einstellung (schluessel, wert) VALUES ('signatur', ?)`).run(d.signatur);
-    db.exec('COMMIT');
-  } catch (e) {
-    db.exec('ROLLBACK');
-    throw e;
-  }
+  });
+}
+
+/** Leere Datenbank mit Schema und Startdaten – für Tests im Speicher. */
+export function erstelleStartdatenbank(pfad = ':memory:'): Datenbank {
+  const db = oeffneDatenbank(pfad);
+  ladeStartdaten(db);
+  return db;
 }

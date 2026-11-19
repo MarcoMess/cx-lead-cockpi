@@ -4,6 +4,7 @@ import { SCREENS } from '../gemeinsam/screens';
 import { api } from './api';
 import { Anmeldung } from './screens/Anmeldung';
 import { Platzhalter } from './screens/Platzhalter';
+import { NichtGefunden } from './screens/NichtGefunden';
 import { Vorfuehrleiste, type VorfuehrZustand } from './teile/Vorfuehrleiste';
 
 type Zustand = 'pruefe' | 'abgemeldet' | 'angemeldet';
@@ -61,6 +62,7 @@ export function App() {
             {SCREENS.map((s) => (
               <Route key={s.id} path={s.pfad} element={<Platzhalter id={s.id} />} />
             ))}
+            <Route path="*" element={<NichtGefunden />} />
           </Routes>
         </main>
       </div>

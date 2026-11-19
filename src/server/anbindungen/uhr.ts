@@ -1,17 +1,16 @@
 // Die Uhr des Cockpits: einziger Ort für die Systemzeit (architektur.md, Abschnitt 9).
-// Im Prototyp gilt ein Vorführdatum aus den Einstellungen (`heute_override`), wenn es gesetzt ist.
+// Im Prototyp gilt ein Vorführdatum aus dem Uhr-Simulator, wenn es gesetzt ist.
 import type { Datenbank } from '../daten/db';
+import { liesVorfuehrdatum } from './uhr-simulator';
 
 const ZEITZONE = 'Europe/Berlin';
 
 export class Uhr {
-  constructor(private readonly db: Datenbank) {}
+  constructor(private readonly vorfuehrdatum: () => string | null = () => null) {}
 
   /** Heutiges Datum JJJJ-MM-TT. */
   heute(): string {
-    const z = this.db.prepare(`SELECT wert FROM einstellung WHERE schluessel = 'heute_override'`).get() as
-      { wert: string | null } | undefined;
-    return z?.wert || new Intl.DateTimeFormat('sv-SE', { timeZone: ZEITZONE }).format(new Date());
+    return this.vorfuehrdatum() || new Intl.DateTimeFormat('sv-SE', { timeZone: ZEITZONE }).format(new Date());
   }
 
   /** Zeitpunkt JJJJ-MM-TT HH:MM: Datum der Uhr, Uhrzeit der Systemzeit. */
@@ -23,9 +22,9 @@ export class Uhr {
   }
 }
 
-export function setzeVorfuehrdatum(db: Datenbank, datum: string | null): void {
-  db.prepare(
-    `INSERT INTO einstellung (schluessel, wert) VALUES ('heute_override', ?)
-     ON CONFLICT (schluessel) DO UPDATE SET wert = excluded.wert`,
-  ).run(datum);
+/** Uhr des Prototyps: Systemzeit, überschrieben vom Vorführdatum. */
+export function erstelleUhr(db: Datenbank): Uhr {
+  return new Uhr(() => liesVorfuehrdatum(db));
 }
+
+export { setzeVorfuehrdatum } from './uhr-simulator';

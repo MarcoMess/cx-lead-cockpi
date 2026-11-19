@@ -1,7 +1,7 @@
 // Format eines Recherchelaufs, wie ihn der Agent über POST /api/v1/agent/laeufe liefert.
 // Dasselbe Format hat die Ergebnisdatei für den Upload (architektur.md, Abschnitt 5 und 12).
 import { z } from 'zod';
-import { ANLASS_TYP, LAENDER, UMSATZ_BEZUG, WAEHRUNGEN } from './werte';
+import { ANLASS_TYP, ANREDEN, LAENDER, UMSATZ_BEZUG, WAEHRUNGEN } from './werte';
 
 const text = z.string().nullish();
 const zahl = z.number().finite().nullish();
@@ -22,7 +22,7 @@ export const VorschlagFirma = z.object({
 });
 
 export const VorschlagPerson = z.object({
-  anrede: z.enum(['Frau', 'Herr']).nullish(),
+  anrede: z.enum(ANREDEN).nullish(),
   titel: text,
   vorname: z.string().trim().min(1, 'Der Vorname der Person fehlt.'),
   nachname: z.string().trim().min(1, 'Der Nachname der Person fehlt.'),

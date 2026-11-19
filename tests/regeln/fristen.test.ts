@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { istDatum, plusTage, plusWerktage, wochentag } from '../../src/server/regeln/datum';
+import { istDatum, plusTage, plusWerktage, wochentag } from '../../src/server/regeln/fristen';
 
 describe('E1-S2 Datumsrechnung für das Vorführdatum', () => {
   it('E1-S2 #2 nächster Werktag: Mittwoch → Donnerstag, Freitag → Montag', () => {

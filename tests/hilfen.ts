@@ -2,7 +2,7 @@
 import { randomBytes } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { baueApp } from '../src/server/app';
-import { erstelleStartdatenbank } from '../src/server/daten/db';
+import { erstelleStartdatenbank } from '../src/server/daten/startdaten';
 import { setzeAgentSchluessel } from '../src/server/dienste/zugang';
 import { setzeVorfuehrdatum } from '../src/server/anbindungen/uhr';
 
