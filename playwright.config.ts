@@ -1,10 +1,20 @@
+import { randomBytes } from 'node:crypto';
 import { defineConfig } from '@playwright/test';
 
 // Eigene Ports und eine eigene Datenbank, damit die Tests nie die Arbeitsdaten berühren.
 // TEST_API_PORT und TEST_WEB_PORT erlauben parallele Testläufe in zwei Arbeitskopien.
 const API_PORT = process.env.TEST_API_PORT ?? '3100';
 const WEB_PORT = process.env.TEST_WEB_PORT ?? '5174';
-const testEnv = { DATABASE_PATH: './data/test.sqlite', PORT: API_PORT, API_PORT, WEB_PORT, COCKPIT_DEMO: '1' };
+const testEnv = {
+  DATABASE_PATH: './data/test.sqlite',
+  PORT: API_PORT,
+  API_PORT,
+  WEB_PORT,
+  COCKPIT_DEMO: '1',
+  COCKPIT_PASSWORD: 'test-passwort',
+  COCKPIT_AGENT_KEY: 'test-agent-schluessel',
+  COCKPIT_SESSION_SECRET: randomBytes(32).toString('hex'),
+};
 
 export default defineConfig({
   testDir: 'tests/oberflaeche',

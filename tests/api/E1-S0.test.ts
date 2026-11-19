@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { neueApp, zahl } from '../hilfen';
+import { alsMarco, neueApp, zahl } from '../hilfen';
 
 let app: FastifyInstance | undefined;
 afterEach(async () => app?.close());
@@ -124,7 +124,8 @@ describe('E1-S0 Grundgerüst mit Startdaten', () => {
 
   it('E1-S0 #6 unbekannte Adresse liefert 404 im Fehlerformat', async () => {
     ({ app } = await neueApp());
-    const r = await app.inject({ method: 'GET', url: '/api/v1/gibt-es-nicht' });
+    // Seit E1-S1 verlangen alle Adressen außer den öffentlichen eine Anmeldung.
+    const r = await app.inject({ method: 'GET', url: '/api/v1/gibt-es-nicht', headers: await alsMarco(app) });
     expect(r.statusCode).toBe(404);
     expect(r.json().fehler.code).toBe('nicht_gefunden');
     expect(typeof r.json().fehler.meldung).toBe('string');
