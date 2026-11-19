@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import type { LaufDetail, LaufZeile, VorschlagKarte } from '../../gemeinsam/eingangskorb';
-import { api } from '../api';
+import { api, ApiFehler } from '../api';
 import { useAktualisierung } from '../aktualisierung';
 import { ANLASS_TYP_TEXT, datum, personName, umsatz } from '../format';
 import { Etikett } from '../teile/Etikett';
@@ -13,11 +13,13 @@ export function S2Eingangskorb() {
   const stand = useAktualisierung();
   const [laeufe, setLaeufe] = useState<LaufZeile[] | null>(null);
   const [lauf, setLauf] = useState<LaufDetail | null>(null);
+  const [neuLaden, setNeuLaden] = useState(0);
+  const [meldung, setMeldung] = useState('');
   const [laufFehler, setLaufFehler] = useState('');
 
   useEffect(() => {
     api<LaufZeile[]>('GET', '/laeufe').then(setLaeufe, () => setLaeufe([]));
-  }, [stand]);
+  }, [stand, neuLaden]);
 
   const gewaehlt = laufId ? Number(laufId) : laeufe?.[0]?.id;
   useEffect(() => {
@@ -32,7 +34,12 @@ export function S2Eingangskorb() {
         setLaufFehler(e.message);
       },
     );
-  }, [gewaehlt, stand]);
+  }, [gewaehlt, stand, neuLaden]);
+
+  function geaendert(text: string) {
+    setMeldung(text);
+    setNeuLaden((n) => n + 1);
+  }
 
   return (
     <>
@@ -41,6 +48,11 @@ export function S2Eingangskorb() {
         titel="Eingangskorb"
         untertitel="Rechercheläufe des Agenten prüfen, freigeben oder verwerfen."
       />
+      {meldung && (
+        <p className="hinweis ok" role="status">
+          {meldung}
+        </p>
+      )}
       <div className="spalten links-schmal">
         <section className="box" aria-label="Läufe">
           <h3>Läufe</h3>
@@ -95,7 +107,7 @@ export function S2Eingangskorb() {
                 </dl>
               </section>
               {lauf.vorschlaege.map((v) => (
-                <Karte key={v.id} v={v} />
+                <Karte key={v.id} v={v} geaendert={geaendert} />
               ))}
               {lauf.vorschlaege.length === 0 || lauf.offen === 0 ? (
                 <div className="box">
@@ -114,14 +126,30 @@ export function S2Eingangskorb() {
   );
 }
 
-function Karte({ v }: { v: VorschlagKarte }) {
+function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: string) => void }) {
   const { firma, person, anlass } = v.daten;
+  const [fehler, setFehler] = useState('');
+
+  async function freigeben() {
+    setFehler('');
+    try {
+      await api('POST', `/vorschlaege/${v.id}/freigabe`);
+      geaendert(
+        `${personName(person)} freigegeben. Firma und Ansprechpartner sind angelegt, der Kontakt steht in der Ansprache.`,
+      );
+    } catch (e) {
+      setFehler(e instanceof ApiFehler ? e.message : 'Die Freigabe hat nicht geklappt.');
+    }
+  }
+
   const ohneAnlass = !anlass || anlass.typ === 'kein_anlass';
   return (
     <article className="box" aria-label={`Vorschlag ${personName(person)}`}>
       <div className="reihe">
         <h3>{personName(person)}</h3>
         <span>{person.funktion}</span>
+        {v.zustand === 'freigegeben' && <Etikett art="ok">Freigegeben</Etikett>}
+        {v.zustand === 'verworfen' && <Etikett art="aus">Verworfen</Etikett>}
       </div>
       <p className="eng">
         <b>{firma.name}</b>, {firma.branche ?? 'Branche nicht belegt'} / {firma.land ?? '–'}, Umsatz {umsatz(firma)}
@@ -141,6 +169,18 @@ function Karte({ v }: { v: VorschlagKarte }) {
           </>
         )}
       </p>
+      {fehler && (
+        <p className="hinweis fehler" role="alert">
+          {fehler}
+        </p>
+      )}
+      {v.zustand === 'zu_pruefen' && (
+        <div className="aktionen">
+          <button className="btn p" type="button" onClick={freigeben}>
+            Freigeben
+          </button>
+        </div>
+      )}
     </article>
   );
 }

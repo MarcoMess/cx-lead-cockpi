@@ -367,3 +367,10 @@ tr.gewaehlt td {
   background: #e9ecf0;
   color: var(--muted);
 }
+.aktionen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
