@@ -5,18 +5,56 @@ import type { AnsprechpartnerStatus } from '../../gemeinsam/werte';
 import { STATUS_TEXT } from '../../gemeinsam/texte';
 import { sperreNachSchliessenBis } from './fristen';
 
-const RECHTSFORMEN = ['gmbh & co. kg', 'gmbh', 'ag', 'se', 'kg', 'ohg', 'gesmbh', 'sa', 'sàrl', 'ug', 'e.v.'];
+// Rechtsformen am Ende des Namens, nach dem Entfernen von Punkten und Kommas; längere zuerst.
+const RECHTSFORMEN = [
+  'gmbh & co kgaa',
+  'gmbh & co kg',
+  'gmbh co kg',
+  'ag & co kg',
+  'gesellschaft mbh',
+  'gesmbh',
+  'gmbh',
+  'mbh',
+  'kgaa',
+  'ag',
+  'se',
+  'kg',
+  'ohg',
+  'gbr',
+  'sa',
+  'sàrl',
+  'sarl',
+  'ug',
+  'ev',
+  'nv',
+  'bv',
+];
 
-/** Normalisiert einen Firmennamen: klein, ohne Rechtsform am Ende, ohne doppelte Leerzeichen. */
+/** Normalisiert einen Firmennamen: Unicode NFC, klein, ohne Punkte und Kommas, ohne Rechtsform am Ende. */
 export function normalisiereFirmenname(name: string): string {
-  let n = name.toLocaleLowerCase('de-DE').replace(/\s+/g, ' ').trim();
-  for (const rf of RECHTSFORMEN) {
-    if (n.endsWith(' ' + rf)) {
-      n = n.slice(0, -rf.length - 1).trim();
-      break;
-    }
+  let n = name
+    .normalize('NFC')
+    .toLocaleLowerCase('de-DE')
+    .replace(/\./g, '')
+    .replace(/,/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  for (let i = 0; i < 2; i++) {
+    const rf = RECHTSFORMEN.find((r) => n.endsWith(' ' + r));
+    if (!rf) break;
+    n = n.slice(0, -rf.length - 1).trim();
   }
   return n;
+}
+
+/** Vergleichbare Form einer Domain: ohne Schema, »www.«, Pfad und Port, klein. */
+export function normalisiereDomain(d: string): string {
+  return d
+    .trim()
+    .toLocaleLowerCase('de-DE')
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/[/:?#].*$/, '');
 }
 
 /**
@@ -32,21 +70,28 @@ export function darfWiederangesprochenWerden(status: AnsprechpartnerStatus): boo
 export function normalisiereLinkedinUrl(url: string): string {
   return url
     .trim()
+    .normalize('NFC')
     .toLocaleLowerCase('de-DE')
     .replace(/^https?:\/\//, '')
-    .replace(/^www\./, '')
+    .replace(/^(www|m|[a-z]{2})\.linkedin\./, 'linkedin.')
     .replace(/[?#].*$/, '')
-    .replace(/\/+$/, '');
+    .replace(/\/+$/, '')
+    .replace(/^(linkedin\.com\/in\/[^/]+)\/[a-z]{2}$/, '$1');
 }
 
 /** Vergleichbare Form eines Personennamens. */
 export function normalisierePersonenname(vorname: string, nachname: string): string {
-  return `${vorname} ${nachname}`.toLocaleLowerCase('de-DE').replace(/\s+/g, ' ').trim();
+  return `${vorname} ${nachname}`.normalize('NFC').toLocaleLowerCase('de-DE').replace(/\s+/g, ' ').trim();
 }
+
+/** Vergleichbare Form einer Anlass-Beschreibung. */
+const anlassSchluessel = (t: string) => t.normalize('NFC').toLocaleLowerCase('de-DE').replace(/\s+/g, ' ').trim();
 
 /**
  * Eine bekannte Person ist eine Dublette – außer sie wurde ohne Antwort geschlossen, die Sperre von 6 Monaten
  * ist abgelaufen und der Vorschlag bringt einen neuen Anlass: dann ist es eine Wiederansprache (Konzept, Abschnitt 9).
+ * Grenztag: Die Sperre endet mit dem Tag vor `sperreNachSchliessenBis`; an diesem Tag ist die Person wieder frei
+ * (geschlossen am 19.05., frei ab 19.11.).
  */
 export function bewerteBekanntePerson(
   p: { status: AnsprechpartnerStatus; geschlossen_am: string | null },
@@ -58,11 +103,7 @@ export function bewerteBekanntePerson(
 }
 
 /** Status, in denen bei einer Firma eine Ansprache läuft (Regel »Zweiter Ansprechpartner«). */
-export const LAUFENDE_ANSPRACHE: readonly AnsprechpartnerStatus[] = [
-  'angeschrieben',
-  'nachgefasst',
-  'antwort_erhalten',
-];
+export const LAUFENDE_ANSPRACHE: readonly AnsprechpartnerStatus[] = ['angeschrieben', 'nachgefasst'];
 
 /** Hinweis für einen zweiten Ansprechpartner, wenn bei der Firma schon eine Ansprache läuft, sonst null. */
 export function hinweisZweiterAnsprechpartner(
@@ -75,6 +116,7 @@ export function hinweisZweiterAnsprechpartner(
 }
 
 export interface Bestandspruefung {
+  /** Bestehende Firma, über den normalisierten Namen oder die Domain gefunden. */
   firma_id: number | null;
   ist_dublette: boolean;
   ist_wiederansprache: boolean;
@@ -84,11 +126,16 @@ export interface Bestandspruefung {
 
 /**
  * Prüft einen Vorschlag gegen den Bestand (A1 Schritt 5, Regel Dublettenprüfung):
- * Firma über den normalisierten Namen; Person über die LinkedIn-Adresse oder über den Namen bei derselben Firma.
+ * Firma über den normalisierten Namen oder die Domain; Person über die LinkedIn-Adresse oder über den Namen
+ * bei derselben Firma. Gilt beim Anlegen, beim Öffnen und beim Freigeben – jeweils gegen den heutigen Bestand.
  */
 export function pruefeGegenBestand(v: VorschlagDaten, bestand: Bestand, heute: string): Bestandspruefung {
   const norm = normalisiereFirmenname(v.firma.name);
-  const firma = bestand.firmen.find((f) => f.name_norm === norm) ?? null;
+  const domain = v.firma.domain ? normalisiereDomain(v.firma.domain) : null;
+  const firma =
+    bestand.firmen.find((f) => normalisiereFirmenname(f.name) === norm) ??
+    (domain ? bestand.firmen.find((f) => f.domain && normalisiereDomain(f.domain) === domain) : undefined) ??
+    null;
   const url = v.person.linkedin_url ? normalisiereLinkedinUrl(v.person.linkedin_url) : null;
   const name = normalisierePersonenname(v.person.vorname, v.person.nachname);
   const person =
@@ -98,13 +145,14 @@ export function pruefeGegenBestand(v: VorschlagDaten, bestand: Bestand, heute: s
         (k) => k.firma_id === firma.id && normalisierePersonenname(k.vorname, k.nachname) === name,
       )) ||
     null;
-  const anlass = v.anlass;
-  const hatNeuenAnlass = !!anlass && anlass.typ !== 'kein_anlass' && !!anlass.beschreibung?.trim();
+  const a = v.anlass;
+  const beschreibung = a && a.typ !== 'kein_anlass' ? (a.beschreibung?.trim() ?? '') : '';
+  const hatNeuenAnlass =
+    !!beschreibung && !(person?.anlaesse ?? []).some((x) => anlassSchluessel(x) === anlassSchluessel(beschreibung));
   const art = person ? bewerteBekanntePerson(person, heute, hatNeuenAnlass) : null;
-  const firmaId = person ? person.firma_id : (firma?.id ?? null);
-  const andere = firmaId ? bestand.kontakte.filter((k) => k.firma_id === firmaId && k.id !== person?.id) : [];
+  const andere = firma ? bestand.kontakte.filter((k) => k.firma_id === firma.id && k.id !== person?.id) : [];
   return {
-    firma_id: firmaId,
+    firma_id: firma?.id ?? null,
     ist_dublette: art === 'dublette',
     ist_wiederansprache: art === 'wiederansprache',
     bezug_ansprechpartner_id: person?.id ?? null,

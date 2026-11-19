@@ -61,4 +61,13 @@ describe('E3-S2 Pflichtangaben vor der Freigabe', () => {
     expect(ammann.fehlende_pflichtangaben).toEqual([]);
     expect((await frei(ammann.id)).statusCode).toBe(200);
   });
+  it('E3-S2 #6 ohne Anlass und ohne Kennzeichnung: Hinweis und 422', async () => {
+    const a = kortmann();
+    a.anlass = null;
+    const { karten, frei } = await lauf([a]);
+    expect(karten[0].fehlende_pflichtangaben).toEqual([
+      'Anlass fehlt oder ist nicht als »Kein belastbarer aktueller Anlass« gekennzeichnet',
+    ]);
+    expect((await frei(karten[0].id)).statusCode).toBe(422);
+  });
 });

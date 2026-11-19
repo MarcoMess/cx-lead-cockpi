@@ -16,12 +16,18 @@ export function ladeLauf(db: Datenbank, uhr: Uhr, id: number): LaufDetail {
   const mindestumsatz = liesMindestumsatz(db);
   const vorschlaege = vorschlaegeVonLauf(db, id).map((v): VorschlagKarte => {
     const { bezug_ansprechpartner_id, ...rest } = v;
-    const bezug = bestand.kontakte.find((k) => k.id === bezug_ansprechpartner_id);
-    // Zuordnung und Hinweis gelten für den heutigen Bestand; Dublette und Wiederansprache stehen seit dem Anlegen fest.
+    // Ungeprüfte Vorschläge werden gegen den heutigen Bestand geprüft: Wer seit dem Anlegen dazugekommen ist,
+    // gilt jetzt als Dublette (Prüfung E2-S4, Befund 1). Geprüfte zeigen, was beim Prüfen galt.
     const p = v.zustand === 'zu_pruefen' ? pruefeGegenBestand(v.daten, bestand, uhr.heute()) : null;
+    const istDublette = p ? p.ist_dublette || (v.ist_dublette && !p.ist_wiederansprache) : v.ist_dublette;
+    const istWiederansprache = p ? p.ist_wiederansprache : v.ist_wiederansprache;
+    const bezugId = p?.bezug_ansprechpartner_id ?? bezug_ansprechpartner_id;
+    const bezug = bestand.kontakte.find((k) => k.id === bezugId);
     const firma = p?.firma_id ? bestand.firmen.find((f) => f.id === p.firma_id) : undefined;
     return {
       ...rest,
+      ist_dublette: istDublette,
+      ist_wiederansprache: istWiederansprache,
       bezug: bezug
         ? {
             id: bezug.id,
@@ -32,7 +38,8 @@ export function ladeLauf(db: Datenbank, uhr: Uhr, id: number): LaufDetail {
         : null,
       bestehende_firma: firma ? { id: firma.id, name: firma.name } : null,
       hinweis_zweiter_ansprechpartner: p?.hinweis_zweiter_ansprechpartner ?? null,
-      fehlende_pflichtangaben: v.zustand === 'zu_pruefen' ? fehlendePflichtangaben(v.daten, mindestumsatz) : [],
+      fehlende_pflichtangaben:
+        v.zustand === 'zu_pruefen' ? fehlendePflichtangaben(v.daten, mindestumsatz, uhr.heute()) : [],
     };
   });
   return { ...lauf, vorschlaege };

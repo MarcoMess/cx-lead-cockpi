@@ -5,7 +5,7 @@ import { api, ApiFehler } from '../api';
 import { useAktualisierung } from '../aktualisierung';
 import { ANLASS_TYP_TEXT, STATUS_TEXT } from '../../gemeinsam/texte';
 import type { Verworfen } from '../../gemeinsam/verwerfen';
-import { VERWERF_GRUENDE, type VerwerfGrund } from '../../gemeinsam/werte';
+import { FRISTEN, VERWERF_GRUENDE, type VerwerfGrund } from '../../gemeinsam/werte';
 import { datum, personName, umsatz } from '../format';
 import { Etikett } from '../teile/Etikett';
 import { ScreenKopf } from '../teile/ScreenKopf';
@@ -205,15 +205,15 @@ function Karte({ v, geaendert }: { v: VorschlagKarte; geaendert: (meldung: strin
         <p className="eng muted">Bestehende Firma: {v.bestehende_firma.name}</p>
       )}
       {v.zustand === 'zu_pruefen' && v.ist_dublette && v.bezug && (
-        <p className="note">
-          Steht schon in deinen Kontakten: {v.bezug.name} ({STATUS_TEXT[v.bezug.status]}). Eine Dublette kannst du nicht
-          freigeben.
+        <p className="note fehler">
+          Dublette: Diese Person ist bereits im Cockpit ({v.bezug.name}, Status »{STATUS_TEXT[v.bezug.status]}«). Der
+          Vorschlag kann nicht freigegeben werden.
         </p>
       )}
       {v.zustand === 'zu_pruefen' && v.ist_wiederansprache && v.bezug && (
         <p className="note">
           Wiederansprache: {v.bezug.name} wurde am {datum(v.bezug.geschlossen_am)} ohne Antwort geschlossen, die Sperre
-          von 6 Monaten ist abgelaufen und es gibt einen neuen Anlass.
+          von {FRISTEN.sperreNachSchliessenMonate} Monaten ist abgelaufen und es gibt einen neuen Anlass.
         </p>
       )}
       {v.zustand === 'zu_pruefen' && v.hinweis_zweiter_ansprechpartner && (
@@ -307,7 +307,7 @@ function Angaben({ v }: { v: VorschlagKarte }) {
   const { firma: f, person: p, anlass: a, nachricht: n } = v.daten;
   const nichtBelegt = <Etikett art="warn">nicht belegt</Etikett>;
   const link = (url: string | null | undefined) =>
-    url ? (
+    url?.trim() ? (
       <>
         <a href={quelle(url)} target="_blank" rel="noopener noreferrer">
           {host(url)}
@@ -342,7 +342,7 @@ function Angaben({ v }: { v: VorschlagKarte }) {
       <dd>{link(p.quelle_url)}</dd>
       <dt>LinkedIn-Profil</dt>
       <dd>
-        {p.linkedin_url ? (
+        {p.linkedin_url?.trim() ? (
           link(p.linkedin_url)
         ) : (
           <>
@@ -388,7 +388,7 @@ function Angaben({ v }: { v: VorschlagKarte }) {
       </dd>
       <dt>LinkedIn-Nachricht</dt>
       <dd>
-        {n?.text ? (
+        {n?.text?.trim() ? (
           <>
             <div className="nachricht">{n.text}</div>
             <span className="muted">(Agent)</span>

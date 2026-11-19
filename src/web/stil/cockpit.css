@@ -495,3 +495,12 @@ input.inl.breit {
 .btn.d:hover {
   background: var(--errbg);
 }
+.note.fehler {
+  border-left-color: var(--err);
+  background: var(--errbg);
+}
+.kv dd,
+.nachricht,
+.note {
+  overflow-wrap: anywhere;
+}
