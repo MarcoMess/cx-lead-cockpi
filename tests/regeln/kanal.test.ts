@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { anspracheModus, fassungNachVersand } from '../../src/server/regeln/ansprache';
+import { anspracheModus, fassungNachVersand } from '../../src/server/regeln/kanal';
 import { wortzahlText, zaehleWoerter } from '../../src/web/screens/S5Ansprache';
 
 describe('E5-S1 Regeln der Ansprache', () => {

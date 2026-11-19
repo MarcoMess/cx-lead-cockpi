@@ -3,7 +3,7 @@ import type { Ansprache } from '../../gemeinsam/ansprache';
 import { liesAkteStamm, liesAnlaesse, liesNachricht } from '../daten/ansprechpartner';
 import type { Datenbank } from '../daten/db';
 import { FachFehler } from '../fehler';
-import { anspracheModus } from '../regeln/ansprache';
+import { anspracheModus } from '../regeln/kanal';
 
 export function ladeAnsprache(db: Datenbank, id: number): Ansprache {
   const a = Number.isInteger(id) && id > 0 ? liesAkteStamm(db, id) : undefined;

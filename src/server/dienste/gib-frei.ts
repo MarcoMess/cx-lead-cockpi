@@ -15,7 +15,7 @@ import { findeFirmaNachNormname, legeFirmaAn } from '../daten/firmen';
 import { liesVorschlag, markiereFreigegeben, zaehleFreigabe } from '../daten/laeufe';
 import { FachFehler } from '../fehler';
 import { normalisiereFirmenname } from '../regeln/dubletten';
-import { darfWiederangesprochenWerden } from '../regeln/status';
+import { darfWiederangesprochenWerden } from '../regeln/dubletten';
 
 export interface Freigabe {
   ansprechpartner_id: number;

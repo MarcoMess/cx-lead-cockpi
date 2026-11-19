@@ -292,7 +292,7 @@ cx-lead-cockpit/
 │   │   ├── reset.ts          `npm run reset`: Datei neu anlegen, dann `setzeZurueck()`
 │   │   ├── api/              eine Datei je Bereich: agent, laeufe, kontakte, ansprache, wiedervorlagen, sap, agent-steuerung, kennzahlen, einstellungen, anmeldung
 │   │   ├── dienste/          ein Anwendungsfall je Datei, benannt nach der Aktion
-│   │   ├── regeln/           status, fristen (auch Werktag- und Datumsrechnung), laufentscheidung, dubletten, pflichtangaben, kanal, ausschluss, kennzahlen, sap-zuordnung, zugang
+│   │   ├── regeln/           status, verlauf, fristen (auch Werktag- und Datumsrechnung), laufentscheidung, dubletten, pflichtangaben, kanal, ausschluss, kennzahlen, sap-zuordnung, zugang
 │   │   ├── daten/            schema.sql, db.ts (öffnen, transaktion), ein Zugriffsmodul je Tabelle (z. B. einstellungen.ts, laeufe.ts), startdaten.ts, leeren.ts
 │   │   └── anbindungen/      sap.ts, sap-simulator.ts, uhr.ts, uhr-simulator.ts
 │   ├── simulator/            sim-routen.ts, agent.ts, beispiel-lauf.json
@@ -340,6 +340,7 @@ Jeder Test trägt die Story und die Nummer des Kriteriums im Namen, zum Beispiel
 | Regel im Konzept | Modul in `src/server/regeln` |
 |---|---|
 | Statuswechsel, erlaubte Aktionen, Endzustände, Wieder öffnen | `status.ts` |
+| Zeitliche Ordnung des Verlaufs einer Kontaktakte | `verlauf.ts` |
 | 7 Werktage, 21 Tage, 6 Monate, Werktag-Rechnung | `fristen.ts` |
 | Laufentscheidung, nächster Lauf, Zusatzlauf, Protokollpflicht | `laufentscheidung.ts` |
 | Dublettenprüfung, Namensnormalisierung, zweiter Ansprechpartner, Wiederansprache | `dubletten.ts` |

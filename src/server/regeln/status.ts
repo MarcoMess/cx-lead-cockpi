@@ -1,7 +1,7 @@
 // Regeln zum Status eines Ansprechpartners (Konzept, Abschnitt 9).
 import type { AnsprechpartnerStatus, KontaktAktion } from '../../gemeinsam/werte';
 
-/** Endzustände: Der Kontakt ist abgeschlossen und erscheint nicht in der Liste »Offene«. */
+/** Abgeschlossen: Der Kontakt erscheint nicht in der Liste »Offene« (wie im Clickdummy). */
 export const ENDZUSTAENDE: readonly AnsprechpartnerStatus[] = [
   'kein_interesse',
   'ohne_antwort_geschlossen',
@@ -14,12 +14,11 @@ export function istOffen(status: AnsprechpartnerStatus): boolean {
 }
 
 /**
- * Wiederansprache gibt es nur für Kontakte, die ohne Antwort geschlossen wurden.
- * »Kein Interesse« sperrt dauerhaft, laufende Kontakte werden nicht zurückgesetzt.
- * Die Frist von 6 Monaten und den neuen Anlass prüft die Sperrliste (E10).
+ * Endzustände im Sinne des Konzepts (Abschnitt 9): Kein Interesse, Ohne Antwort geschlossen, Gesperrt.
+ * »An SAP übergeben« ist das Ziel der Statusschiene, kein Endzustand – erscheint aber nicht mehr unter »Offene«.
  */
-export function darfWiederangesprochenWerden(status: AnsprechpartnerStatus): boolean {
-  return status === 'ohne_antwort_geschlossen';
+export function istEndzustand(status: AnsprechpartnerStatus): boolean {
+  return status === 'kein_interesse' || status === 'ohne_antwort_geschlossen' || status === 'gesperrt';
 }
 
 /**

@@ -75,7 +75,7 @@ export function S4Kontaktakte({ id }: { id: string }) {
           Endzustand »{STATUS_TEXT[akte.status]}«. Verlauf, Anlässe und Nachrichten bleiben erhalten.
         </p>
       ) : (
-        <ol className="schiene" aria-label="Status">
+        <ol className="schiene" aria-label="Statusschiene">
           {STATUS_SCHIENE.map((s, i) => (
             <li
               key={s}
