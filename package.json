@@ -10,7 +10,7 @@
   "scripts": {
     "einrichten": "npm install && node scripts/einrichten.mjs",
     "dev": "concurrently -k -n server,web -c blue,green \"tsx watch src/server/start.ts\" \"vite\"",
-    "reset": "tsx src/server/daten/reset.ts",
+    "reset": "tsx src/server/reset.ts",
     "test": "npm run typecheck && npm run lint && npm run test:logik && npm run test:oberflaeche",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",

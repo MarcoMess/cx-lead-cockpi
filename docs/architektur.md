@@ -1,6 +1,6 @@
 # CX Lead Cockpit – Architektur
 
-Abgeleitet aus: konzept.md Version 1.2, stories.md vom 19.11.2026 · Stand: Freigegeben (Marco, 19.11.2026), Version 1.2
+Abgeleitet aus: konzept.md Version 1.2, stories.md vom 19.11.2026 · Stand: Freigegeben (Marco, 19.11.2026), Version 1.3
 
 Eine Datei `technik-vorgaben.md` lag nicht vor. Die Technik hat Marco am 18.11.2026 gewählt: »TypeScript schlank«. Die Qualitätsstufe ebenfalls: »Prototyp, simuliert«.
 
@@ -45,7 +45,7 @@ Die Versionen wurden am 19.11.2026 im npm-Verzeichnis geprüft. TypeScript bleib
 | `regeln` | Alle Regeln aus Abschnitt 9 des Konzepts als reine Funktionen | `gemeinsam` | Datenbank, HTTP, Uhrzeit des Systems |
 | `daten` | Schema, Zugriff je Tabelle, Startdaten | `gemeinsam` | Regeln, HTTP |
 | `anbindungen` | Schnittstelle zu SAP und zur Uhr, samt Simulatoren | `gemeinsam`, `daten` (nur der Simulator) | Regeln, React |
-| `simulator` | Vorführ-Routen und Agenten-Simulator | die öffentliche HTTP-Schnittstelle, `anbindungen` | Interna von `dienste` und `regeln` |
+| `simulator` | Vorführ-Routen und Agenten-Simulator | Vorführ-Routen (`sim-routen.ts`): `dienste` wie eine Routen-Datei in `api`. Agenten-Simulator (`agent.ts`): nur die Agenten-API, für den eigenen Zustand `daten/einstellungen` | `regeln`, Interna der Dienste |
 
 Was wo auf keinen Fall hingehört:
 
@@ -56,7 +56,9 @@ Was wo auf keinen Fall hingehört:
 - `regeln`: kein Zugriff auf Datenbank, Netz oder Systemzeit. »Heute« wird immer als Parameter übergeben.
 - `daten`: keine Entscheidung. Hier steht nur, wie gelesen und geschrieben wird.
 - `anbindungen`: keine Annahme darüber, wann übergeben werden darf. Das entscheidet `regeln`.
-- `simulator`: kein direkter Schreibzugriff auf Fachtabellen außer beim Zurücksetzen. Der Agenten-Simulator nutzt die Agenten-API wie ein Fremder.
+- `simulator`: kein direkter Schreibzugriff auf Fachtabellen. Das Zurücksetzen läuft über den Dienst `setzeZurueck()`. Der Agenten-Simulator nutzt die Agenten-API wie ein Fremder.
+
+Die Grenzen prüft ESLint (`no-restricted-imports` in `eslint.config.js`) bei jedem `npm test`. Ein verbotener Import lässt den Testlauf scheitern.
 
 ## 4. Datenmodell
 
@@ -287,10 +289,11 @@ cx-lead-cockpit/
 │   ├── gemeinsam/            Typen, Zod-Schemas, erlaubte Werte, Texte der Statusnamen
 │   ├── server/
 │   │   ├── start.ts          baut den Server zusammen und startet ihn
+│   │   ├── reset.ts          `npm run reset`: Datei neu anlegen, dann `setzeZurueck()`
 │   │   ├── api/              eine Datei je Bereich: agent, laeufe, kontakte, ansprache, wiedervorlagen, sap, agent-steuerung, kennzahlen, einstellungen, anmeldung
 │   │   ├── dienste/          ein Anwendungsfall je Datei, benannt nach der Aktion
-│   │   ├── regeln/           status, fristen, laufentscheidung, dubletten, pflichtangaben, kanal, ausschluss, kennzahlen, sap-zuordnung
-│   │   ├── daten/            schema.sql, db.ts, ein Zugriffsmodul je Tabelle, startdaten.ts
+│   │   ├── regeln/           status, fristen (auch Werktag- und Datumsrechnung), laufentscheidung, dubletten, pflichtangaben, kanal, ausschluss, kennzahlen, sap-zuordnung, zugang
+│   │   ├── daten/            schema.sql, db.ts (öffnen, transaktion), ein Zugriffsmodul je Tabelle (z. B. einstellungen.ts, laeufe.ts), startdaten.ts, leeren.ts
 │   │   └── anbindungen/      sap.ts, sap-simulator.ts, uhr.ts
 │   ├── simulator/            sim-routen.ts, agent.ts, beispiel-lauf.json
 │   └── web/
@@ -349,7 +352,7 @@ Jeder Test trägt die Story und die Nummer des Kriteriums im Namen, zum Beispiel
 - **Erlaubte Aktionen kommen vom Server.** `GET /kontakte/:id` liefert `erlaubte_aktionen`; die Oberfläche zeigt oder sperrt Schaltflächen danach und wiederholt keine Bedingung.
 - **Fehler:** Dienste werfen `FachFehler(code, meldung, feld)`. Ein zentraler Handler in `api` macht daraus das Fehlerformat. Die Oberfläche zeigt `meldung` als Hinweis; Meldungen sind deutsch, in Du-Form, und sagen, was zu tun ist.
 - **Zeit:** Niemand ruft `new Date()` außerhalb von `uhr.ts` auf.
-- **Datenbank:** Schemaänderungen nur in `schema.sql`; der Prototyp kennt keine Migrationen, `npm run reset` baut neu. Schreibende Dienste laufen in einer Transaktion.
+- **Datenbank:** Schemaänderungen nur in `schema.sql`; der Prototyp kennt keine Migrationen, `npm run reset` baut neu. Schreibende Dienste laufen in `transaktion()`. Sie ist verschachtelbar (Sicherungspunkte) und nur für synchrone Funktionen. SQL steht nur in `daten`, auch für Einstellungen (`daten/einstellungen.ts`).
 - **Oberfläche:** Jeder Screen zeigt seine ID (S1 bis S9) im Kopf. Texte, Reihenfolge und Etiketten folgen dem Clickdummy; wo das Konzept 1.2 vom Dummy abweicht, gilt das Konzept. Leere Zustände haben immer einen Satz.
 - **Keine neuen Abhängigkeiten** ohne Eintrag in Abschnitt 12 dieser Datei.
 - **Fertig ist eine Story, wenn:** jedes Akzeptanzkriterium einen benannten Test hat, `npm test` grün ist, `npm run reset` und `npm run dev` funktionieren und nichts außerhalb der Story gebaut wurde.
@@ -438,6 +441,7 @@ Jeder Test trägt die Story und die Nummer des Kriteriums im Namen, zum Beispiel
 | Der 21-Tage-Vorschlag wird beim Erstkontakt als Wiedervorlage angelegt | Täglicher Hintergrundlauf | Kein Zeitplaner im Prototyp nötig |
 | Passwort-Anmeldung, ein Nutzer | Microsoft Entra ID | Prototyp ohne Abhängigkeit von der IT |
 | Agenten-Simulator ruft die echte Agenten-API über HTTP | Simulator schreibt direkt in die Datenbank | Prüft dieselbe Schnittstelle, die später die Claude-Aufgabe nutzt |
+| Bausteingrenzen per ESLint erzwungen; Vorführ-Routen dürfen Dienste rufen (Architektur 1.3) | Grenzen nur als Text; Simulator ohne Dienste | Dieselbe Grenzverletzung fiel in den Prüfungen von E1-S0, E1-S1 und E1-S2 auf. Das Zurücksetzen und das Setzen des Datums sind keine Agenten-Aktionen und brauchen einen Dienst |
 | Node.js 22 statt 24 | Node.js 24 | In der Arbeitsumgebung vorhanden; beide sind Langzeit-Versionen. Von Marco am 19.11.2026 bestätigt |
 | Aktuelle Hauptversionen (Vite 8, React Router 8, Vitest 5), TypeScript 5.9 | Die im Entwurf genannten älteren Hauptversionen; TypeScript 7 | Stand des npm-Verzeichnisses am 19.11.2026; TypeScript 7 wird von typescript-eslint noch nicht unterstützt |
 | Namen und Pfade aus dem Repository übernommen (`.env.example`, `data/`, PR gegen `main`, `docs/`) | Die im Entwurf genannten deutschen Namen | Das Repository brachte mit `CLAUDE.md`, `.env.example` und `.gitignore` bereits Regeln mit |

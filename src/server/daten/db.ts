@@ -4,7 +4,6 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ladeStartdaten } from './startdaten';
 
 export type Datenbank = DatabaseSync;
 
@@ -20,22 +19,24 @@ export function oeffneDatenbank(pfad: string): Datenbank {
   return db;
 }
 
-/** Führt fn in einer Transaktion aus; bei einem Fehler wird alles zurückgerollt. */
+let sicherungspunkt = 0;
+
+/**
+ * Führt fn in einer Transaktion aus; bei einem Fehler wird alles zurückgerollt.
+ * Läuft schon eine Transaktion, wird ein Sicherungspunkt verwendet, sodass Dienste einander aufrufen können.
+ * fn muss synchron sein: SQLite-Zugriffe hier sind synchron, ein Promise würde vor seinem Ende gespeichert.
+ */
 export function transaktion<T>(db: Datenbank, fn: () => T): T {
-  db.exec('BEGIN');
+  const verschachtelt = db.isTransaction;
+  const punkt = `sp_${++sicherungspunkt}`;
+  db.exec(verschachtelt ? `SAVEPOINT ${punkt}` : 'BEGIN');
   try {
     const ergebnis = fn();
-    db.exec('COMMIT');
+    if (ergebnis instanceof Promise) throw new Error('transaktion() verlangt eine synchrone Funktion.');
+    db.exec(verschachtelt ? `RELEASE ${punkt}` : 'COMMIT');
     return ergebnis;
   } catch (e) {
-    db.exec('ROLLBACK');
+    db.exec(verschachtelt ? `ROLLBACK TO ${punkt}; RELEASE ${punkt}` : 'ROLLBACK');
     throw e;
   }
-}
-
-/** Leere Datenbank mit Schema und Startdaten – für Tests im Speicher und für `npm run reset`. */
-export function erstelleStartdatenbank(pfad = ':memory:'): Datenbank {
-  const db = oeffneDatenbank(pfad);
-  ladeStartdaten(db);
-  return db;
 }

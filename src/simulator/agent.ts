@@ -1,12 +1,15 @@
 // Simulierter Recherche-Agent (architektur.md, Abschnitt 6). Er benutzt ausschließlich die Agenten-API
 // mit dem Agenten-Schlüssel – genau wie später die geplante Claude-Aufgabe – und schreibt nie direkt in die Datenbank.
 // Die Anfrage läuft über `app.inject`, also durch dieselbe Routen-, Zugangs- und Fehlerbehandlung wie eine HTTP-Anfrage.
+// Seinen eigenen Zustand (geliefert, API gestört, Ergebnisdatei) hält er in den Einstellungen.
 import type { FastifyInstance } from 'fastify';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { FehlerAntwort } from '../gemeinsam/fehler';
 import type { LaufAngelegt } from '../gemeinsam/lauf';
 import { FachFehler } from '../server/fehler';
+import type { Datenbank } from '../server/daten/db';
+import { liesEinstellung, schreibeEinstellung } from '../server/daten/einstellungen';
 
 const BEISPIEL_LAUF = JSON.parse(readFileSync(fileURLToPath(new URL('./beispiel-lauf.json', import.meta.url)), 'utf8'));
 const LEERER_LAUF = { abdeckungsgrenzen: 'Keine weiteren belegten Treffer', vorschlaege: [] };
@@ -16,29 +19,19 @@ const GELIEFERT = 'sim_agent_geliefert';
 const GESTOERT = 'sim_agent_api_gestoert';
 const DATEI = 'sim_agent_ergebnisdatei';
 
-function lies(app: FastifyInstance, k: string): string | null {
-  const z = app.db.prepare(`SELECT wert FROM einstellung WHERE schluessel = ?`).get(k) as
-    { wert: string | null } | undefined;
-  return z?.wert ?? null;
-}
-function schreibe(app: FastifyInstance, k: string, wert: string | null): void {
-  app.db
-    .prepare(
-      `INSERT INTO einstellung (schluessel, wert) VALUES (?, ?) ON CONFLICT (schluessel) DO UPDATE SET wert = excluded.wert`,
-    )
-    .run(k, wert);
+const lies = liesEinstellung;
+const schreibe = schreibeEinstellung;
+
+export function agentZustand(db: Datenbank) {
+  return { api_gestoert: lies(db, GESTOERT) === '1', ergebnisdatei_bereit: lies(db, DATEI) !== null };
 }
 
-export function agentZustand(app: FastifyInstance) {
-  return { api_gestoert: lies(app, GESTOERT) === '1', ergebnisdatei_bereit: lies(app, DATEI) !== null };
+export function setzeApiGestoert(db: Datenbank, gestoert: boolean): void {
+  schreibe(db, GESTOERT, gestoert ? '1' : '0');
 }
 
-export function setzeApiGestoert(app: FastifyInstance, gestoert: boolean): void {
-  schreibe(app, GESTOERT, gestoert ? '1' : '0');
-}
-
-export function ergebnisdatei(app: FastifyInstance): unknown | null {
-  const d = lies(app, DATEI);
+export function ergebnisdatei(db: Datenbank): unknown | null {
+  const d = lies(db, DATEI);
   return d === null ? null : JSON.parse(d);
 }
 
@@ -51,11 +44,11 @@ export async function agentMeldetSich(
   app: FastifyInstance,
   agentSchluessel: string | undefined,
 ): Promise<AgentMeldung> {
-  const lauf = lies(app, GELIEFERT) === '1' ? LEERER_LAUF : BEISPIEL_LAUF;
+  const lauf = lies(app.db, GELIEFERT) === '1' ? LEERER_LAUF : BEISPIEL_LAUF;
 
-  if (lies(app, GESTOERT) === '1') {
-    schreibe(app, DATEI, JSON.stringify(lauf));
-    schreibe(app, GELIEFERT, '1');
+  if (lies(app.db, GESTOERT) === '1') {
+    schreibe(app.db, DATEI, JSON.stringify(lauf));
+    schreibe(app.db, GELIEFERT, '1');
     return {
       ergebnis: 'api_gestoert',
       meldung:
@@ -81,7 +74,7 @@ export async function agentMeldetSich(
     );
   }
   const ergebnis = r.json() as LaufAngelegt;
-  schreibe(app, GELIEFERT, '1');
+  schreibe(app.db, GELIEFERT, '1');
   return {
     ergebnis: 'lauf_angelegt',
     lauf_id: ergebnis.lauf_id,

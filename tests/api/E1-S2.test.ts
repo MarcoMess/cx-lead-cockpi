@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { alsMarco, neueApp, zahl } from '../hilfen';
-import { setzeZurueck } from '../../src/server/daten/zuruecksetzen';
-import { erstelleStartdatenbank } from '../../src/server/daten/db';
+import { setzeZurueck } from '../../src/server/dienste/zuruecksetzen';
+import { erstelleStartdatenbank } from '../../src/server/daten/startdaten';
 import { Uhr } from '../../src/server/anbindungen/uhr';
 
 let app: FastifyInstance | undefined;

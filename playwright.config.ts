@@ -29,7 +29,7 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'tsx src/server/daten/reset.ts && tsx src/server/start.ts',
+      command: 'tsx src/server/reset.ts && tsx src/server/start.ts',
       url: `http://localhost:${API_PORT}/api/v1/gesundheit`,
       env: testEnv,
       reuseExistingServer: false,

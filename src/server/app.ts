@@ -37,9 +37,14 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
     }
     const e = err as { validation?: unknown; statusCode?: number; message: string };
     if (e.validation || e.statusCode === 400) {
-      return reply
-        .status(400)
-        .send({ fehler: { code: 'eingabe_ungueltig', meldung: 'Die Eingabe ist ungültig: ' + e.message } });
+      return reply.status(400).send({
+        fehler: {
+          code: 'eingabe_ungueltig',
+          meldung: /json/i.test(e.message)
+            ? 'Die Anfrage enthält kein gültiges JSON.'
+            : 'Die Eingabe ist ungültig. Bitte prüfe die Angaben.',
+        },
+      });
     }
     app.log.error(err);
     return reply
