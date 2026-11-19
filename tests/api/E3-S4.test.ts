@@ -129,7 +129,11 @@ describe('E3-S4 Vorschlag verwerfen', () => {
     expect(r.json().sperreintrag).toMatchObject({ neu: false, verlaengert: true, gesperrt_bis: '2027-05-19' });
     const s = sperren() as { gesperrt_bis: string; grund: string }[];
     expect(s).toHaveLength(1);
-    expect(s[0]).toMatchObject({ gesperrt_bis: '2027-05-19', grund: 'Kontakt nicht belegt' });
+    expect(s[0]).toMatchObject({
+      gesperrt_bis: '2027-05-19',
+      grund: 'Kontakt nicht belegt',
+      erstellt_am: '2026-11-19',
+    });
   });
 
   it('eine längere oder dauerhafte Personensperre bleibt, die Antwort nennt ihr tatsächliches Ende', async () => {
