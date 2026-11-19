@@ -14,6 +14,8 @@ import {
 import { findeFirmaNachNormname, legeFirmaAn } from '../daten/firmen';
 import { liesVorschlag, markiereFreigegeben, zaehleFreigabe } from '../daten/laeufe';
 import { FachFehler } from '../fehler';
+import { liesMindestumsatz } from '../daten/profil';
+import { fehlendePflichtangaben } from '../regeln/pflichtangaben';
 import { normalisiereFirmenname } from '../regeln/dubletten';
 import { darfWiederangesprochenWerden } from '../regeln/dubletten';
 
@@ -42,6 +44,10 @@ export function gibVorschlagFrei(db: Datenbank, uhr: Uhr, vorschlagId: number): 
       );
     }
     const d = JSON.parse(v.daten) as VorschlagDaten;
+    const fehlend = fehlendePflichtangaben(d, liesMindestumsatz(db));
+    if (fehlend.length > 0) {
+      throw new FachFehler(422, 'pflichtangabe_fehlt', `Freigeben geht noch nicht: ${fehlend.join('; ')}.`);
+    }
     const heute = uhr.heute();
 
     let ansprechpartnerId: number;
@@ -132,7 +138,7 @@ function findeOderLegeFirmaAn(db: Datenbank, f: VorschlagDaten['firma']): number
   });
 }
 
-/** Grundschutz, bis E3-S2 die vollständige Prüfung der Pflichtangaben vor der Freigabe baut. */
+/** Letzter Schutz für Felder, die die Datenbank verlangt; die Regel steht in regeln/pflichtangaben.ts (E3-S2). */
 function pflicht<T>(wert: T | null | undefined, feld: string): T {
   if (wert === null || wert === undefined || wert === '') {
     throw new FachFehler(422, 'pflichtangabe_fehlt', `Für die Freigabe fehlt die Angabe »${feld}«.`, feld);

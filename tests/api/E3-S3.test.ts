@@ -226,7 +226,11 @@ describe('E3-S3 Vorschlag freigeben', () => {
     expect(r.statusCode).toBe(409);
     expect(r.json().fehler.code).toBe('dublette');
     // Der Schutz über das LinkedIn-Profil greift weiter, falls ein Vorschlag ohne Kennzeichnung angelegt wurde.
-    db.prepare(`UPDATE vorschlag SET ist_dublette = 0 WHERE id = ?`).run(id('Albers'));
+    // Albers kommt ohne Nachricht; für diese Probe bekommt sie eine, damit die Pflichtangaben (E3-S2) nicht vorher greifen.
+    db.prepare(
+      `UPDATE vorschlag SET ist_dublette = 0,
+         daten = json_set(daten, '$.nachricht', json_object('betreff', 'B', 'text', 'T')) WHERE id = ?`,
+    ).run(id('Albers'));
     const r2 = await frei(app, kopf, id('Albers'));
     expect(r2.json().fehler.code).toBe('person_bekannt');
     expect(r2.json().fehler.meldung).toContain('Katrin Albers');
