@@ -37,12 +37,13 @@ Marco will zuerst den echten Agenten statt des Simulators. Gewählt: Die geplant
 
 | # | Story | Branch | PR | Stand | Korrekturschleifen |
 |---|---|---|---|---|---|
-| 13 | E10-S1 Sperrliste | story/E10-S1-sperrliste | #14 | In Prüfung | 0 von 2 |
+| 13 | E10-S1 Sperrliste | story/E10-S1-sperrliste | #14 | In Prüfung (Runde 2) | 1 von 2 |
 | 14 | E2-S4 Dubletten und Wiederansprache | story/E2-S4-dubletten | – | Offen | 0 von 2 |
 | 15 | E3-S2 Angaben prüfen, Pflichtangaben | story/E3-S2-pflichtangaben | – | Offen | 0 von 2 |
 | 16 | E3-S4 Verwerfen | story/E3-S4-verwerfen | – | Offen | 0 von 2 |
 | 17 | E2-S5 Ergebnisdatei hochladen | story/E2-S5-upload | – | Offen | 0 von 2 |
-| 18 | Echtbetrieb neben dem Vorführbestand (neu, siehe Konzept 1.3) | – | – | Offen | – |
+| 18 | Echtbetrieb neben dem Vorführbestand (neu, kommt mit Konzept 1.3) | – | – | Offen | – |
+| 19 | E2-S2 Ausschlussliste (auch Nachweis E10-S1 #4) | – | – | Offen | 0 von 2 |
 
 Danach die übrigen Stories in der Reihenfolge aus `stories.md`.
 
@@ -64,6 +65,7 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 | E4-S2 | Filter nach Merkmal und Tagen | E9 |
 | E4-S3 | »An SAP übergeben« wird in der Akte als Endzustand gezeigt; Tests zu #5/#7 und zu `erlaubteAktionen` unvollständig; Schiene und Filter heißen beide »Status«; `regeln/verlauf.ts` fehlt in Architektur §7/§9 | erledigt mit E5-S2 |
 | E4-S2 | Kontaktliste ohne Schutz gegen späte Antworten beim Filterwechsel; Tests zu #1 prüfen Funktion und Firma nur auf »nicht leer« | erledigt mit E5-S1 |
+| E10-S1 | Kriterium 4, Teil »fehlt in der Ausschlussliste des Agenten«: die Ausschlussliste baut E2-S2; Nachweis mit einem Test »E10-S1 #4« dort | Marco nimmt die Verschiebung an? |
 | E5-S1 | Kriterium 7 nennt Bernasconi, der auf »Nachgefasst« steht und keine Ansprache hat; Vorschlag: »ein freigegebener Kontakt ohne Anlass (Reto Ammann aus dem Lauf vom 19.11.2026)« | Frage an Marco |
 | E5-S1 | Kriterium 5 (Fassung »von Marco geändert«) setzt das Protokollieren voraus, das erst E5-S3 baut; E5-S3 enthält die Servertests »E5-S1 #5« für beide Fälle | Marco nimmt die Verschiebung an? |
 | E5-S1 | Änderungen an Betreff und Text gehen verloren, wenn Marco die Ansprache ohne Markieren verlässt (A3 Schritt 2 »speichert die Fassung«) | Frage an Marco |

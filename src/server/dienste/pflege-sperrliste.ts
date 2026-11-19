@@ -1,8 +1,8 @@
 // Anwendungsfälle der Sperrliste (Story E10-S1, Screen S8): ansehen, Eintrag hinzufügen, Eintrag entfernen.
 import { SperreEingabe, type SperrZeile } from '../../gemeinsam/sperrliste';
 import type { Uhr } from '../anbindungen/uhr';
-import type { Datenbank } from '../daten/db';
-import { entferneSperre, legeSperreAn, listeSperren } from '../daten/sperrliste';
+import { transaktion, type Datenbank } from '../daten/db';
+import { entferneSperre, findeSperre, legeSperreAn, listeSperren } from '../daten/sperrliste';
 import { FachFehler } from '../fehler';
 
 export function ladeSperrliste(db: Datenbank): SperrZeile[] {
@@ -15,19 +15,31 @@ export function fuegeSperreHinzu(db: Datenbank, uhr: Uhr, eingabe: unknown): Spe
     const f = e.error.issues[0];
     throw new FachFehler(422, 'eingabe_ungueltig', f.message, String(f.path[0] ?? ''));
   }
-  legeSperreAn(db, {
-    art: e.data.art,
-    name: e.data.name,
-    grund: e.data.grund || 'Von Marco eingetragen',
-    herkunft: 'von_marco',
-    erstellt_am: uhr.heute(),
+  return transaktion(db, () => {
+    if (findeSperre(db, e.data.art, e.data.name)) {
+      throw new FachFehler(
+        409,
+        'schon_gesperrt',
+        `»${e.data.name}« steht schon auf der Sperrliste. Pass den bestehenden Eintrag an, statt einen zweiten anzulegen.`,
+        'name',
+      );
+    }
+    legeSperreAn(db, {
+      art: e.data.art,
+      name: e.data.name,
+      grund: e.data.grund || 'Von Marco gesperrt',
+      herkunft: 'von_marco',
+      erstellt_am: uhr.heute(),
+    });
+    return listeSperren(db);
   });
-  return listeSperren(db);
 }
 
 export function entferneSperreintrag(db: Datenbank, id: number): SperrZeile[] {
-  if (!Number.isInteger(id) || id < 1 || !entferneSperre(db, id)) {
-    throw new FachFehler(404, 'sperre_unbekannt', 'Diesen Eintrag gibt es nicht mehr auf der Sperrliste.');
-  }
-  return listeSperren(db);
+  return transaktion(db, () => {
+    if (!Number.isInteger(id) || id < 1 || !entferneSperre(db, id)) {
+      throw new FachFehler(404, 'sperre_unbekannt', 'Diesen Eintrag gibt es nicht mehr auf der Sperrliste.');
+    }
+    return listeSperren(db);
+  });
 }
