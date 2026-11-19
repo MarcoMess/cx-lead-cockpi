@@ -4,6 +4,8 @@ import { FachFehler } from './fehler';
 import type { Datenbank } from './daten/db';
 import { gesundheitRouten } from './api/gesundheit';
 import { richteZugangEin } from './api/zugang';
+import { Uhr } from './anbindungen/uhr';
+import { simRouten } from '../simulator/sim-routen';
 
 export interface AppOptionen {
   db: Datenbank;
@@ -16,6 +18,7 @@ declare module 'fastify' {
   interface FastifyInstance {
     db: Datenbank;
     demo: boolean;
+    uhr: Uhr;
   }
 }
 
@@ -23,6 +26,7 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
   app.decorate('db', opt.db);
   app.decorate('demo', opt.demo);
+  app.decorate('uhr', new Uhr(opt.db));
 
   app.setErrorHandler((err, _req, reply) => {
     if (err instanceof FachFehler) {
@@ -46,5 +50,6 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
 
   await richteZugangEin(app, { passwort: opt.passwort, sitzungsSchluessel: opt.sitzungsSchluessel });
   await app.register(gesundheitRouten, { prefix: '/api/v1' });
+  if (opt.demo) await app.register(simRouten, { prefix: '/api/v1' });
   return app;
 }

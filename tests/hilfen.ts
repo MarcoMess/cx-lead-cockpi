@@ -4,6 +4,7 @@ import type { FastifyInstance } from 'fastify';
 import { baueApp } from '../src/server/app';
 import { erstelleStartdatenbank } from '../src/server/daten/db';
 import { setzeAgentSchluessel } from '../src/server/dienste/zugang';
+import { setzeVorfuehrdatum } from '../src/server/anbindungen/uhr';
 
 export const TEST_PASSWORT = 'test-passwort';
 export const TEST_AGENT_SCHLUESSEL = 'test-agent-schluessel';
@@ -12,6 +13,7 @@ export const AGENT = { authorization: `Bearer ${TEST_AGENT_SCHLUESSEL}` };
 export async function neueApp(opt: { demo?: boolean } = {}) {
   const db = erstelleStartdatenbank(':memory:');
   setzeAgentSchluessel(db, TEST_AGENT_SCHLUESSEL);
+  setzeVorfuehrdatum(db, '2026-11-18'); // wie nach `npm run reset`
   const app = await baueApp({
     db,
     demo: opt.demo ?? true,
