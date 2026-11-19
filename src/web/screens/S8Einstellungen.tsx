@@ -89,7 +89,7 @@ export function S8Einstellungen() {
                 </td>
                 <td>{ART_TEXT[z.art]}</td>
                 <td>
-                  {z.grund}
+                  {z.herkunft === 'verworfen' ? `Verworfen: ${z.grund}` : z.grund}
                   {z.gesperrt_bis && <span className="muted"> – gesperrt bis {datum(z.gesperrt_bis)}</span>}
                 </td>
                 <td>{z.herkunft === 'startbestand' ? 'Startbestand' : datum(z.erstellt_am)}</td>
