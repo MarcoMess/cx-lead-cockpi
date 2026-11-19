@@ -5,6 +5,8 @@ import { api } from './api';
 import { Anmeldung } from './screens/Anmeldung';
 import { Platzhalter } from './screens/Platzhalter';
 import { NichtGefunden } from './screens/NichtGefunden';
+import { S2Eingangskorb } from './screens/S2Eingangskorb';
+import type { ScreenId } from '../gemeinsam/screens';
 import { Vorfuehrleiste, type VorfuehrZustand } from './teile/Vorfuehrleiste';
 
 type Zustand = 'pruefe' | 'abgemeldet' | 'angemeldet';
@@ -60,12 +62,23 @@ export function App() {
         <main>
           <Routes>
             {SCREENS.map((s) => (
-              <Route key={s.id} path={s.pfad} element={<Platzhalter id={s.id} />} />
+              <Route key={s.id} path={s.pfad} element={screenFuer(s.id)} />
             ))}
+            <Route path="/eingangskorb/:laufId" element={<S2Eingangskorb />} />
             <Route path="*" element={<NichtGefunden />} />
           </Routes>
         </main>
       </div>
     </>
   );
+}
+
+/** Gebaute Screens; alle übrigen zeigen bis zu ihrer Story den Platzhalter. */
+function screenFuer(id: ScreenId) {
+  switch (id) {
+    case 'S2':
+      return <S2Eingangskorb />;
+    default:
+      return <Platzhalter id={id} />;
+  }
 }

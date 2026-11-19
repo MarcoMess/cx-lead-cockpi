@@ -225,10 +225,27 @@ textarea {
   padding: 6px 14px;
   font-size: 12.5px;
   color: #3b2c00;
+}
+/* Zwei Zeilen wie im Clickdummy (Prüfung E1-S3, Befund 1) */
+.vorfuehrleiste .zeile {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 10px;
   align-items: center;
+}
+.vorfuehrleiste .zeile + .zeile {
+  margin-top: 5px;
+}
+.vorfuehrleiste label {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.vorfuehrleiste .meldung {
+  background: #fff;
+  border: 1px solid #7a5a00;
+  border-radius: 3px;
+  padding: 1px 8px;
 }
 .vorfuehrleiste b {
   font-family: var(--head);
@@ -251,4 +268,102 @@ textarea {
   padding: 2px 9px;
   border-radius: 3px;
   font-family: var(--head);
+}
+
+/* Listen, Tabellen, Etiketten (wie im Clickdummy) */
+.spalten {
+  display: grid;
+  gap: 14px;
+}
+.spalten.links-schmal {
+  grid-template-columns: 340px 1fr;
+}
+.spalten.zwei {
+  grid-template-columns: 1fr 1.25fr;
+}
+.box > h2,
+.box > h3 {
+  margin-bottom: 10px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  font-weight: 600;
+  text-align: left;
+  color: var(--muted);
+  font-size: 12.5px;
+  border-bottom: 2px solid var(--ink);
+  padding: 5px 8px;
+}
+td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+tr.gewaehlt td {
+  background: var(--okbg);
+}
+.zeilenlink {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+.zeilenlink:hover {
+  text-decoration: underline;
+}
+.kv {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 5px 12px;
+  margin: 8px 0 0;
+}
+.kv dt {
+  color: var(--muted);
+}
+.kv dd {
+  margin: 0;
+}
+.reihe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+.eng {
+  margin: 6px 0;
+}
+.tag {
+  display: inline-block;
+  border-radius: 3px;
+  padding: 0 7px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  white-space: nowrap;
+}
+.tag.ok {
+  background: var(--okbg);
+  border-color: #9fdcc8;
+  color: #0e5a45;
+}
+.tag.warn {
+  background: var(--warnbg);
+  border-color: #e6c078;
+  color: var(--warn);
+}
+.tag.fehler {
+  background: var(--errbg);
+  border-color: #e8aaa5;
+  color: var(--err);
+}
+.tag.hypothese {
+  background: #edeafb;
+  border-color: #c5bdf0;
+  color: #3b2f8f;
+}
+.tag.aus {
+  background: #e9ecf0;
+  color: var(--muted);
 }

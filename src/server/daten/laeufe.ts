@@ -1,4 +1,5 @@
 // Zugriff auf Rechercheläufe und Vorschläge (nur Lesen und Schreiben, keine Entscheidungen).
+import type { LaufZeile, VorschlagKarte } from '../../gemeinsam/eingangskorb';
 import type { LaufHerkunft } from '../../gemeinsam/werte';
 import type { Datenbank } from './db';
 
@@ -28,4 +29,27 @@ export function fuegeVorschlagEin(db: Datenbank, laufId: number, daten: unknown)
     .prepare(`INSERT INTO vorschlag (recherchelauf_id, zustand, daten) VALUES (?, ?, ?)`)
     .run(laufId, 'zu_pruefen', JSON.stringify(daten));
   return Number(r.lastInsertRowid);
+}
+
+const LAUF_SPALTEN = `l.id, l.datum, l.anzahl_vorschlaege, l.anzahl_freigegeben, l.abdeckungsgrenzen,
+  (SELECT COUNT(*) FROM vorschlag v WHERE v.recherchelauf_id = l.id AND v.zustand = ?) AS offen`;
+
+/** Ausgeführte Läufe, der neueste zuerst. Übersprungene Läufe gehören nicht in den Eingangskorb. */
+export function listeAusgefuehrteLaeufe(db: Datenbank): LaufZeile[] {
+  return db
+    .prepare(`SELECT ${LAUF_SPALTEN} FROM recherchelauf l WHERE l.ergebnis = ? ORDER BY l.datum DESC, l.id DESC`)
+    .all('zu_pruefen', 'ausgefuehrt') as unknown as LaufZeile[];
+}
+
+export function liesAusgefuehrtenLauf(db: Datenbank, id: number): LaufZeile | undefined {
+  return db
+    .prepare(`SELECT ${LAUF_SPALTEN} FROM recherchelauf l WHERE l.id = ? AND l.ergebnis = ?`)
+    .get('zu_pruefen', id, 'ausgefuehrt') as unknown as LaufZeile | undefined;
+}
+
+export function vorschlaegeVonLauf(db: Datenbank, laufId: number): VorschlagKarte[] {
+  const zeilen = db
+    .prepare(`SELECT id, zustand, daten FROM vorschlag WHERE recherchelauf_id = ? ORDER BY id`)
+    .all(laufId) as { id: number; zustand: VorschlagKarte['zustand']; daten: string }[];
+  return zeilen.map((z) => ({ id: z.id, zustand: z.zustand, daten: JSON.parse(z.daten) }));
 }
