@@ -13,11 +13,41 @@ export const ANSPRECHPARTNER_STATUS = [
 ] as const;
 export type AnsprechpartnerStatus = (typeof ANSPRECHPARTNER_STATUS)[number];
 
+/** Die Statusschiene der Kontaktakte: der Weg vom Vorschlag bis zur Übergabe (Konzept, Abschnitt 9). */
+export const STATUS_SCHIENE = [
+  'neu',
+  'freigegeben',
+  'angeschrieben',
+  'nachgefasst',
+  'antwort_erhalten',
+  'gespraech_vereinbart',
+  'an_sap_uebergeben',
+] as const;
+
+/** Aktionen der Kontaktakte; welche erlaubt sind, entscheidet regeln/status.ts. */
+export const KONTAKT_AKTIONEN = [
+  'ansprechen',
+  'nachfassen',
+  'antwort_erfassen',
+  'gespraech_eintragen',
+  'wiedervorlage_setzen',
+  'ohne_antwort_schliessen',
+  'wieder_oeffnen',
+  'an_sap_uebergeben',
+  'sperren',
+  'loeschen',
+] as const;
+export type KontaktAktion = (typeof KONTAKT_AKTIONEN)[number];
+
 export const ANTWORT_ART = ['positiv', 'neutral_spaeter', 'kein_interesse'] as const;
 export const ANTWORT_EINORDNUNG = ['positiv', 'neutral_spaeter', 'kein_interesse', 'nicht_mehr_kontaktieren'] as const;
+export type AntwortEinordnung = (typeof ANTWORT_EINORDNUNG)[number];
 export const KONTAKT_KANAL = ['inmail', 'vernetzungsanfrage', 'linkedin_nachricht', 'email'] as const;
+export type KontaktKanal = (typeof KONTAKT_KANAL)[number];
 export const KONTAKT_ART = ['erstkontakt', 'nachfassen'] as const;
+export type KontaktArt = (typeof KONTAKT_ART)[number];
 export const EMAIL_GRUNDLAGE = ['in_hubspot_bekannt', 'hat_geantwortet', 'andere'] as const;
+export type EmailGrundlage = (typeof EMAIL_GRUNDLAGE)[number];
 export const NACHRICHT_KANAL = ['linkedin', 'email'] as const;
 export const NACHRICHT_FASSUNG = ['agent', 'von_marco_geaendert', 'vorlage'] as const;
 export const ANLASS_TYP = ['eigener_beitrag', 'unternehmensanlass', 'kein_anlass'] as const;

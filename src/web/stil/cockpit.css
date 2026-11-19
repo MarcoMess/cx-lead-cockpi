@@ -381,3 +381,75 @@ select.inl,
 input.inl {
   width: auto;
 }
+
+/* Kontaktakte (wie im Clickdummy: .rail, .tl, .msg, .note) */
+.aktionen.kopf {
+  margin: 0;
+}
+.unterzeile {
+  margin: 4px 0 0;
+}
+.note {
+  border-left: 4px solid var(--warn);
+  background: var(--warnbg);
+  padding: 8px 12px;
+  margin: 12px 0;
+  color: #4a2b00;
+}
+.schiene {
+  display: flex;
+  margin: 12px 0 4px;
+  padding: 0;
+  counter-reset: schritt;
+}
+.schiene li {
+  list-style: none;
+  flex: 1;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 4px solid var(--line);
+  padding: 5px 6px 0 0;
+  counter-increment: schritt;
+}
+.schiene li::before {
+  content: counter(schritt) ' ';
+  font-family: var(--head);
+}
+.schiene li.erledigt {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.schiene li.aktuell {
+  border-color: var(--mint);
+  color: var(--ink);
+  font-weight: 700;
+}
+.kv + h3,
+.anlass + h3,
+article > h3 {
+  margin-top: 14px;
+}
+.anlass p {
+  margin: 4px 0;
+}
+.verlauf {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.verlauf li {
+  border-left: 3px solid var(--ink);
+  padding: 2px 0 10px 12px;
+  margin-left: 4px;
+}
+.verlauf li.antwort {
+  border-color: var(--mint);
+}
+.nachricht {
+  white-space: pre-wrap;
+  background: #f7f9f8;
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  border-radius: 3px;
+  margin-top: 4px;
+}

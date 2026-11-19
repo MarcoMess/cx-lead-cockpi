@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { KONTAKT_FILTER, type KontaktFilter, type KontaktZeile } from '../../gemeinsam/kontakte';
 import { STATUS_TEXT } from '../../gemeinsam/texte';
 import { api } from '../api';
@@ -7,6 +7,7 @@ import { useAktualisierung } from '../aktualisierung';
 import { personName } from '../format';
 import { ScreenKopf } from '../teile/ScreenKopf';
 import { StatusEtikett } from '../teile/StatusEtikett';
+import { S4Kontaktakte } from './S4Kontaktakte';
 
 function filterText(f: KontaktFilter): string {
   if (f === 'offene') return 'Offene';
@@ -14,8 +15,9 @@ function filterText(f: KontaktFilter): string {
   return STATUS_TEXT[f];
 }
 
-/** S4 Kontakte: Liste mit Statusfilter, auch geschlossene Kontakte (Story E4-S2). */
+/** S4 Kontakte: Liste mit Statusfilter (E4-S2) und Kontaktakte (E4-S3). */
 export function S4Kontakte() {
+  const { kontaktId } = useParams();
   const stand = useAktualisierung();
   const [suche, setSuche] = useSearchParams();
   const roh = suche.get('status') ?? 'offene';
@@ -69,9 +71,11 @@ export function S4Kontakte() {
             </thead>
             <tbody>
               {kontakte?.map((k) => (
-                <tr key={k.id}>
+                <tr key={k.id} className={String(k.id) === kontaktId ? 'gewaehlt' : undefined}>
                   <td>
-                    {personName(k)}
+                    <Link to={{ pathname: `/kontakte/${k.id}`, search: suche.toString() }} className="zeilenlink">
+                      {personName(k)}
+                    </Link>
                     <br />
                     <span className="muted">{k.funktion}</span>
                   </td>
@@ -92,7 +96,11 @@ export function S4Kontakte() {
           </table>
         </section>
         <section className="box" aria-label="Kontaktakte">
-          <p className="muted">Wähle links einen Kontakt, um Verlauf, Anlässe und Aktionen zu sehen.</p>
+          {kontaktId ? (
+            <S4Kontaktakte id={kontaktId} />
+          ) : (
+            <p className="muted">Wähle links einen Kontakt, um Verlauf, Anlässe und Aktionen zu sehen.</p>
+          )}
         </section>
       </div>
     </>

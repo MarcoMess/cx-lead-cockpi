@@ -66,6 +66,8 @@ export function App() {
               <Route key={s.id} path={s.pfad} element={screenFuer(s.id)} />
             ))}
             <Route path="/eingangskorb/:laufId" element={<S2Eingangskorb />} />
+            <Route path="/kontakte/:kontaktId" element={<S4Kontakte />} />
+            <Route path="/firmen/:firmaId" element={screenFuer('S3')} />
             <Route path="*" element={<NichtGefunden />} />
           </Routes>
         </main>
