@@ -3,7 +3,8 @@ import { Link, useParams } from 'react-router';
 import type { LaufDetail, LaufZeile, VorschlagKarte } from '../../gemeinsam/eingangskorb';
 import { api, ApiFehler } from '../api';
 import { useAktualisierung } from '../aktualisierung';
-import { ANLASS_TYP_TEXT, datum, personName, umsatz } from '../format';
+import { ANLASS_TYP_TEXT } from '../../gemeinsam/texte';
+import { datum, personName, umsatz } from '../format';
 import { Etikett } from '../teile/Etikett';
 import { ScreenKopf } from '../teile/ScreenKopf';
 
@@ -21,20 +22,33 @@ export function S2Eingangskorb() {
     api<LaufZeile[]>('GET', '/laeufe').then(setLaeufe, () => setLaeufe([]));
   }, [stand, neuLaden]);
 
-  const gewaehlt = laufId ? Number(laufId) : laeufe?.[0]?.id;
+  // Nur positive ganze Zahlen sind Lauf-Nummern; alles andere gibt es nicht (Prüfung E3-S1, Runde 2).
+  const idGueltig = !laufId || /^[1-9][0-9]*$/.test(laufId);
+  const gewaehlt = laufId ? (idGueltig ? Number(laufId) : undefined) : laeufe?.[0]?.id;
   useEffect(() => {
     if (!gewaehlt) return;
+    let aktuell = true; // Spätere Antworten zu einem nicht mehr gewählten Lauf verwerfen.
     api<LaufDetail>('GET', `/laeufe/${gewaehlt}`).then(
       (l) => {
+        if (!aktuell) return;
         setLauf(l);
         setLaufFehler('');
       },
       (e: Error) => {
+        if (!aktuell) return;
         setLauf(null);
         setLaufFehler(e.message);
       },
     );
+    return () => {
+      aktuell = false;
+    };
   }, [gewaehlt, stand, neuLaden]);
+  const spaltenFehler = !idGueltig
+    ? 'Diesen Recherchelauf gibt es nicht.'
+    : !lauf || lauf.id !== gewaehlt
+      ? laufFehler
+      : '';
 
   function geaendert(text: string) {
     setMeldung(text);
@@ -83,17 +97,12 @@ export function S2Eingangskorb() {
           </table>
         </section>
         <div>
-          {laufId && !Number.isInteger(Number(laufId)) && (
+          {spaltenFehler && (
             <section className="box">
-              <p className="muted">Diesen Recherchelauf gibt es nicht. Wähle links einen anderen Lauf.</p>
+              <p className="muted">{spaltenFehler} Wähle links einen anderen Lauf.</p>
             </section>
           )}
-          {laufFehler && !lauf && (
-            <section className="box">
-              <p className="muted">{laufFehler} Wähle links einen anderen Lauf.</p>
-            </section>
-          )}
-          {lauf && lauf.id === gewaehlt && (
+          {!spaltenFehler && lauf && lauf.id === gewaehlt && (
             <>
               <section className="box" aria-label={`Lauf vom ${datum(lauf.datum)}`}>
                 <h2>Lauf vom {datum(lauf.datum)}</h2>

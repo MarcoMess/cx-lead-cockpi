@@ -374,3 +374,10 @@ tr.gewaehlt td {
   align-items: center;
   margin-top: 10px;
 }
+.aktionen.oben {
+  margin: 0 0 10px;
+}
+select.inl,
+input.inl {
+  width: auto;
+}

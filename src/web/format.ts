@@ -1,5 +1,6 @@
 // Anzeigeformate der Oberfläche (deutsche Schreibweise wie im Clickdummy).
 import type { VorschlagDaten } from '../gemeinsam/lauf';
+import { UMSATZ_BEZUG_TEXT } from '../gemeinsam/texte';
 
 export function datum(d: string | null | undefined): string {
   if (!d) return '–';
@@ -10,21 +11,23 @@ export function datum(d: string | null | undefined): string {
 
 const zahl = (n: number) => n.toLocaleString('de-DE', { maximumFractionDigits: 1 });
 
-/** z. B. »121 Mio. EUR, 2025, Konzern« oder »1,4 Mrd. EUR, 2025, Konzern«. */
+const betragText = (mio: number) => (mio >= 1000 ? `${zahl(mio / 1000)} Mrd.` : `${zahl(mio)} Mio.`);
+
+/** z. B. »121 Mio. EUR, 2025, Konzern« oder »88 Mio. CHF, 2025, Konzern (rund 93 Mio. EUR, Beispielkurs 1,06)«. */
 export function umsatz(f: VorschlagDaten['firma']): string {
   if (f.umsatz_wert == null) return 'Umsatz nicht belegt';
-  const betrag = f.umsatz_wert >= 1000 ? `${zahl(f.umsatz_wert / 1000)} Mrd.` : `${zahl(f.umsatz_wert)} Mio.`;
-  const bezug =
-    f.umsatz_bezug === 'konzern' ? 'Konzern' : f.umsatz_bezug === 'einzelgesellschaft' ? 'Einzelgesellschaft' : null;
-  return [`${betrag} ${f.umsatz_waehrung ?? ''}`.trim(), f.umsatz_jahr, bezug].filter(Boolean).join(', ');
+  const bezug = f.umsatz_bezug ? (UMSATZ_BEZUG_TEXT[f.umsatz_bezug] ?? null) : null;
+  const text = [`${betragText(f.umsatz_wert)} ${f.umsatz_waehrung ?? ''}`.trim(), f.umsatz_jahr, bezug]
+    .filter(Boolean)
+    .join(', ');
+  if (!f.umsatz_waehrung || f.umsatz_waehrung === 'EUR' || f.umsatz_eur == null) return text;
+  const kurs =
+    f.wechselkurs != null
+      ? `, Beispielkurs ${f.wechselkurs.toLocaleString('de-DE', { maximumFractionDigits: 4 })}`
+      : '';
+  return `${text} (rund ${zahl(Math.round(f.umsatz_eur))} Mio. EUR${kurs})`;
 }
 
 export function personName(p: { titel?: string | null; vorname: string; nachname: string }): string {
   return [p.titel, p.vorname, p.nachname].filter(Boolean).join(' ');
 }
-
-export const ANLASS_TYP_TEXT: Record<string, string> = {
-  eigener_beitrag: 'Eigener Beitrag',
-  unternehmensanlass: 'Unternehmensanlass',
-  kein_anlass: 'Kein belastbarer aktueller Anlass',
-};

@@ -1,4 +1,5 @@
 // Zugriff auf Ansprechpartner, ihre Anlässe und Nachrichten.
+import type { KontaktZeile } from '../../gemeinsam/kontakte';
 import type { AnsprechpartnerStatus } from '../../gemeinsam/werte';
 import type { Datenbank } from './db';
 
@@ -99,4 +100,14 @@ export function setzeErstnachricht(
      ON CONFLICT (ansprechpartner_id, kanal, art) DO UPDATE SET betreff = excluded.betreff, text = excluded.text,
        sprache = excluded.sprache, fassung = excluded.fassung`,
   ).run(ansprechpartnerId, 'linkedin', 'erstkontakt', n.betreff, n.text, n.sprache, 'agent');
+}
+
+/** Alle Ansprechpartner mit Firmenname, in der Reihenfolge ihres Anlegens. */
+export function listeAnsprechpartner(db: Datenbank): KontaktZeile[] {
+  return db
+    .prepare(
+      `SELECT a.id, a.anrede, a.titel, a.vorname, a.nachname, a.funktion, a.firma_id, f.name AS firma_name, a.status, a.antwort_art
+       FROM ansprechpartner a JOIN firma f ON f.id = a.firma_id ORDER BY a.id`,
+    )
+    .all() as unknown as KontaktZeile[];
 }

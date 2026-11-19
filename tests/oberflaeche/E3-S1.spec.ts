@@ -48,7 +48,9 @@ test('E3-S1 #2 #3 #4 Lauf vom 19.11.2026 mit vier Karten, »4 offen« und Etiket
 
   const ammann = page.getByRole('article', { name: 'Vorschlag Reto Ammann' });
   await expect(ammann).toContainText('Kein belastbarer aktueller Anlass');
-  await expect(ammann).toContainText('Hospitality / CH, Umsatz 88 Mio. CHF, 2025, Konzern');
+  await expect(ammann).toContainText(
+    'Hospitality / CH, Umsatz 88 Mio. CHF, 2025, Konzern (rund 93 Mio. EUR, Beispielkurs 1,06)',
+  );
   await expect(ammann.getByRole('link', { name: 'Quelle öffnen' })).toHaveCount(0);
 });
 
@@ -74,6 +76,12 @@ test('E3-S1 unbekannter Lauf: die rechte Spalte sagt, dass es ihn nicht gibt (Pr
 }) => {
   await anmelden(page, '/eingangskorb/999');
   await expect(page.getByText('Diesen Recherchelauf gibt es nicht. Wähle links einen anderen Lauf.')).toBeVisible();
-  await page.goto('/eingangskorb/abc');
-  await expect(page.getByText('Diesen Recherchelauf gibt es nicht. Wähle links einen anderen Lauf.')).toBeVisible();
+  for (const id of ['abc', '0', '%20', '1.5']) {
+    await page.goto(`/eingangskorb/${id}`);
+    await expect(page.getByText('Diesen Recherchelauf gibt es nicht. Wähle links einen anderen Lauf.')).toHaveCount(1);
+  }
+  await page.goto('/eingangskorb/999');
+  await page.getByRole('region', { name: 'Läufe' }).getByRole('link', { name: '12.11.2026' }).click();
+  await expect(page.getByText('Diesen Recherchelauf gibt es nicht.')).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Lauf vom 12.11.2026' })).toBeVisible();
 });
