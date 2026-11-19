@@ -32,10 +32,22 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | #12 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | #13 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 
-Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
+### Weg zu echten Daten (Marco, 19.11.2026)
+Marco will zuerst den echten Agenten statt des Simulators. Gewählt: Die geplante Claude-Aufgabe recherchiert in der Cloud und liefert die Ergebnisdatei, Marco lädt sie im Cockpit hoch. Vorher kommt ein erster echter Lauf aus dieser Sitzung.
+
+| # | Story | Branch | PR | Stand | Korrekturschleifen |
+|---|---|---|---|---|---|
+| 13 | E10-S1 Sperrliste | story/E10-S1-sperrliste | #14 | In Prüfung | 0 von 2 |
+| 14 | E2-S4 Dubletten und Wiederansprache | story/E2-S4-dubletten | – | Offen | 0 von 2 |
+| 15 | E3-S2 Angaben prüfen, Pflichtangaben | story/E3-S2-pflichtangaben | – | Offen | 0 von 2 |
+| 16 | E3-S4 Verwerfen | story/E3-S4-verwerfen | – | Offen | 0 von 2 |
+| 17 | E2-S5 Ergebnisdatei hochladen | story/E2-S5-upload | – | Offen | 0 von 2 |
+| 18 | Echtbetrieb neben dem Vorführbestand (neu, siehe Konzept 1.3) | – | – | Offen | – |
+
+Danach die übrigen Stories in der Reihenfolge aus `stories.md`.
 
 ## Nächster Schritt
-**Halt zum Durchklicken** (vereinbart). Marco klickt den Kernweg auf `story/E5-S3-versand` durch (Anleitung: docs/durchklicken.md) und entscheidet über E5-S1 (Kriterien 5 und 7). Danach #11, #12, #13 zusammenführen und mit den übrigen 34 Stories weitermachen, zuerst eine Pflege mit den gesammelten Punkten.
+Marco hat durchgeklickt und den Kernweg angenommen (19.11.2026). Weiter mit dem Weg zu echten Daten. Bisher: **Halt zum Durchklicken** (vereinbart). Marco klickt den Kernweg auf `story/E5-S3-versand` durch (Anleitung: docs/durchklicken.md) und entscheidet über E5-S1 (Kriterien 5 und 7). Danach #11, #12, #13 zusammenführen und mit den übrigen 34 Stories weitermachen, zuerst eine Pflege mit den gesammelten Punkten.
 
 ## Offene Punkte aus den Prüfungen
 Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der Story erledigt, die den Bereich ohnehin anfasst, spätestens in einer Pflege vor dem Halt.
