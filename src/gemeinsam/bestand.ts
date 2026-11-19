@@ -2,7 +2,7 @@
 import type { AnsprechpartnerStatus } from './werte';
 
 export interface Bestand {
-  firmen: { id: number; name: string; name_norm: string }[];
+  firmen: { id: number; name: string; domain: string | null }[];
   kontakte: {
     id: number;
     firma_id: number;
@@ -12,5 +12,7 @@ export interface Bestand {
     linkedin_url: string | null;
     status: AnsprechpartnerStatus;
     geschlossen_am: string | null;
+    /** Beschreibungen der gespeicherten Anlässe, für die Frage »neuer Anlass?«. */
+    anlaesse: string[];
   }[];
 }

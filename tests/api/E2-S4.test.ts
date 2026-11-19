@@ -37,7 +37,7 @@ describe('E2-S4 Dubletten und Wiederansprache erkennen', () => {
       bezug: { id: 1, name: 'Dr. Katrin Albers', status: 'gespraech_vereinbart' },
     });
     const r = await frei('Albers');
-    expect(r.statusCode).toBe(409);
+    expect(r.statusCode).toBe(422);
     expect(r.json().fehler.code).toBe('dublette');
     expect(karte('Kortmann').ist_dublette).toBe(false);
   });
@@ -126,5 +126,89 @@ describe('E2-S4 Dubletten und Wiederansprache erkennen', () => {
       d.prepare(`UPDATE ansprechpartner SET geschlossen_am = '2026-01-10' WHERE id = 5`).run(),
     );
     expect(b.karte('Ostermann')).toMatchObject({ ist_dublette: true, ist_wiederansprache: false });
+  });
+
+  it('Prüfung E2-S4 Befund 1: dieselbe Person in zwei offenen Läufen wird nur einmal angelegt', async () => {
+    ({ app, db } = await neueApp());
+    const kopf = await alsMarco(app);
+    const v = nach(kopie(), 'Kortmann');
+    v.person.linkedin_url = null;
+    const laeufe: number[] = [];
+    for (const heute of ['2026-11-19', '2026-11-20']) {
+      await app.inject({ method: 'POST', url: '/api/v1/sim/datum', headers: kopf, payload: { heute } });
+      const r = await app.inject({
+        method: 'POST',
+        url: '/api/v1/agent/laeufe',
+        headers: AGENT,
+        payload: { vorschlaege: [v] },
+      });
+      laeufe.push(r.json().lauf_id);
+    }
+    const karte = async (lauf: number) =>
+      (await app!.inject({ method: 'GET', url: `/api/v1/laeufe/${lauf}`, headers: kopf })).json().vorschlaege[0];
+    const k1 = await karte(laeufe[0]);
+    expect(
+      (await app.inject({ method: 'POST', url: `/api/v1/vorschlaege/${k1.id}/freigabe`, headers: kopf })).statusCode,
+    ).toBe(200);
+    const k2 = await karte(laeufe[1]);
+    expect(k2).toMatchObject({ ist_dublette: true, bezug: { name: 'Sabine Kortmann' } });
+    const r = await app.inject({ method: 'POST', url: `/api/v1/vorschlaege/${k2.id}/freigabe`, headers: kopf });
+    expect(r.statusCode).toBe(422);
+    expect(r.json().fehler.code).toBe('dublette');
+    expect(db.prepare(`SELECT COUNT(*) n FROM ansprechpartner WHERE nachname = 'Kortmann'`).get()).toEqual({ n: 1 });
+  });
+
+  it('Prüfung E2-S4 Befund 1: dieselbe Person zweimal im selben Lauf, LinkedIn mit www. und Schrägstrich', async () => {
+    const a = nach(kopie(), 'Voss');
+    const b = nach(kopie(), 'Voss');
+    b.person.linkedin_url = 'https://www.linkedin.com/in/miriam-voss-beispiel/';
+    ({ app, db } = await neueApp());
+    const kopf = await alsMarco(app);
+    await app.inject({ method: 'POST', url: '/api/v1/sim/datum', headers: kopf, payload: { heute: '2026-11-19' } });
+    const lauf = (
+      await app.inject({
+        method: 'POST',
+        url: '/api/v1/agent/laeufe',
+        headers: AGENT,
+        payload: { vorschlaege: [a, b] },
+      })
+    ).json();
+    const karten = async () =>
+      (await app!.inject({ method: 'GET', url: `/api/v1/laeufe/${lauf.lauf_id}`, headers: kopf })).json().vorschlaege;
+    const [k1, k2] = await karten();
+    expect(
+      (await app.inject({ method: 'POST', url: `/api/v1/vorschlaege/${k1.id}/freigabe`, headers: kopf })).statusCode,
+    ).toBe(200);
+    expect((await karten())[1].ist_dublette).toBe(true);
+    expect(
+      (await app.inject({ method: 'POST', url: `/api/v1/vorschlaege/${k2.id}/freigabe`, headers: kopf })).statusCode,
+    ).toBe(422);
+    expect(db.prepare(`SELECT COUNT(*) n FROM ansprechpartner WHERE nachname = 'Voss'`).get()).toEqual({ n: 1 });
+  });
+
+  it('Prüfung E2-S4 Sollte: Firma über die Domain; gleicher alter Anlass ist keine Wiederansprache', async () => {
+    const v = nach(kopie(), 'Kortmann');
+    v.firma.name = 'Nordwerk Gruppe';
+    v.firma.domain = 'https://www.nordwerk-foerdertechnik.example/';
+    const { karte } = await lauf([v], (d) =>
+      d.prepare(`UPDATE firma SET domain = 'nordwerk-foerdertechnik.example' WHERE id = 1`).run(),
+    );
+    expect(karte('Kortmann').bestehende_firma).toEqual({ id: 1, name: 'Nordwerk Fördertechnik GmbH' });
+    await app!.close();
+
+    const o = nach(kopie(), 'Kortmann');
+    o.firma.name = 'Weserland Entsorgung GmbH';
+    o.person.vorname = 'Markus';
+    o.person.nachname = 'Ostermann';
+    o.person.linkedin_url = null;
+    const alt = await lauf([o], (d) => {
+      d.prepare(`UPDATE ansprechpartner SET geschlossen_am = '2026-05-18' WHERE id = 5`).run();
+      const b = 'Neue Sortieranlage in Bremen angekündigt';
+      d.prepare(
+        `INSERT INTO anlass (ansprechpartner_id, typ, beschreibung, erstellt_am) VALUES (5, 'unternehmensanlass', ?, '2026-04-01')`,
+      ).run(b);
+      o.anlass = { ...o.anlass, typ: 'unternehmensanlass', beschreibung: `  ${b.toUpperCase()} ` };
+    });
+    expect(alt.karte('Ostermann')).toMatchObject({ ist_dublette: true, ist_wiederansprache: false });
   });
 });

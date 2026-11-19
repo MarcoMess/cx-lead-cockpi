@@ -63,3 +63,42 @@ test('E3-S2 #3 #7 fehlende Pflichtangaben sperren »Freigeben« mit Hinweis (Alb
   );
   await expect(karte.getByRole('button', { name: 'Freigeben' })).toBeDisabled();
 });
+
+test('E3-S2 #4 nur fehlende Pflichtangaben (keine Dublette) sperren »Freigeben«', async ({ page, request }) => {
+  await request.post('/api/v1/sim/zuruecksetzen');
+  await request.post('/api/v1/sim/datum', { data: { heute: '2026-11-19' } });
+  const v = {
+    firma: {
+      name: 'Beispiel Antriebe GmbH',
+      branche: 'Maschinenbau',
+      land: 'DE',
+      umsatz_wert: 40,
+      umsatz_waehrung: 'EUR',
+      umsatz_jahr: 2025,
+      umsatz_bezug: 'konzern',
+      umsatz_quelle_url: 'https://example.com/bericht',
+    },
+    person: {
+      anrede: 'Frau',
+      vorname: 'Erika',
+      nachname: 'Beispiel',
+      funktion: 'Leiterin Service',
+      rolle: 'Service',
+      quelle_url: 'https://example.com/team',
+    },
+    anlass: { typ: 'unternehmensanlass', beschreibung: 'Neues Werk', ereignis_datum: '2026-11-01' },
+    nachricht: { betreff: 'Neues Werk', text: 'Hallo Frau Beispiel' },
+  };
+  const r = await request.post('/api/v1/agent/laeufe', {
+    headers: { authorization: 'Bearer test-agent-schluessel' },
+    data: { vorschlaege: [v] },
+  });
+  expect(r.status()).toBe(201);
+  await anmelden(page, '/eingangskorb');
+  const karte = page.getByRole('article', { name: 'Vorschlag Erika Beispiel' });
+  await expect(karte.getByRole('note', { name: 'Fehlende Pflichtangaben' })).toHaveText(
+    'Freigeben ist gesperrt: unter Mindestumsatz (40 Mio. EUR, mindestens 50 Mio. EUR).',
+  );
+  await expect(karte.locator('.tag').filter({ hasText: 'Dublette' })).toHaveCount(0);
+  await expect(karte.getByRole('button', { name: 'Freigeben' })).toBeDisabled();
+});

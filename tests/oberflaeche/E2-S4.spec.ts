@@ -13,7 +13,7 @@ test('E2-S4 #1 #4 Eingangskorb: Albers als Dublette gesperrt, Voss mit Hinweis f
   const albers = page.getByRole('article', { name: /Vorschlag .*Katrin Albers/ });
   await expect(albers.locator('.tag')).toContainText(['Dublette']);
   await expect(albers).toContainText(
-    'Steht schon in deinen Kontakten: Dr. Katrin Albers (Gespräch vereinbart). Eine Dublette kannst du nicht freigeben.',
+    'Dublette: Diese Person ist bereits im Cockpit (Dr. Katrin Albers, Status »Gespräch vereinbart«). Der Vorschlag kann nicht freigegeben werden.',
   );
   await expect(albers.getByRole('button', { name: 'Freigeben' })).toBeDisabled();
 
