@@ -1,0 +1,64 @@
+# E10-S1 – Sperrliste verwalten: Prüfung 1
+
+Branch: story/E10-S1-sperrliste (Commit b98a3b4, Story-Diff gegen origin/main 644dcd5 = Stand nach E5-S3) · PR #14 · Datum: 19.11.2026 · **Urteil: Nicht bestanden – nur formal, weil Kriterium 4 zur Hälfte »nicht prüfbar« ist. Wenn Marco annimmt, dass der Nachweis »fehlt in der Ausschlussliste des Agenten« mit E2-S2 erbracht wird: Bestanden.** Am Code gibt es keinen blockierenden Befund.
+
+## Tests
+Ausgeführt: 155 · Bestanden: 155 · Befehl: `PLAYWRIGHT_CHANNEL=chrome TEST_API_PORT=5500 TEST_WEB_PORT=7574 npm test` (vorher `npm run reset`), Exit-Code 0
+
+- Typprüfung (`tsc --noEmit`) und ESLint mit Bausteingrenzen: ohne Befund.
+- Vitest: 21 Dateien, 120 Tests, alle bestanden (neu `tests/api/E10-S1.test.ts` mit 5 Tests).
+- Playwright: 35 Tests, alle bestanden (neu `tests/oberflaeche/E10-S1.spec.ts` mit 2 Tests).
+- Gegen origin/main wurde kein Test gelöscht, gelockert oder übersprungen. `git diff --stat origin/main..b98a3b4 -- tests` zeigt nur die zwei neuen Dateien. `package.json`, `eslint.config.js`, `playwright.config.ts` und `vite.config.ts` sind unverändert.
+
+Wie gut die Tests die einzelnen Kriterien prüfen:
+- #1 #5: Der API-Test prüft die fünf Namen wörtlich und in Reihenfolge, je Zeile `art: firma`, Grund »In früherer Ausgabe genannt« und `erstellt_am`. Der Oberflächentest prüft fünf Zeilen und die erste Zeile Zelle für Zelle (Eintrag, Art, Grund, Seit). Fehlt die Funktion, schlagen beide fehl.
+- #2: Geprüft wird ein neuer Eintrag mit Art, Name, Grund, Herkunft und `erstellt_am: 2026-11-18`. Dieses Datum ist zugleich das Datum des Startbestands und der Uhr nach dem Zurücksetzen; ein fest eingetragenes Datum würde den Test ebenso bestehen (Befund 3). Am System habe ich das Datum mit verstellter Uhr geprüft, es stimmt.
+- #3: Leerer Name und Name aus Leerraum ergeben 422 mit `feld: name` und wörtlicher Meldung; die Zahl der Einträge in der Datenbank bleibt 5. In der Oberfläche erscheint der Hinweis, die Liste bleibt bei 5 Zeilen.
+- #4: Prüft das Fehlen in der Antwort und in der Tabelle `sperreintrag` sowie 404 beim zweiten Entfernen. Die Ausschlussliste des Agenten prüft er nicht, weil es sie noch nicht gibt (siehe Kriterium 4). Der Oberflächentest prüft nach dem Neuladen nur die Zeilenzahl, nicht, dass HORNBACH fehlt (Befund 8).
+- Zusätzlich: ohne Sitzung 401, mit Agenten-Schlüssel 403.
+
+## Akzeptanzkriterien
+Alle Prüfungen am laufenden System liefen gegen den Entwicklungsserver (`PORT=5400 npx tsx src/server/start.ts`, `API_PORT=5400 WEB_PORT=7474 npx vite`): mit `curl` über die Schnittstelle (angemeldet mit dem Passwort aus `.env`) und mit einem Playwright-Skript in Chrome (1440 × 1000) über die Oberfläche. Das Skript lag außerhalb des Repositorys.
+
+| Kriterium | Ergebnis (erfüllt · nicht erfüllt · nicht prüfbar) | Beleg |
+|---|---|---|
+| 1 Beim ersten Öffnen fünf Firmen als Startbestand mit Grund »In früherer Ausgabe genannt« | erfüllt | Nach »Zurücksetzen« in der Vorführleiste und Klick auf »Einstellungen« (`/einstellungen`, Kopf »S8 Einstellungen«): fünf Zeilen »Windmöller & Hölscher / BOBST / Haberkorn / HORNBACH / Energie Steiermark«, jeweils »Firma · In früherer Ausgabe genannt · 18.11.2026 · Entfernen«. `GET /api/v1/sperrliste` liefert dieselben fünf mit `herkunft: startbestand`. |
+| 2 Neuer Eintrag mit Name, Art und Grund steht mit dem heutigen Datum in der Liste | erfüllt | Oberfläche am 18.11.2026: »Erika Beispiel«, Person, »Wird von Kollegen betreut« → Meldung »»Erika Beispiel« steht jetzt auf der Sperrliste.«, neue Zeile »Erika Beispiel · Person · Wird von Kollegen betreut · 18.11.2026«. Nach »Nächster Werktag« (19.11.2026) neue Zeile »Musterfirma Beispiel GmbH · Firma · Von Marco eingetragen · 19.11.2026«. API mit `POST /sim/datum {"heute":"2026-11-24"}`: neuer Eintrag hat `erstellt_am: 2026-11-24`. Leerraum am Namen wird entfernt (`"  Erika Beispiel  "` → `Erika Beispiel`). Nach dem Hinzufügen sind Name und Grund geleert. |
+| 3 Leerer Name: nichts angelegt, Name verlangt | erfüllt | Oberfläche: »Hinzufügen« mit leerem Namen und mit Name `"    "` zeigt »Gib den Namen der Firma oder Person ein.« (`role=alert`), weiter 5 Zeilen, der eingegebene Grund bleibt stehen. API: `""`, `"   "`, fehlender Name, `null` und `123` ergeben jeweils 422 mit `feld: name`; danach weiter 5 Einträge (bzw. unverändert). |
+| 4 Entfernter Eintrag fehlt in der Liste und in der Ausschlussliste des Agenten | **Liste: erfüllt · Ausschlussliste: nicht prüfbar** | Liste: »HORNBACH entfernen« → »»HORNBACH« ist nicht mehr gesperrt.«, Zeile weg, auch nach Neuladen. API: `DELETE /sperrliste/2` (BOBST) 200 ohne BOBST, zweites Mal 404 `sperre_unbekannt`. Ausschlussliste: `GET /api/v1/agent/ausschlussliste` mit Agenten-Schlüssel ergibt 404 `nicht_gefunden` – die Adresse baut erst E2-S2, und nichts im Code liest die Sperrliste (`grep -rn ausschluss src tests` ohne Treffer). Weil der Eintrag in der Tabelle `sperreintrag` gelöscht wird, wird eine Ausschlussliste, die auf dieser Tabelle aufbaut, ihn nicht enthalten – das ist aber eine Schlussfolgerung, kein Nachweis am System. Die Übergabenotiz meldet das offen. |
+| 5 Jeder Eintrag zeigt Art, Grund und seit wann er gilt | erfüllt | Spalten »Eintrag · Art · Grund · Seit« wie im Clickdummy; alle Zeilen (Startbestand und neue) zeigen Art (Firma/Person), Grund und ein Datum. Zum »Seit« des Startbestands siehe Befund 4. |
+
+Weitere Prüfungen am System:
+- Rollen: ohne Sitzung `GET`, `POST`, `DELETE` je 401 »Bitte melde dich an.«; mit Agenten-Schlüssel je 403 `rolle_nicht_erlaubt`. Der Agent kann die Sperrliste also weder lesen noch ändern; lesen soll er sie später über die Ausschlussliste.
+- Ungültige Art (`verein`, fehlend): 422 »Wähle, ob eine Firma oder eine Person gesperrt wird.« mit `feld: art`. Kein JSON: 400. Ohne Körper oder mit Array: 422 mit englischer Meldung (Befund 6).
+- `DELETE` mit `999`, `0`, `-1`, `abc`, `1.5`, `01`: jeweils 404 `sperre_unbekannt`, nichts entfernt.
+- Doppelt ausgeführt: Doppelklick auf »Hinzufügen« legte nur einen Eintrag an. Derselbe Name ein zweites Mal (API, »Haberkorn«) wird dagegen ein zweiter Eintrag (Befund 2).
+- Leerer Zustand: Nach Entfernen aller Einträge steht »Die Sperrliste ist leer.« »Zurücksetzen« in der Vorführleiste lädt S8 ohne Neuladen wieder mit den fünf Firmen.
+- Konsole: nur 401 vor der Anmeldung, 404 für `/favicon.ico` und die zwei erwarteten 422 der leeren Namen; kein Seitenfehler.
+- Regeln Abschnitt 9: »Eine so gesperrte Firma bleibt gesperrt, bis Marco den Sperreintrag entfernt« – Entfernen ist da. Die automatischen Auslöser (Verwerfen, Opt-out, Sperren von Hand) sind laut Story nicht enthalten.
+- Stichprobe früherer Hauptablauf (API, nach Zurücksetzen): »Nächster Werktag« → 19.11.2026, »Agent meldet sich« → 4 Vorschläge, Freigabe Kortmann → Ansprechpartner 8, Kontaktversuch InMail → 201, Status `angeschrieben`, Wiedervorlage 30.11.2026. Dazu lief die gesamte Oberflächen-Suite der früheren Stories grün.
+
+## Umfang und Architektur
+- Bausteine: Route `api/sperrliste.ts` ruft je einen Dienst, Dienst `dienste/pflege-sperrliste.ts` ohne SQL, SQL nur in `daten/sperrliste.ts`, Schema und Typen in `gemeinsam/sperrliste.ts`, Werte in `werte.ts`. Entspricht Architektur §3 und §10 (web, api, dienste, daten). ESLint-Grenzen grün.
+- Schnittstelle: `GET/POST/DELETE /sperrliste` mit `art, name, grund`, Ausgabe Liste, Fehler 422 – wie Architektur §5. Datenmodell wie §4 (`herkunft: von_marco`, `erstellt_am` aus der Uhr).
+- Mehr als verlangt: Der Ersatzgrund »Von Marco eingetragen« bei leerem Grund (gemeldet), die Anzeige von `firma_name` und »gesperrt bis« für künftige Einträge aus E3-S4/E6-S1 – klein und ohne eigene Wirkung. Kein weiterer Kasten in S8 gebaut.
+- Zugangsdaten: keine im Diff; das einzige Passwort ist das Test-Passwort der Playwright-Konfiguration. Beispielnamen (»Erika Beispiel«) sind erkennbar erfunden.
+
+## Befunde
+| Nr. | Stelle | Befund | Schwere | So nachvollziehen |
+|---|---|---|---|---|
+| 1 | `docs/status.md`, »Offene Punkte aus den Prüfungen«; `docs/stories.md` E2-S2 | Der Nachweis zu Kriterium 4 »fehlt in der Ausschlussliste des Agenten« ist auf später verschoben, steht aber nicht in den offenen Punkten. Die Kriterien von E2-S2 nennen den Fall »Eintrag entfernt« nicht, und E2-S2 steht auch nicht im neuen Block »Weg zu echten Daten«. Ohne Eintrag geht der Nachweis verloren – dasselbe Muster wie Befund 1 der Prüfung E5-S1. | Sollte | `docs/status.md` nach »E10-S1« durchsuchen – nur die Planzeile; E2-S2 in `stories.md` lesen. |
+| 2 | `dienste/pflege-sperrliste.ts`, `fuegeSperreHinzu` | Derselbe Name kann mehrfach eingetragen werden (`POST` »Haberkorn« ergibt einen zweiten Eintrag Haberkorn). Entfernt Marco dann einen, bleibt die Firma über den anderen gesperrt, obwohl die Meldung »ist nicht mehr gesperrt« sagt. Weder Konzept noch Story regeln das; ein Hinweis auf den vorhandenen Eintrag oder eine Abweisung würde es vermeiden. | Sollte | `POST /api/v1/sperrliste {"art":"firma","name":"Haberkorn"}` → 201, `GET` zeigt Haberkorn zweimal. |
+| 3 | `tests/api/E10-S1.test.ts` »#2«, `tests/oberflaeche/E10-S1.spec.ts` »#2 #3 #4« | »Mit dem heutigen Datum« wird nur am 18.11.2026 geprüft – dem Datum des Startbestands und der Uhr nach dem Zurücksetzen. Ein fest eingetragenes `2026-11-18` würde beide Tests bestehen. Ein Test mit verstelltem Datum (z. B. `heute_override` 2026-11-24) würde das Kriterium wirklich festhalten. Am System stimmt es. | Sollte | Tests lesen; zum Gegenbeweis `POST /sim/datum {"heute":"2026-11-24"}` und dann hinzufügen. |
+| 4 | `src/web/screens/S8Einstellungen.tsx`, `dienste/pflege-sperrliste.ts` | Texte weichen vom Clickdummy ab (Architektur §9: »Texte, Reihenfolge und Etiketten folgen dem Clickdummy«), gemeldet ist nur der freiwillige Grund: Schaltfläche »Hinzufügen« statt »Eintrag hinzufügen«; Ersatzgrund »Von Marco eingetragen« statt »Von Marco gesperrt« (Clickdummy `slAdd`, Zeile 318); »Seit« zeigt beim Startbestand »18.11.2026« statt »Startbestand« (Zeile 445). Das Datum passt zu Kriterium 5 und zum Datenmodell (`erstellt_am` Pflicht), widerspricht aber dem Dummy – Marco sollte entscheiden. | Sollte | `/einstellungen` neben `clickdummy.html` S8 öffnen. |
+| 5 | `dienste/pflege-sperrliste.ts` | Die beiden schreibenden Dienste laufen nicht in `transaktion()` (Architektur §9: »Schreibende Dienste laufen in `transaktion()`«). Je eine Anweisung, daher ohne Folgen; Abweichung von der Arbeitsregel. | Sollte | Code lesen; vgl. `protokolliere-versand.ts`, `gib-frei.ts`. |
+| 6 | `dienste/pflege-sperrliste.ts`, Eingabeprüfung | Ohne Körper oder mit einem Array als Körper antwortet der Server 422 mit englischer Zod-Meldung »Invalid input: expected object, received undefined« und `feld: ""`. Architektur §5 sieht 400 für Schemafehler vor, §9 deutsche Meldungen. Die Oberfläche sendet das nie; dasselbe Muster steht in `protokolliere-versand.ts`. | Hinweis | `curl -X POST …/sperrliste` ohne Körper. |
+| 7 | `src/web/screens/S8Einstellungen.tsx` | Die grüne Meldung (z. B. »»Doppelklick AG« ist nicht mehr gesperrt.«) bleibt nach »Zurücksetzen« in der Vorführleiste stehen, obwohl die Liste neu geladen ist. Gleiches Muster wie in den offenen Punkten zu E5-S3 (»Meldungen bleiben stehen«). | Hinweis | Eintrag entfernen, dann »Zurücksetzen«. |
+| 8 | `tests/oberflaeche/E10-S1.spec.ts` »#2 #3 #4« | Nach dem Neuladen wird nur `toHaveCount(5)` geprüft; dass HORNBACH fehlt und Erika Beispiel bleibt, wird nicht geprüft. Die Zahl stimmt nur zufällig (5 + 1 − 1). | Hinweis | Test lesen. |
+| 9 | `src/web/screens/S8Einstellungen.tsx`, Formular | Bei einer Person lässt sich die Firma nicht angeben (`firma_name` bleibt leer), obwohl das Datenmodell sie vorsieht und der Agent später Personen mit Firma abgleicht. Der Clickdummy schreibt die Firma in den Namen, Kriterium 2 nennt nur Name, Art und Grund – kein Mangel dieser Story, aber für E2-S2 zu bedenken. | Hinweis | Person hinzufügen, `GET /sperrliste` → `firma_name: null`. |
+| 10 | `docs/status.md` | Die neue Zeile 18 verweist auf »Konzept 1.3«; `docs/konzept.md` kennt nur Versionen bis 1.2. Der Absatz »Nächster Schritt« mischt den neuen Stand mit dem alten Text (»Danach #11, #12, #13 zusammenführen …«, obwohl sie zusammengeführt sind). | Hinweis | `docs/status.md` und Versionstabelle in `docs/konzept.md` lesen. |
+
+## Nicht geprüft
+- Kriterium 4, zweite Hälfte: Die Ausschlussliste des Agenten (`GET /agent/ausschlussliste`) gibt es erst mit E2-S2; am System antwortet die Adresse mit 404. Geprüft ist nur, dass der Eintrag aus Liste und Tabelle verschwindet.
+- Ob der Kopf von PR #14 auf b98a3b4 steht: Der GitHub-Zugriff ist in dieser Sitzung nicht freigegeben. Geprüft ist nur der Commit b98a3b4 (gleich dem lokalen Branch `story/E10-S1-sperrliste`).
+- Die automatischen Auslöser für Sperreinträge (E3-S4, E4-S4, E6-S1) – laut Story nicht enthalten.

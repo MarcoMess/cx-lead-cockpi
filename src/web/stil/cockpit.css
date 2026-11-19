@@ -481,3 +481,18 @@ td.rechts {
   border-top: 1px solid var(--line);
   margin: 16px 0;
 }
+input.inl.breit {
+  width: 240px;
+}
+.kv.angaben {
+  margin: 10px 0;
+}
+.note.fehler {
+  border-left-color: var(--err);
+  background: var(--errbg);
+}
+.kv dd,
+.nachricht,
+.note {
+  overflow-wrap: anywhere;
+}
