@@ -1,10 +1,12 @@
 // Regeln zu Ansprache und Kanal (Konzept, Abschnitt 9 »Kanalwahl«; Ablauf A3). Die Wortzahl zählt die Oberfläche (architektur.md §3).
 import type { AnsprechpartnerStatus, AnspracheModus, NachrichtFassung } from '../../gemeinsam/werte';
+import { erlaubteAktionen } from './status';
 
-/** Erstkontakt aus »Freigegeben«, Nachfassen aus »Angeschrieben« (höchstens ein Nachfassen), sonst keine Ansprache. */
+/** Erstkontakt, wenn »ansprechen« erlaubt ist, Nachfassen, wenn »nachfassen« erlaubt ist, sonst keine (eine Quelle: status.ts). */
 export function anspracheModus(status: AnsprechpartnerStatus): AnspracheModus {
-  if (status === 'freigegeben') return 'erstkontakt';
-  if (status === 'angeschrieben') return 'nachfassen';
+  const erlaubt = erlaubteAktionen(status, null);
+  if (erlaubt.includes('ansprechen')) return 'erstkontakt';
+  if (erlaubt.includes('nachfassen')) return 'nachfassen';
   return 'keine';
 }
 

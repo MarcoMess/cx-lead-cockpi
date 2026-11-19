@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import { KONTAKT_FILTER, type KontaktFilter, type KontaktZeile } from '../../gemeinsam/kontakte';
 import { STATUS_TEXT } from '../../gemeinsam/texte';
 import { api } from '../api';
@@ -18,6 +18,7 @@ function filterText(f: KontaktFilter): string {
 /** S4 Kontakte: Liste mit Statusfilter (E4-S2) und Kontaktakte (E4-S3). */
 export function S4Kontakte() {
   const { kontaktId } = useParams();
+  const meldung = (useLocation().state as { meldung?: string } | null)?.meldung;
   const stand = useAktualisierung();
   const [suche, setSuche] = useSearchParams();
   const roh = suche.get('status') ?? 'offene';
@@ -45,6 +46,11 @@ export function S4Kontakte() {
   return (
     <>
       <ScreenKopf id="S4" titel="Kontakte" untertitel="Pipeline und Kontaktakte." />
+      {meldung && (
+        <p className="hinweis ok" role="status">
+          {meldung}
+        </p>
+      )}
       {fehler && (
         <p className="hinweis fehler" role="alert">
           {fehler}

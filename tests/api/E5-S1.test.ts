@@ -23,14 +23,18 @@ describe('E5-S1 Ansprache', () => {
       ereignis_datum: '2026-09-15',
       quelle_url: 'https://example.com/quelle-3',
     });
-    expect(a.aufhaenger.hypothese).toBeTruthy();
-    expect(a.aufhaenger.gespraechsziel).toBeTruthy();
+    expect(a.aufhaenger.hypothese).toBe(
+      'Ein Kundenportal für Netzanschlüsse berührt Anfrage, Statusauskunft und Service zugleich.',
+    );
+    expect(a.aufhaenger.gespraechsziel).toBe(
+      'Einordnen, welche Kundenprozesse rund um den Netzanschluss zuerst mitwachsen sollten.',
+    );
     expect(a.nachricht).toMatchObject({ betreff: 'Kundenportal Netzanschlüsse 2027', fassung: 'agent' });
     expect(a.nachricht.text).toMatch(/^Hallo Frau Gruber, im Geschäftsbericht/);
     expect(a.nachricht.text.trim().match(/\S+/g)).toHaveLength(50);
   });
 
-  it('E5-S1 #7 Bernasconi: Anlass ist als »kein_anlass« gekennzeichnet', async () => {
+  it('E5-S1 #7 Bernasconis Anlass ist als »kein_anlass« gekennzeichnet (Anzeige siehe Oberflächentest an Ammann)', async () => {
     ({ app } = await neueApp());
     const a = (await ansprache(app, 4)).json();
     expect(a.aufhaenger.typ).toBe('kein_anlass');
