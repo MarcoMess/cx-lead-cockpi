@@ -2,7 +2,7 @@
 import type { AnsprechpartnerStatus } from './werte';
 
 export interface Bestand {
-  firmen: { id: number; name: string; domain: string | null; land: string | null }[];
+  firmen: { id: number; name: string; domain: string | null }[];
   kontakte: {
     id: number;
     firma_id: number;

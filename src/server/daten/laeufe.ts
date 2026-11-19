@@ -8,6 +8,8 @@ export interface NeuerLauf {
   abdeckungsgrenzen: string | null;
   herkunft: LaufHerkunft;
   anzahl_vorschlaege: number;
+  /** Was beim Einlesen nicht übernommen wurde, je Zeile ein Satz (Prüfung E2-S5, Befund 4). */
+  einlese_hinweise?: string[];
 }
 
 export function gibtAusgefuehrtenLaufAm(db: Datenbank, datum: string): boolean {
@@ -19,10 +21,18 @@ export function gibtAusgefuehrtenLaufAm(db: Datenbank, datum: string): boolean {
 export function fuegeLaufEin(db: Datenbank, l: NeuerLauf): number {
   const r = db
     .prepare(
-      `INSERT INTO recherchelauf (datum, ergebnis, anzahl_vorschlaege, anzahl_freigegeben, abdeckungsgrenzen, herkunft)
-       VALUES (?, ?, ?, 0, ?, ?)`,
+      `INSERT INTO recherchelauf (datum, ergebnis, anzahl_vorschlaege, anzahl_freigegeben, abdeckungsgrenzen, herkunft,
+         einlese_hinweise)
+       VALUES (?, ?, ?, 0, ?, ?, ?)`,
     )
-    .run(l.datum, 'ausgefuehrt' satisfies LaufErgebnis, l.anzahl_vorschlaege, l.abdeckungsgrenzen, l.herkunft);
+    .run(
+      l.datum,
+      'ausgefuehrt' satisfies LaufErgebnis,
+      l.anzahl_vorschlaege,
+      l.abdeckungsgrenzen,
+      l.herkunft,
+      l.einlese_hinweise?.length ? JSON.stringify(l.einlese_hinweise) : null,
+    );
   return Number(r.lastInsertRowid);
 }
 
@@ -52,21 +62,41 @@ export function fuegeVorschlagEin(
   return Number(r.lastInsertRowid);
 }
 
-const LAUF_SPALTEN = `l.id, l.datum, l.anzahl_vorschlaege, l.anzahl_freigegeben, l.abdeckungsgrenzen,
+const LAUF_SPALTEN = `l.id, l.datum, l.anzahl_vorschlaege, l.anzahl_freigegeben, l.abdeckungsgrenzen, l.einlese_hinweise,
   (SELECT COUNT(*) FROM vorschlag v WHERE v.recherchelauf_id = l.id AND v.zustand = ?) AS offen`;
+
+type LaufRoh = Omit<LaufZeile, 'einlese_hinweise'> & { einlese_hinweise: string | null };
+const alsLaufZeile = (z: LaufRoh): LaufZeile => ({
+  ...z,
+  einlese_hinweise: z.einlese_hinweise ? (JSON.parse(z.einlese_hinweise) as string[]) : [],
+});
 
 /** Ausgeführte Läufe, der neueste zuerst. Übersprungene Läufe gehören nicht in den Eingangskorb. */
 export function listeAusgefuehrteLaeufe(db: Datenbank): LaufZeile[] {
-  return db
-    .prepare(`SELECT ${LAUF_SPALTEN} FROM recherchelauf l WHERE l.ergebnis = ? ORDER BY l.datum DESC, l.id DESC`)
-    .all('zu_pruefen' satisfies VorschlagZustand, 'ausgefuehrt' satisfies LaufErgebnis) as unknown as LaufZeile[];
+  return (
+    db
+      .prepare(`SELECT ${LAUF_SPALTEN} FROM recherchelauf l WHERE l.ergebnis = ? ORDER BY l.datum DESC, l.id DESC`)
+      .all('zu_pruefen' satisfies VorschlagZustand, 'ausgefuehrt' satisfies LaufErgebnis) as unknown as LaufRoh[]
+  ).map(alsLaufZeile);
 }
 
 export function liesAusgefuehrtenLauf(db: Datenbank, id: number): LaufZeile | undefined {
-  return db
+  const z = db
     .prepare(`SELECT ${LAUF_SPALTEN} FROM recherchelauf l WHERE l.id = ? AND l.ergebnis = ?`)
     .get('zu_pruefen' satisfies VorschlagZustand, id, 'ausgefuehrt' satisfies LaufErgebnis) as unknown as
-    LaufZeile | undefined;
+    LaufRoh | undefined;
+  return z ? alsLaufZeile(z) : undefined;
+}
+
+/** Alle noch ungeprüften Vorschläge mit dem Datum ihres Laufs, für den Abgleich beim Anlegen (E2-S5, Kriterium 3). */
+export function offeneVorschlaege(db: Datenbank): { daten: VorschlagKarte['daten']; lauf_datum: string }[] {
+  const zeilen = db
+    .prepare(
+      `SELECT v.daten, l.datum AS lauf_datum FROM vorschlag v JOIN recherchelauf l ON l.id = v.recherchelauf_id
+       WHERE v.zustand = ? ORDER BY v.id`,
+    )
+    .all('zu_pruefen' satisfies VorschlagZustand) as { daten: string; lauf_datum: string }[];
+  return zeilen.map((z) => ({ daten: JSON.parse(z.daten), lauf_datum: z.lauf_datum }));
 }
 
 export type VorschlagRoh = Pick<

@@ -4,9 +4,9 @@ import { VerwerfEingabe, type Verworfen } from '../../gemeinsam/verwerfen';
 import type { Uhr } from '../anbindungen/uhr';
 import { transaktion, type Datenbank } from '../daten/db';
 import { liesVorschlag, markiereVerworfen } from '../daten/laeufe';
-import { legeSperreAn, listeSperren } from '../daten/sperrliste';
+import { legeSperreAn, listeSperren, verlaengereSperre } from '../daten/sperrliste';
 import { FachFehler } from '../fehler';
-import { gueltigeSperre, sperrfolgeVerwerfen } from '../regeln/ausschluss';
+import { findeGueltigeSperre, sperreNachVerwerfen, sperrfolgeVerwerfen } from '../regeln/ausschluss';
 
 export function verwirfVorschlag(db: Datenbank, uhr: Uhr, vorschlagId: number, eingabe: unknown): Verworfen {
   return transaktion(db, () => {
@@ -29,12 +29,15 @@ export function verwirfVorschlag(db: Datenbank, uhr: Uhr, vorschlagId: number, e
       uhr.heute(),
     );
     // Steht die Firma oder Person schon mit einem gültigen Eintrag auf der Sperrliste, bleibt es bei diesem Eintrag;
-    // ein abgelaufener Eintrag zählt nicht, dann entsteht ein neuer.
-    const vorhanden = gueltigeSperre(
+    // endet eine Personensperre vor der neuen Frist, wird sie verlängert. Ein abgelaufener Eintrag zählt nicht.
+    const vorhanden = findeGueltigeSperre(
       listeSperren(db),
       { art: folge.art, name: folge.name, firma_name: folge.art === 'person' ? folge.firma_name : null },
       uhr.heute(),
     );
+    let gesperrtBis = folge.gesperrt_bis;
+    let name = folge.name;
+    let verlaengert = false;
     if (!vorhanden) {
       legeSperreAn(db, {
         art: folge.art,
@@ -45,8 +48,14 @@ export function verwirfVorschlag(db: Datenbank, uhr: Uhr, vorschlagId: number, e
         gesperrt_bis: folge.gesperrt_bis,
         erstellt_am: uhr.heute(),
       });
+    } else {
+      const n = sperreNachVerwerfen(vorhanden, folge);
+      if (n.verlaengern && n.gesperrt_bis) verlaengereSperre(db, vorhanden.id, n.gesperrt_bis, e.data.grund);
+      gesperrtBis = n.gesperrt_bis;
+      name = vorhanden.name;
+      verlaengert = n.verlaengern;
     }
     markiereVerworfen(db, v.id, e.data.grund);
-    return { sperreintrag: { art: folge.art, name: folge.name, gesperrt_bis: folge.gesperrt_bis, neu: !vorhanden } };
+    return { sperreintrag: { art: folge.art, name, gesperrt_bis: gesperrtBis, neu: !vorhanden, verlaengert } };
   });
 }

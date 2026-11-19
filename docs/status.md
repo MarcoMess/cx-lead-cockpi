@@ -40,9 +40,9 @@ Marco will zuerst den echten Agenten statt des Simulators. Gewählt: Die geplant
 | 13 | E10-S1 Sperrliste | story/E10-S1-sperrliste | #14 | Bestanden unter Vorbehalt (Runde 2; Kriterium 4 Teil Ausschlussliste mit E2-S2) | 1 von 2 |
 | 14 | E2-S4 Dubletten und Wiederansprache | story/E2-S4-dubletten | #15 | Bestanden (Runde 2) | 1 von 2 |
 | 15 | E3-S2 Angaben prüfen, Pflichtangaben | story/E3-S2-pflichtangaben | #16 | Bestanden (Runde 1), Sollte-Befunde behoben; wartet auf #14 und #15 | 0 von 2 |
-| 16 | E3-S4 Verwerfen | story/E3-S4-verwerfen | #17 | In Prüfung (Runde 2) | 1 von 2 |
-| 17 | E2-S5 Ergebnisdatei hochladen (mit Konzept 1.3) | story/E2-S5-upload | #18 | In Prüfung | 0 von 2 |
-| 18 | E1-S4 Echtbetrieb neben dem Vorführbestand (neu mit Konzept 1.3) | story/E1-S4-echtbetrieb | #19 | In Prüfung | 0 von 2 |
+| 16 | E3-S4 Verwerfen | story/E3-S4-verwerfen | #17 | In Prüfung (Runde 3, nach Nachbesserung 2) | 2 von 2 |
+| 17 | E2-S5 Ergebnisdatei hochladen (mit Konzept 1.3) | story/E2-S5-upload | #18 | In Prüfung (Runde 2, nach Nachbesserung 1) | 1 von 2 |
+| 18 | E1-S4 Echtbetrieb neben dem Vorführbestand (neu mit Konzept 1.3) | story/E1-S4-echtbetrieb | #19 | Bestanden (Runde 1), Sollte-Befunde in Arbeit | 0 von 2 |
 | 19 | E2-S2 Ausschlussliste (auch Nachweis E10-S1 #4) | – | – | Offen | 0 von 2 |
 
 Danach die übrigen Stories in der Reihenfolge aus `stories.md`.
@@ -55,6 +55,10 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 
 | Herkunft | Punkt | Wohin |
 |---|---|---|
+| E2-S5 R1 | Fragen an Marco: Pause, Urlaubssperre, Obergrenze und Lauftage auf dem Upload-Weg; zwei Dateien nach einem ausgelassenen Tag (Konzept Abschnitt 13 `[Offen]`); Recht (§ 7 UWG) und Löschfrist vor echten Daten | Rückfrage an Marco |
+| E2-S5 R1 | Hinweis auf S2 »Der Lauf vom … kam nicht über die API an« aus dem Clickdummy: Das Cockpit erfährt davon nicht, solange der Agent es nicht erreicht; im Vorführweg bietet die Vorführleiste die Datei an | mit E2-S6 entscheiden |
+| E2-S5 R1 | Prompt der Claude-Aufgabe: reines JSON in UTF-8, erlaubte Werte, höchstens 10 Vorschläge | E2-S6 |
+| E2-S5 R1 | Gleicher Stammname in einem anderen Land (»Hansemarkt Handels AG« CH) gilt nach Konzept als dieselbe Firma | Rückfrage an Marco, falls unerwünscht |
 | E1-S0 | Der Vite-Proxy liest `PORT` nicht aus `.env` | Pflege vor dem Halt |
 | E1-S0 | Untertitel der Screens fehlen noch teilweise | mit dem jeweiligen Screen |
 | Pflege 1 R1 | `transaktion()` mit asynchroner Funktion; Vorführleiste ohne Fehlermeldung (E1-S2 #4) | Pflege vor dem Halt |

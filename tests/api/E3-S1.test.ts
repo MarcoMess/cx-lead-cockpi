@@ -23,6 +23,7 @@ describe('E3-S1 Eingangskorb zeigt Läufe und Vorschläge', () => {
         anzahl_vorschlaege: 10,
         anzahl_freigegeben: 7,
         abdeckungsgrenzen: '2 Profile ohne verifizierte URL',
+        einlese_hinweise: [],
         offen: 0,
       },
       {
@@ -30,6 +31,7 @@ describe('E3-S1 Eingangskorb zeigt Läufe und Vorschläge', () => {
         anzahl_vorschlaege: 8,
         anzahl_freigegeben: 6,
         abdeckungsgrenzen: 'Nur 8 belegte Treffer, Lücke benannt',
+        einlese_hinweise: [],
         offen: 0,
       },
       {
@@ -38,6 +40,7 @@ describe('E3-S1 Eingangskorb zeigt Läufe und Vorschläge', () => {
         anzahl_vorschlaege: 10,
         anzahl_freigegeben: 8,
         abdeckungsgrenzen: null,
+        einlese_hinweise: [],
         offen: 0,
       },
     ]);

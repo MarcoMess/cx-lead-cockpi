@@ -32,6 +32,11 @@ export function legeSperreAn(
 }
 
 /** true, wenn ein Eintrag entfernt wurde. */
+/** Verlängert einen Eintrag und hält den neuen Grund fest. */
+export function verlaengereSperre(db: Datenbank, id: number, gesperrtBis: string, grund: string): void {
+  db.prepare(`UPDATE sperreintrag SET gesperrt_bis = ?, grund = ? WHERE id = ?`).run(gesperrtBis, grund, id);
+}
+
 export function entferneSperre(db: Datenbank, id: number): boolean {
   return db.prepare(`DELETE FROM sperreintrag WHERE id = ?`).run(id).changes > 0;
 }

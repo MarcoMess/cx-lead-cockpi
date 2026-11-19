@@ -1,6 +1,6 @@
 # CX Lead Cockpit – Stories
 
-Abgeleitet aus: konzept.md Version 1.2, clickdummy.html vom 18.11.2026 · Stand: Freigegeben (Marco, 18.11.2026); Wegbereiter E1-S0, E1-S2, E1-S3 aus der Architektur am 19.11.2026 ergänzt und freigegeben
+Abgeleitet aus: konzept.md Version 1.3, clickdummy.html vom 18.11.2026 · Stand: Freigegeben (Marco, 18.11.2026); Wegbereiter E1-S0, E1-S2, E1-S3 aus der Architektur am 19.11.2026 ergänzt und freigegeben
 
 Konzept und Clickdummy sind von Marco freigegeben. Die Stories folgen dem Konzept; wo der Clickdummy abweicht, steht das unter »Fragen an das Konzept«. Beispielwerte stammen aus Abschnitt 8 des Konzepts. Als »heute« gilt, wenn nichts anderes dasteht, der 18.11.2026.
 
@@ -8,7 +8,7 @@ Konzept und Clickdummy sind von Marco freigegeben. Die Stories folgen dem Konzep
 
 | Epic | Stories | Bezug im Konzept |
 |---|---|---|
-| E1 – Grundlagen | 4 | Abschnitt 3, 11 · architektur.md |
+| E1 – Grundlagen | 5 | Abschnitt 3, 11 · architektur.md |
 | E2 – Recherchelauf übernehmen | 6 | A1, F1, F9, Regeln Laufentscheidung und Dublettenprüfung |
 | E3 – Vorschläge prüfen und freigeben | 4 | A2, F2, S2 |
 | E4 – Firmen und Kontakte führen | 4 | F3, S3, S4 |
@@ -19,7 +19,7 @@ Konzept und Clickdummy sind von Marco freigegeben. Die Stories folgen dem Konzep
 | E9 – Wirkung prüfen | 3 | A6, F6, S1 |
 | E10 – Einstellungen und Schnittstelle | 5 | F8, F9, S8 |
 
-Zusammen 46 Stories.
+Zusammen 47 Stories.
 
 ## Vorgeschlagene Reihenfolge
 
@@ -58,7 +58,7 @@ Zuerst der dünnste Weg durch den Kern: Lauf kommt an, wird freigegeben, Kontakt
 31. E8-S6 – Laufprotokoll und nächster Lauf
 32. E10-S2 – API-Schlüssel erneuern
 33. E2-S6 – der Agent läuft als geplante Claude-Aufgabe gegen das Cockpit
-34. E2-S5 – Ausweichweg Datei-Upload
+34. E2-S5 – Ausweichweg Datei-Upload, danach E1-S4 – Echtbetrieb neben dem Vorführbestand (beide neu mit Konzept 1.3)
 35. E10-S3 – Fristen und Signatur in den Einstellungen
 36. E5-S4 – E-Mail-Fassung auf Knopfdruck
 37. E5-S5 – E-Mail-Grundlage und Entwurf im Mailprogramm

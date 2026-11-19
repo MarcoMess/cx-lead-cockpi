@@ -55,7 +55,7 @@ describe('Pflege nach den Prüfungen E1-S0 bis E2-S3', () => {
     ({ app } = await neueApp());
     const lauf = JSON.parse(readFileSync('src/simulator/beispiel-lauf.json', 'utf8'));
     lauf.vorschlaege[0].firma.land = 'XX';
-    lauf.vorschlaege[1].firma.umsatz_wert = '88';
+    lauf.vorschlaege[1].firma.umsatz_wert = 'achtundachtzig';
     lauf.vorschlaege[2] = null;
     const r = await app.inject({ method: 'POST', url: '/api/v1/agent/laeufe', headers: AGENT, payload: lauf });
     expect(r.json().zurueckgewiesen).toEqual([
@@ -63,13 +63,20 @@ describe('Pflege nach den Prüfungen E1-S0 bis E2-S3', () => {
         index: 0,
         feld: 'firma.land',
         meldung: 'Das Feld »firma.land« hat einen unzulässigen Wert. Erlaubt: DE, AT, CH.',
+        bezeichnung: 'Sabine Kortmann, Kranbau Oberhavel GmbH',
       },
       {
         index: 1,
         feld: 'firma.umsatz_wert',
         meldung: 'Das Feld »firma.umsatz_wert« hat den falschen Typ (erwartet: number).',
+        bezeichnung: 'Miriam Voss, Hansemarkt Handels SE',
       },
-      { index: 2, feld: 'vorschlag', meldung: 'Der Vorschlag muss ein Objekt mit »firma« und »person« sein.' },
+      {
+        index: 2,
+        feld: 'vorschlag',
+        meldung: 'Der Vorschlag muss ein Objekt mit »firma« und »person« sein.',
+        bezeichnung: 'ohne Namen',
+      },
     ]);
     const zahl = await app.inject({
       method: 'POST',

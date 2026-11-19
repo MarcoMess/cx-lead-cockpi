@@ -113,3 +113,103 @@ describe('E2-S5 Ergebnisdatei hochladen', () => {
     expect(spaeter.find((x: { id: number }) => x.id === k('Kortmann').id).gesperrt).toBeNull();
   });
 });
+
+describe('E2-S5 Prüfung 1, Nachbesserung', () => {
+  it('Befund 1 (#3): dieselbe Datei am Folgetag, erster Lauf noch ungeprüft → kein Lauf, jeder Vorschlag genannt', async () => {
+    const rufe = await marco();
+    expect((await rufe('POST', '/laeufe/upload', BEISPIEL)).statusCode).toBe(201);
+    await rufe('POST', '/sim/datum', { heute: '2026-11-20' });
+    const r = await rufe('POST', '/laeufe/upload', BEISPIEL);
+    expect(r.statusCode).toBe(422);
+    expect(r.json().fehler.code).toBe('nichts_neu');
+    expect(r.json().fehler.meldung).toContain(
+      'Nr. 2 (Miriam Voss, Hansemarkt Handels SE) nicht noch einmal angelegt: liegt schon ungeprüft im Lauf vom 19.11.2026.',
+    );
+    expect(zahl(`SELECT COUNT(*) n FROM recherchelauf WHERE datum = '2026-11-20'`)).toBe(0);
+    expect(zahl(`SELECT COUNT(*) n FROM vorschlag WHERE zustand = 'zu_pruefen'`)).toBe(4);
+    // Der Tag bleibt frei: eine Datei mit einem neuen Vorschlag geht noch am selben Tag.
+    const neu = structuredClone(BEISPIEL);
+    neu.vorschlaege[0].person = {
+      ...neu.vorschlaege[0].person,
+      vorname: 'Jonas',
+      nachname: 'Erfunden',
+      linkedin_url: null,
+    };
+    const zwei = await rufe('POST', '/laeufe/upload', neu);
+    expect(zwei.json()).toMatchObject({ angelegt: 1 });
+    expect(zwei.json().bereits_vorhanden).toHaveLength(3);
+  });
+
+  it('Befund 2: gleicher Firmenname in einem anderen Land wird der bestehenden Firma zugeordnet, Freigabe ohne Fehler', async () => {
+    const rufe = await marco();
+    const v = structuredClone(BEISPIEL.vorschlaege[1]);
+    v.firma.name = 'Nordwerk Fördertechnik AG';
+    v.firma.land = 'AT';
+    v.person = { ...v.person, vorname: 'Lena', nachname: 'Erfunden', linkedin_url: null };
+    const r = await rufe('POST', '/laeufe/upload', { vorschlaege: [v] });
+    const karte = (await rufe('GET', `/laeufe/${r.json().lauf_id}`)).json().vorschlaege[0];
+    expect(karte.bestehende_firma).toEqual({ id: 1, name: 'Nordwerk Fördertechnik GmbH' });
+    const f = await rufe('POST', `/vorschlaege/${karte.id}/freigabe`);
+    expect(f.statusCode).toBe(200);
+    expect(zahl(`SELECT COUNT(*) n FROM firma WHERE name LIKE 'Nordwerk%'`)).toBe(1);
+  });
+
+  it('Befund 3: Sperrliste trifft »HORNBACH Baumarkt AG«, »Bobst Group SA« und Personen mit Titel im Eintrag', async () => {
+    const rufe = await marco();
+    await rufe('POST', '/sperrliste', { art: 'person', name: 'Herr Reto Ammann' });
+    const [a, b] = [structuredClone(BEISPIEL.vorschlaege[0]), structuredClone(BEISPIEL.vorschlaege[2])];
+    a.firma.name = 'HORNBACH Baumarkt AG';
+    b.firma.name = 'Bobst Group SA';
+    const c = structuredClone(BEISPIEL.vorschlaege[3]);
+    const r = await rufe('POST', '/laeufe/upload', { vorschlaege: [a, b, c] });
+    const karten = (await rufe('GET', `/laeufe/${r.json().lauf_id}`)).json().vorschlaege;
+    expect(karten.map((k: { gesperrt: { art: string; name: string } | null }) => k.gesperrt)).toMatchObject([
+      { art: 'firma', name: 'HORNBACH' },
+      { art: 'firma', name: 'BOBST' },
+      { art: 'person', name: 'Herr Reto Ammann' },
+    ]);
+    expect((await rufe('POST', `/vorschlaege/${karten[0].id}/freigabe`)).json().fehler.code).toBe('gesperrt');
+  });
+
+  it('Befund 4: typische KI-Abweichungen werden geglättet statt zurückgewiesen', async () => {
+    const rufe = await marco();
+    const v = structuredClone(BEISPIEL.vorschlaege[0]);
+    Object.assign(v.firma, {
+      land: 'Deutschland',
+      umsatz_wert: '121',
+      umsatz_jahr: '2025',
+      umsatz_bezug: 'Konzern',
+      umsatz_waehrung: 'eur',
+    });
+    v.person.anrede = '';
+    v.anlass.typ = 'Unternehmensanlass';
+    const r = await rufe('POST', '/laeufe/upload', { vorschlaege: [v] });
+    expect(r.json()).toMatchObject({ angelegt: 1, zurueckgewiesen: [] });
+    const karte = (await rufe('GET', `/laeufe/${r.json().lauf_id}`)).json().vorschlaege[0];
+    expect(karte.daten.firma).toMatchObject({
+      land: 'DE',
+      umsatz_wert: 121,
+      umsatz_jahr: 2025,
+      umsatz_bezug: 'konzern',
+      umsatz_waehrung: 'EUR',
+    });
+    expect(karte.daten.person.anrede).toBeNull();
+    expect(karte.daten.anlass.typ).toBe('unternehmensanlass');
+    expect(karte.fehlende_pflichtangaben).toContain('Anrede fehlt');
+  });
+
+  it('Ältere Datenbank ohne die neue Spalte wird beim Öffnen nachgezogen', async () => {
+    const { oeffneDatenbank } = await import('../../src/server/daten/db');
+    const { mkdtempSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { tmpdir } = await import('node:os');
+    const pfad = join(mkdtempSync(join(tmpdir(), 'cockpit-')), 'alt.sqlite');
+    const alt = oeffneDatenbank(pfad);
+    alt.exec('ALTER TABLE recherchelauf DROP COLUMN einlese_hinweise');
+    alt.close();
+    const neu = oeffneDatenbank(pfad);
+    const spalten = (neu.prepare('PRAGMA table_info(recherchelauf)').all() as { name: string }[]).map((s) => s.name);
+    expect(spalten).toContain('einlese_hinweise');
+    neu.close();
+  });
+});

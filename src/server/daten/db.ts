@@ -16,7 +16,24 @@ export function oeffneDatenbank(pfad: string): Datenbank {
   db.exec('PRAGMA foreign_keys = ON');
   const hatSchema = db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'firma'`).get();
   if (!hatSchema) db.exec(SCHEMA);
+  else zieheSpaltenNach(db);
   return db;
+}
+
+/**
+ * Neue, nur hinzugefügte Spalten in einer schon bestehenden Datei nachziehen, damit `data/echt.sqlite` nach einem
+ * Update weiterläuft (Prüfung E1-S4, Hinweis »Keine Migrationen«). Nur Spalten mit NULL als Vorgabe; alles andere
+ * bleibt bei `npm run reset` (architektur.md, Abschnitt 9).
+ */
+const NACHZUZIEHEN: { tabelle: string; spalte: string; typ: string }[] = [
+  { tabelle: 'recherchelauf', spalte: 'einlese_hinweise', typ: 'TEXT' },
+];
+
+function zieheSpaltenNach(db: Datenbank): void {
+  for (const n of NACHZUZIEHEN) {
+    const spalten = db.prepare(`PRAGMA table_info(${n.tabelle})`).all() as { name: string }[];
+    if (!spalten.some((s) => s.name === n.spalte)) db.exec(`ALTER TABLE ${n.tabelle} ADD COLUMN ${n.spalte} ${n.typ}`);
+  }
 }
 
 let sicherungspunkt = 0;

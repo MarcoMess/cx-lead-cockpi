@@ -8,6 +8,8 @@ export interface LaufZeile {
   anzahl_vorschlaege: number;
   anzahl_freigegeben: number;
   abdeckungsgrenzen: string | null;
+  /** Was beim Einlesen nicht übernommen wurde (zurückgewiesen oder schon offen), je Eintrag ein Satz. */
+  einlese_hinweise: string[];
   offen: number;
 }
 

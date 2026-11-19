@@ -8,5 +8,14 @@ export const VerwerfEingabe = z.object(
 );
 
 export interface Verworfen {
-  sperreintrag: { art: 'firma' | 'person'; name: string; gesperrt_bis: string | null; neu: boolean };
+  sperreintrag: {
+    art: 'firma' | 'person';
+    /** Name im Eintrag; war die Firma oder Person schon gesperrt, der des vorhandenen Eintrags. */
+    name: string;
+    /** Tatsächliches Ende der Sperre laut Sperrliste; null bei Firmensperren und dauerhaften Einträgen. */
+    gesperrt_bis: string | null;
+    neu: boolean;
+    /** Eine vorhandene Personensperre wurde bis zur neuen Frist verlängert. */
+    verlaengert: boolean;
+  };
 }
