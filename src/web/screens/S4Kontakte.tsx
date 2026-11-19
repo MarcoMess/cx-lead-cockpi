@@ -26,13 +26,20 @@ export function S4Kontakte() {
   const [fehler, setFehler] = useState('');
 
   useEffect(() => {
+    let aktuell = true; // Antworten zu einem nicht mehr gewählten Filter verwerfen (Prüfung E4-S2, Sollte 1).
     api<KontaktZeile[]>('GET', `/kontakte?status=${filter}`).then(
       (k) => {
+        if (!aktuell) return;
         setKontakte(k);
         setFehler('');
       },
-      (e: Error) => setFehler(e.message),
+      (e: Error) => {
+        if (aktuell) setFehler(e.message);
+      },
     );
+    return () => {
+      aktuell = false;
+    };
   }, [filter, stand]);
 
   return (

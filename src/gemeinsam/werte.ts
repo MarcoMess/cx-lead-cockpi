@@ -50,6 +50,11 @@ export const EMAIL_GRUNDLAGE = ['in_hubspot_bekannt', 'hat_geantwortet', 'andere
 export type EmailGrundlage = (typeof EMAIL_GRUNDLAGE)[number];
 export const NACHRICHT_KANAL = ['linkedin', 'email'] as const;
 export const NACHRICHT_FASSUNG = ['agent', 'von_marco_geaendert', 'vorlage'] as const;
+export type NachrichtFassung = (typeof NACHRICHT_FASSUNG)[number];
+export const ANSPRACHE_MODUS = ['erstkontakt', 'nachfassen', 'keine'] as const;
+export type AnspracheModus = (typeof ANSPRACHE_MODUS)[number];
+/** Zielkorridor der LinkedIn-Nachricht in Wörtern (Konzept, Abschnitt 9). */
+export const LINKEDIN_WORTE = { von: 45, bis: 70 } as const;
 export const ANLASS_TYP = ['eigener_beitrag', 'unternehmensanlass', 'kein_anlass'] as const;
 export const WIEDERVORLAGE_ART = ['nachfassen', 'schliessen_vorschlag', 'frei'] as const;
 export const ANREDEN = ['Frau', 'Herr'] as const;

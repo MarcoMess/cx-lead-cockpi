@@ -28,14 +28,14 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 7 | E3-S3 Freigeben | story/E3-S3-freigeben | #8 | Zusammengeführt (Runde 1 bestanden; Nachtrag in der Prüfung von E4-S2 mitgeprüft) | 0 von 2 |
 | 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | #9 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | #10 | In Prüfung | 0 von 2 |
-| 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | – | Offen | 0 von 2 |
+| 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | #11 | In Prüfung | 0 von 2 |
 | 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | – | Offen | 0 von 2 |
 | 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | – | Offen | 0 von 2 |
 
 Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
 
 ## Nächster Schritt
-E5-S1 Ansprache-Ansicht umsetzen; Prüfung von E4-S3 abwarten, dann #10 zusammenführen.
+E5-S2 Kopieren und Profil öffnen umsetzen; Prüfungen von E4-S3 und E5-S1 abwarten.
 
 ## Offene Punkte aus den Prüfungen
 Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der Story erledigt, die den Bereich ohnehin anfasst, spätestens in einer Pflege vor dem Halt.
@@ -50,7 +50,8 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 | E3-S3 | Dublettenkennzeichnung, Abgleich über Domain, Sperre der Freigabe | E2-S4 |
 | E3-S3 | Frist von 6 Monaten und neuer Anlass bei Wiederansprache | E10-S1 ff. |
 | E4-S2 | Filter nach Merkmal und Tagen | E9 |
-| E4-S2 | Kontaktliste ohne Schutz gegen späte Antworten beim Filterwechsel; Tests zu #1 prüfen Funktion und Firma nur auf »nicht leer« | E5-S1 (Pflege) |
+| E4-S2 | Kontaktliste ohne Schutz gegen späte Antworten beim Filterwechsel; Tests zu #1 prüfen Funktion und Firma nur auf »nicht leer« | erledigt mit E5-S1 |
+| E5-S1 | Kriterium 7 nennt Bernasconi, der auf »Nachgefasst« steht und keine Ansprache hat | Frage an Marco |
 | E4-S2 | Meldung `filter_ungueltig` ohne Handlungshinweis; »Dr.« fehlt in der Meldung `person_bekannt` | Pflege vor dem Halt |
 | Konzept | 21-Tage-Schließvorschlag für Reinhardts Altdaten | Entscheidung mit E6-S5 |
 | Konzept | Rechtliches (UWG E-Mail, InMail) und Datenschutz | Frage an Marco vor dem Echtbetrieb |
