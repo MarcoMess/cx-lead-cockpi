@@ -47,8 +47,9 @@ export async function agentMeldetSich(
   const lauf = lies(app.db, GELIEFERT) === '1' ? LEERER_LAUF : BEISPIEL_LAUF;
 
   if (lies(app.db, GESTOERT) === '1') {
+    // Nicht als geliefert merken: Wird die Störung wieder ausgeschaltet, liefert der Agent den Lauf erneut
+    // (Prüfung E1-S3, Befund 2). Den Upload der Ergebnisdatei baut E2-S5.
     schreibe(app.db, DATEI, JSON.stringify(lauf));
-    schreibe(app.db, GELIEFERT, '1');
     return {
       ergebnis: 'api_gestoert',
       meldung:
@@ -75,6 +76,8 @@ export async function agentMeldetSich(
   }
   const ergebnis = r.json() as LaufAngelegt;
   schreibe(app.db, GELIEFERT, '1');
+  // Der Lauf ist angekommen: Eine liegengebliebene Ergebnisdatei gilt nicht mehr (Prüfung E3-S1, Befund 4).
+  schreibe(app.db, DATEI, null);
   return {
     ergebnis: 'lauf_angelegt',
     lauf_id: ergebnis.lauf_id,
