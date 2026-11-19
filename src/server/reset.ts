@@ -1,6 +1,7 @@
 // `npm run reset`: Datenbankdatei neu anlegen und über setzeZurueck() in den Ausgangszustand bringen.
 import { randomBytes } from 'node:crypto';
 import { rmSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { ladeUmgebung } from './umgebung';
 import { oeffneDatenbank } from './daten/db';
 import { zaehleBestand } from './daten/leeren';
@@ -10,7 +11,9 @@ import { VORFUEHR_START_DATUM } from '../gemeinsam/werte';
 ladeUmgebung();
 const datenbankPfad = process.env.DATABASE_PATH ?? './data/cockpit.sqlite';
 // Der Echtbestand wird nie zurückgesetzt (Story E1-S4, Kriterium 3).
-if (/(^|[\\/])echt\.sqlite$/i.test(datenbankPfad) || datenbankPfad === process.env.ECHT_DATABASE_PATH) {
+// Verglichen werden aufgelöste Pfade ohne Groß-/Kleinschreibung (Prüfung E1-S4, Hinweis zu ECHT_DATABASE_PATH).
+const gleicherPfad = (a: string, b: string | undefined) => !!b && resolve(a).toLowerCase() === resolve(b).toLowerCase();
+if (/(^|[\\/])echt\.sqlite$/i.test(datenbankPfad) || gleicherPfad(datenbankPfad, process.env.ECHT_DATABASE_PATH)) {
   console.error(`Abgebrochen: ${datenbankPfad} ist die Datenbank des Echtbetriebs und wird nicht zurückgesetzt.`);
   process.exit(1);
 }

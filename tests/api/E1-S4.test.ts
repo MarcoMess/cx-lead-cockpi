@@ -7,6 +7,7 @@ import { baueApp } from '../../src/server/app';
 import { Uhr } from '../../src/server/anbindungen/uhr';
 
 const PFAD = './data/test-echt.sqlite';
+const SPERR_PFAD = './data/test-sperre/echt.sqlite';
 const loesche = () => {
   for (const e of ['', '-wal', '-shm']) rmSync(PFAD + e, { force: true });
 };
@@ -55,7 +56,8 @@ describe('E1-S4 Echtbetrieb neben dem Vorführbestand', () => {
     let fehler = '';
     try {
       execSync('npx tsx src/server/reset.ts', {
-        env: { ...process.env, DATABASE_PATH: './data/echt.sqlite', ECHT_DATABASE_PATH: PFAD },
+        // Nie die echte Datei: Ein Pfad, den die Sperre am Dateinamen erkennt (Prüfung E1-S4, Sollte 1).
+        env: { ...process.env, DATABASE_PATH: SPERR_PFAD, ECHT_DATABASE_PATH: PFAD },
         encoding: 'utf8',
         stdio: 'pipe',
       });
@@ -63,7 +65,27 @@ describe('E1-S4 Echtbetrieb neben dem Vorführbestand', () => {
       fehler = String((e as { stderr?: string }).stderr);
     }
     expect(fehler).toContain('wird nicht zurückgesetzt');
+    expect(existsSync(SPERR_PFAD)).toBe(false);
     expect(existsSync(PFAD) && statSync(PFAD).size).toBe(vorher);
+  }, 30000);
+
+  it('E1-S4 #3 die Sperre erkennt ECHT_DATABASE_PATH auch in anderer Schreibweise', () => {
+    let fehler = '';
+    try {
+      execSync('npx tsx src/server/reset.ts', {
+        env: {
+          ...process.env,
+          DATABASE_PATH: 'data/test-pruef-echt.sqlite',
+          ECHT_DATABASE_PATH: './data/TEST-pruef-echt.sqlite',
+        },
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    } catch (e) {
+      fehler = String((e as { stderr?: string }).stderr);
+    }
+    expect(fehler).toContain('wird nicht zurückgesetzt');
+    expect(existsSync('data/test-pruef-echt.sqlite')).toBe(false);
   }, 30000);
 
   it('E1-S4 #2 ohne Vorführmodus: keine Adressen unter /api/v1/sim, echtes Datum', async () => {

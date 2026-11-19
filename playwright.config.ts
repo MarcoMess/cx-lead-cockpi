@@ -16,6 +16,18 @@ const testEnv = {
   COCKPIT_SESSION_SECRET: randomBytes(32).toString('hex'),
 };
 
+// Echtbetrieb über den Befehl selbst (`scripts/echt.mjs`, Story E1-S4), mit eigener Datenbank und eigenen Ports.
+const ECHT_API_PORT = process.env.TEST_ECHT_API_PORT ?? String(Number(API_PORT) + 2);
+const ECHT_WEB_PORT = process.env.TEST_ECHT_WEB_PORT ?? String(Number(WEB_PORT) + 2);
+export const ECHT_BASIS = `http://localhost:${ECHT_WEB_PORT}`;
+const echtEnv = {
+  ...testEnv,
+  ECHT_DATABASE_PATH: './data/test-echt-ui.sqlite',
+  PORT: ECHT_API_PORT,
+  API_PORT: ECHT_API_PORT,
+  WEB_PORT: ECHT_WEB_PORT,
+};
+
 export default defineConfig({
   testDir: 'tests/oberflaeche',
   fullyParallel: false,
@@ -41,6 +53,14 @@ export default defineConfig({
       env: testEnv,
       reuseExistingServer: false,
       timeout: 60_000,
+    },
+    {
+      command:
+        "node -e \"for (const e of ['', '-wal', '-shm']) require('fs').rmSync('./data/test-echt-ui.sqlite' + e, { force: true })\" && node scripts/echt.mjs",
+      url: ECHT_BASIS,
+      env: echtEnv,
+      reuseExistingServer: false,
+      timeout: 90_000,
     },
   ],
 });

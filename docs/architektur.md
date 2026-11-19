@@ -316,9 +316,11 @@ cx-lead-cockpit/
 | Starten | `npm run dev` |
 | Alle Tests | `npm test` |
 | Startdaten zurücksetzen | `npm run reset` |
+| Echtbetrieb starten (Konzept 1.3) | `npm run echt` |
 
 - `npm run einrichten` führt `npm install`, `npx playwright install chromium`, das Anlegen von `.env` aus `.env.example` und `npm run reset` aus.
 - `npm run dev` startet den Server auf Port 3000 und die Oberfläche auf http://localhost:5173, mit `COCKPIT_DEMO=1`. Anmeldung mit dem Passwort aus `.env`.
+- `npm run echt` (`scripts/echt.mjs`) richtet beim ersten Start `data/echt.sqlite` ein (Sperrliste-Startbestand und Rechercheprofil, sonst leer; `src/server/echt.ts`) und startet dann `npm run dev` mit `DATABASE_PATH=./data/echt.sqlite` (oder `ECHT_DATABASE_PATH`) und `COCKPIT_DEMO=0`: keine Vorführleiste, keine Adressen unter `/api/v1/sim`, echtes Datum. `npm run reset` verweigert diese Datei; Playwright startet den Befehl mit eigener Datenbank `data/test-echt-ui.sqlite` und eigenen Ports.
 - `npm test` führt nacheinander aus: Typprüfung (`tsc --noEmit`), ESLint, Vitest, Playwright. Der Befehl endet mit Fehler, sobald ein Teil scheitert.
 - `npm run reset` löscht die Datenbank unter `DATABASE_PATH` (Vorgabe `./data/cockpit.sqlite`), legt das Schema an, lädt die Startdaten und stellt die Uhr auf 2026-11-18.
 
@@ -365,6 +367,7 @@ Jeder Test trägt die Story und die Nummer des Kriteriums im Namen, zum Beispiel
 | E1-S0 Grundgerüst | alle | Projekt nach Abschnitt 7, Schema mit allen Tabellen aus Abschnitt 4, Startdaten, vier Befehle, leere Screens S1–S9, Fehlerformat, `GET /gesundheit` |
 | E1-S1 Zugang | api, web, daten | Passwort aus `.env`, Agenten-Schlüssel als Hash; Rollenprüfung zentral als Fastify-Hook |
 | E1-S2 Vorführdatum, Zurücksetzen, Vorführleiste | anbindungen (Uhr), simulator, web | nur bei `COCKPIT_DEMO=1` |
+| E1-S4 Echtbetrieb | server (`echt.ts`, `reset.ts`), daten (`startdaten.ts` `ladeGrundbestand`), dienste (`richte-echtbetrieb-ein.ts`), scripts | getrennt über `DATABASE_PATH` und `COCKPIT_DEMO`; derselbe Code wie der Vorführbestand |
 | E1-S3 Agenten-Simulator | simulator | legt über die Agenten-API den Beispiel-Lauf an; den vollen Ablauf mit Laufauftrag und Ausschlussliste ergänzt E2-S6 |
 | E2-S1 Laufauftrag | api, dienste, regeln, anbindungen | `laufentscheidung.ts`; schreibt beim Abruf Protokolleinträge für entfallene Lauftage |
 | E2-S2 Ausschlussliste | api, dienste, regeln | `ausschluss.ts`; 6-Monats-Frist über die Uhr |
