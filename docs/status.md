@@ -24,9 +24,9 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 4 | E2-S3 Lauf anlegen | story/E2-S3-lauf-anlegen | #4 | Zusammengeführt (Prüfung 1 bestanden) | 0 von 2 |
 | 5 | E1-S3 Agenten-Simulator | story/E1-S3-agenten-simulator | #5 | Zusammengeführt (Prüfung 1 bestanden) | 0 von 2 |
 | 5a | Pflege 1 Bausteingrenzen | pflege/bausteingrenzen | #6 | In Prüfung (Runde 2) | 1 von 2 |
-| 6 | E3-S1 Eingangskorb | story/E3-S1-eingangskorb | #7 | Bestanden (Runde 2), wartet auf Pflege 1 | 1 von 2 |
-| 7 | E3-S3 Freigeben | story/E3-S3-freigeben | #8 | Bestanden (Runde 1), zwei Sollte-Befunde behoben, wartet auf Vorgänger | 0 von 2 |
-| 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | #9 | In Prüfung | 0 von 2 |
+| 6 | E3-S1 Eingangskorb | story/E3-S1-eingangskorb | #7 | Zusammengeführt (Runde 2 bestanden) | 1 von 2 |
+| 7 | E3-S3 Freigeben | story/E3-S3-freigeben | #8 | Zusammengeführt (Runde 1 bestanden; Nachtrag in der Prüfung von E4-S2 mitgeprüft) | 0 von 2 |
+| 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | #9 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | – | Offen | 0 von 2 |
 | 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | – | Offen | 0 von 2 |
 | 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | – | Offen | 0 von 2 |
@@ -48,6 +48,8 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 | E3-S3 | Dublettenkennzeichnung, Abgleich über Domain, Sperre der Freigabe | E2-S4 |
 | E3-S3 | Frist von 6 Monaten und neuer Anlass bei Wiederansprache | E10-S1 ff. |
 | E4-S2 | Filter nach Merkmal und Tagen | E9 |
+| E4-S2 | Kontaktliste ohne Schutz gegen späte Antworten beim Filterwechsel; Tests zu #1 prüfen Funktion und Firma nur auf »nicht leer« | E5-S1 (Pflege) |
+| E4-S2 | Meldung `filter_ungueltig` ohne Handlungshinweis; »Dr.« fehlt in der Meldung `person_bekannt` | Pflege vor dem Halt |
 | Konzept | 21-Tage-Schließvorschlag für Reinhardts Altdaten | Entscheidung mit E6-S5 |
 | Konzept | Rechtliches (UWG E-Mail, InMail) und Datenschutz | Frage an Marco vor dem Echtbetrieb |
 
