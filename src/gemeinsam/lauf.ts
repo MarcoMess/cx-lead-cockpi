@@ -16,12 +16,13 @@ const klein = (w: string) =>
 /** Leerer Text gilt als fehlend; sonst unverändert. */
 const ohneLeer = (w: unknown) => (typeof w === 'string' && w.trim() === '' ? null : w);
 
-/** »121«, »121,5« oder »1.234,5« wird zur Zahl; anderes bleibt, wie es ist, und fällt bei der Prüfung auf. */
+/** »121«, »121,5«, »1.065« oder »1.234,5« wird zur Zahl; anderes bleibt, wie es ist, und fällt bei der Prüfung auf. */
 export function zahlAusText(w: unknown): unknown {
   const v = ohneLeer(w);
   if (typeof v !== 'string') return v;
   const t = v.trim().replace(/\s/g, '');
-  if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(t)) return Number(t.replace(/\./g, '').replace(',', '.'));
+  // Tausenderpunkte nur zusammen mit Dezimalkomma (»1.234,5«); »1.065« bleibt 1,065 (Prüfung E2-S5 Runde 2, Sollte 1).
+  if (/^-?\d{1,3}(\.\d{3})+,\d+$/.test(t)) return Number(t.replace(/\./g, '').replace(',', '.'));
   if (/^-?\d+([.,]\d+)?$/.test(t)) return Number(t.replace(',', '.'));
   return v;
 }

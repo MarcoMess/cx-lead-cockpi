@@ -41,7 +41,7 @@ Marco will zuerst den echten Agenten statt des Simulators. Gewählt: Die geplant
 | 14 | E2-S4 Dubletten und Wiederansprache | story/E2-S4-dubletten | #15 | Bestanden (Runde 2) | 1 von 2 |
 | 15 | E3-S2 Angaben prüfen, Pflichtangaben | story/E3-S2-pflichtangaben | #16 | Bestanden (Runde 1), Sollte-Befunde behoben; wartet auf #14 und #15 | 0 von 2 |
 | 16 | E3-S4 Verwerfen | story/E3-S4-verwerfen | #17 | Bestanden (Runde 3) | 2 von 2 |
-| 17 | E2-S5 Ergebnisdatei hochladen (mit Konzept 1.3) | story/E2-S5-upload | #18 | In Prüfung (Runde 2, nach Nachbesserung 1) | 1 von 2 |
+| 17 | E2-S5 Ergebnisdatei hochladen (mit Konzept 1.3) | story/E2-S5-upload | #18 | Bestanden (Runde 2); neue Regeln in Abschnitt 9 als [Annahme] zur Bestätigung | 1 von 2 |
 | 18 | E1-S4 Echtbetrieb neben dem Vorführbestand (neu mit Konzept 1.3) | story/E1-S4-echtbetrieb | #19 | Bestanden (Runde 1), Sollte-Befunde in Arbeit | 0 von 2 |
 | 19 | E2-S2 Ausschlussliste (auch Nachweis E10-S1 #4) | – | – | Offen | 0 von 2 |
 

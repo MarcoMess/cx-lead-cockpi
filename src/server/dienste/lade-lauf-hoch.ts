@@ -14,5 +14,10 @@ export function ladeLaufHoch(db: Datenbank, uhr: Uhr, inhalt: unknown): LaufAnge
       'Die Datei lässt sich nicht lesen: Erwartet wird ein Lauf im JSON-Format mit der Liste »vorschlaege«.',
     );
   }
+  const liste = (inhalt as { vorschlaege?: unknown }).vorschlaege;
+  if (Array.isArray(liste) && liste.length === 0) {
+    // Eine leere Datei soll den Tag nicht belegen (Prüfung E2-S5 Runde 2, Sollte 2).
+    throw new FachFehler(422, 'nichts_neu', 'Die Datei enthält keine Vorschläge; es wurde kein Lauf angelegt.');
+  }
   return legeLaufAn(db, uhr, inhalt, { herkunft: 'upload', ohneNeueAbweisen: true });
 }
