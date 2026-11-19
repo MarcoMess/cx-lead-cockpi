@@ -9,6 +9,8 @@ coverage/
 .env.*
 !.env.example
 *.sqlite
+*.sqlite-wal
+*.sqlite-shm
 *.sqlite3
 *.db
 
@@ -16,3 +18,7 @@ coverage/
 .DS_Store
 .vscode/
 .idea/
+
+# Testergebnisse
+test-results/
+playwright-report/
