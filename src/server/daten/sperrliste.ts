@@ -31,12 +31,17 @@ export function legeSperreAn(
   return Number(r.lastInsertRowid);
 }
 
-/** true, wenn ein Eintrag entfernt wurde. */
-/** Verlängert einen Eintrag und hält den neuen Grund fest. */
-export function verlaengereSperre(db: Datenbank, id: number, gesperrtBis: string, grund: string): void {
-  db.prepare(`UPDATE sperreintrag SET gesperrt_bis = ?, grund = ? WHERE id = ?`).run(gesperrtBis, grund, id);
+/** Verlängert einen Eintrag; Grund und Datum gelten ab heute (Prüfung E3-S4 Runde 3, Hinweis 1). */
+export function verlaengereSperre(db: Datenbank, id: number, gesperrtBis: string, grund: string, heute: string): void {
+  db.prepare(`UPDATE sperreintrag SET gesperrt_bis = ?, grund = ?, erstellt_am = ? WHERE id = ?`).run(
+    gesperrtBis,
+    grund,
+    heute,
+    id,
+  );
 }
 
+/** true, wenn ein Eintrag entfernt wurde. */
 export function entferneSperre(db: Datenbank, id: number): boolean {
   return db.prepare(`DELETE FROM sperreintrag WHERE id = ?`).run(id).changes > 0;
 }

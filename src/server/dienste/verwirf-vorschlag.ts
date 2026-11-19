@@ -50,7 +50,8 @@ export function verwirfVorschlag(db: Datenbank, uhr: Uhr, vorschlagId: number, e
       });
     } else {
       const n = sperreNachVerwerfen(vorhanden, folge);
-      if (n.verlaengern && n.gesperrt_bis) verlaengereSperre(db, vorhanden.id, n.gesperrt_bis, e.data.grund);
+      if (n.verlaengern && n.gesperrt_bis)
+        verlaengereSperre(db, vorhanden.id, n.gesperrt_bis, e.data.grund, uhr.heute());
       gesperrtBis = n.gesperrt_bis;
       name = vorhanden.name;
       verlaengert = n.verlaengern;
