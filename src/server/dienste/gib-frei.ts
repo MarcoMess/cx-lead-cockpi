@@ -5,8 +5,9 @@ import type { Uhr } from '../anbindungen/uhr';
 import { transaktion, type Datenbank } from '../daten/db';
 import {
   fuegeAnlassHinzu,
-  gibtAnsprechpartner,
+  findeNachLinkedin,
   legeAnsprechpartnerAn,
+  liesStatus,
   oeffneZurWiederansprache,
   setzeErstnachricht,
 } from '../daten/ansprechpartner';
@@ -14,6 +15,7 @@ import { findeFirmaNachNormname, legeFirmaAn } from '../daten/firmen';
 import { liesVorschlag, markiereFreigegeben, zaehleFreigabe } from '../daten/laeufe';
 import { FachFehler } from '../fehler';
 import { normalisiereFirmenname } from '../regeln/dubletten';
+import { darfWiederangesprochenWerden } from '../regeln/status';
 
 export interface Freigabe {
   ansprechpartner_id: number;
@@ -37,10 +39,25 @@ export function gibVorschlagFrei(db: Datenbank, uhr: Uhr, vorschlagId: number): 
 
     let ansprechpartnerId: number;
     let firmaId: number | null = null;
-    if (v.ist_wiederansprache && v.bezug_ansprechpartner_id && gibtAnsprechpartner(db, v.bezug_ansprechpartner_id)) {
-      ansprechpartnerId = v.bezug_ansprechpartner_id;
+    if (v.ist_wiederansprache) {
+      const bisher = v.bezug_ansprechpartner_id ? liesStatus(db, v.bezug_ansprechpartner_id) : undefined;
+      if (!bisher || !darfWiederangesprochenWerden(bisher)) {
+        throw new FachFehler(
+          409,
+          'wiederansprache_nicht_erlaubt',
+          'Diesen Kontakt kannst du nicht wieder ansprechen: Wiederansprache gibt es nur für Kontakte, die ohne Antwort geschlossen wurden.',
+        );
+      }
+      ansprechpartnerId = v.bezug_ansprechpartner_id!;
       oeffneZurWiederansprache(db, ansprechpartnerId, 'freigegeben');
     } else {
+      if (d.person.linkedin_url && findeNachLinkedin(db, d.person.linkedin_url)) {
+        throw new FachFehler(
+          409,
+          'person_bekannt',
+          `${d.person.vorname} ${d.person.nachname} steht mit demselben LinkedIn-Profil schon in deinen Kontakten und wird nicht ein zweites Mal angelegt.`,
+        );
+      }
       firmaId = findeOderLegeFirmaAn(db, d.firma);
       ansprechpartnerId = legeAnsprechpartnerAn(db, {
         firma_id: firmaId,

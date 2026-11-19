@@ -1,6 +1,6 @@
 // Zugriff auf Rechercheläufe und Vorschläge (nur Lesen und Schreiben, keine Entscheidungen).
 import type { LaufZeile, VorschlagKarte } from '../../gemeinsam/eingangskorb';
-import type { LaufHerkunft } from '../../gemeinsam/werte';
+import type { LaufErgebnis, LaufHerkunft, VorschlagZustand } from '../../gemeinsam/werte';
 import type { Datenbank } from './db';
 
 export interface NeuerLauf {
@@ -11,7 +11,9 @@ export interface NeuerLauf {
 }
 
 export function gibtAusgefuehrtenLaufAm(db: Datenbank, datum: string): boolean {
-  return !!db.prepare(`SELECT 1 FROM recherchelauf WHERE datum = ? AND ergebnis = ?`).get(datum, 'ausgefuehrt');
+  return !!db
+    .prepare(`SELECT 1 FROM recherchelauf WHERE datum = ? AND ergebnis = ?`)
+    .get(datum, 'ausgefuehrt' satisfies LaufErgebnis);
 }
 
 export function fuegeLaufEin(db: Datenbank, l: NeuerLauf): number {
@@ -20,14 +22,14 @@ export function fuegeLaufEin(db: Datenbank, l: NeuerLauf): number {
       `INSERT INTO recherchelauf (datum, ergebnis, anzahl_vorschlaege, anzahl_freigegeben, abdeckungsgrenzen, herkunft)
        VALUES (?, ?, ?, 0, ?, ?)`,
     )
-    .run(l.datum, 'ausgefuehrt', l.anzahl_vorschlaege, l.abdeckungsgrenzen, l.herkunft);
+    .run(l.datum, 'ausgefuehrt' satisfies LaufErgebnis, l.anzahl_vorschlaege, l.abdeckungsgrenzen, l.herkunft);
   return Number(r.lastInsertRowid);
 }
 
 export function fuegeVorschlagEin(db: Datenbank, laufId: number, daten: unknown): number {
   const r = db
     .prepare(`INSERT INTO vorschlag (recherchelauf_id, zustand, daten) VALUES (?, ?, ?)`)
-    .run(laufId, 'zu_pruefen', JSON.stringify(daten));
+    .run(laufId, 'zu_pruefen' satisfies VorschlagZustand, JSON.stringify(daten));
   return Number(r.lastInsertRowid);
 }
 
@@ -38,13 +40,14 @@ const LAUF_SPALTEN = `l.id, l.datum, l.anzahl_vorschlaege, l.anzahl_freigegeben,
 export function listeAusgefuehrteLaeufe(db: Datenbank): LaufZeile[] {
   return db
     .prepare(`SELECT ${LAUF_SPALTEN} FROM recherchelauf l WHERE l.ergebnis = ? ORDER BY l.datum DESC, l.id DESC`)
-    .all('zu_pruefen', 'ausgefuehrt') as unknown as LaufZeile[];
+    .all('zu_pruefen' satisfies VorschlagZustand, 'ausgefuehrt' satisfies LaufErgebnis) as unknown as LaufZeile[];
 }
 
 export function liesAusgefuehrtenLauf(db: Datenbank, id: number): LaufZeile | undefined {
   return db
     .prepare(`SELECT ${LAUF_SPALTEN} FROM recherchelauf l WHERE l.id = ? AND l.ergebnis = ?`)
-    .get('zu_pruefen', id, 'ausgefuehrt') as unknown as LaufZeile | undefined;
+    .get('zu_pruefen' satisfies VorschlagZustand, id, 'ausgefuehrt' satisfies LaufErgebnis) as unknown as
+    LaufZeile | undefined;
 }
 
 export function vorschlaegeVonLauf(db: Datenbank, laufId: number): VorschlagKarte[] {
@@ -75,7 +78,7 @@ export function liesVorschlag(db: Datenbank, id: number): VorschlagZeile | undef
 
 export function markiereFreigegeben(db: Datenbank, vorschlagId: number, ansprechpartnerId: number): void {
   db.prepare(`UPDATE vorschlag SET zustand = ?, ansprechpartner_id = ? WHERE id = ?`).run(
-    'freigegeben',
+    'freigegeben' satisfies VorschlagZustand,
     ansprechpartnerId,
     vorschlagId,
   );

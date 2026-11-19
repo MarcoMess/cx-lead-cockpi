@@ -2,8 +2,7 @@
 import secureSession from '@fastify/secure-session';
 import type { FastifyInstance } from 'fastify';
 import { FachFehler } from '../fehler';
-import { zugangsart } from '../regeln/zugang';
-import { gleich, istAgentSchluessel } from '../dienste/zugang';
+import { gleich, istAgentSchluessel, zugangFuer } from '../dienste/zugang';
 
 declare module '@fastify/secure-session' {
   interface SessionData {
@@ -30,7 +29,7 @@ export async function richteZugangEin(app: FastifyInstance, opt: ZugangOptionen)
   });
 
   app.addHook('onRequest', async (req) => {
-    const art = zugangsart(req.method, req.url);
+    const art = zugangFuer(req.method, req.url);
     const angemeldet = req.session.get('nutzer') === 'marco';
     const auth = req.headers.authorization ?? '';
     const schluessel = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';

@@ -215,4 +215,35 @@ describe('E3-S3 Vorschlag freigeben', () => {
     expect(zahl(db, 'SELECT COUNT(*) n FROM firma')).toBe(7);
     expect(zahl(db, `SELECT COUNT(*) n FROM vorschlag WHERE id = ${vid} AND zustand = 'zu_pruefen'`)).toBe(1);
   });
+
+  it('Prüfung E3-S3 Befund 1: Albers mit bekanntem LinkedIn-Profil → 409 person_bekannt, nichts angelegt', async () => {
+    let db: Datenbank;
+    ({ app, db } = await neueApp());
+    const { kopf, id } = await laufVom19(app);
+    const vorher = zahl(db, 'SELECT COUNT(*) n FROM ansprechpartner');
+    const r = await frei(app, kopf, id('Albers'));
+    expect(r.statusCode).toBe(409);
+    expect(r.json().fehler.code).toBe('person_bekannt');
+    expect(r.json().fehler.meldung).toContain('Katrin Albers');
+    expect(zahl(db, 'SELECT COUNT(*) n FROM ansprechpartner')).toBe(vorher);
+    expect(zahl(db, `SELECT COUNT(*) n FROM vorschlag WHERE id = ${id('Albers')} AND zustand = 'zu_pruefen'`)).toBe(1);
+  });
+
+  it('Prüfung E3-S3 Befund 2: Wiederansprache von Wiesner (Kein Interesse) → 409, Status bleibt', async () => {
+    let db: Datenbank;
+    ({ app, db } = await neueApp());
+    const { kopf, id } = await laufVom19(app);
+    db.prepare(`UPDATE vorschlag SET ist_wiederansprache = 1, bezug_ansprechpartner_id = 6 WHERE id = ?`).run(
+      id('Kortmann'),
+    );
+    const r = await frei(app, kopf, id('Kortmann'));
+    expect(r.statusCode).toBe(409);
+    expect(r.json().fehler.code).toBe('wiederansprache_nicht_erlaubt');
+    expect(db.prepare(`SELECT nachname, status FROM ansprechpartner WHERE id = 6`).get()).toEqual({
+      nachname: 'Wiesner',
+      status: 'kein_interesse',
+    });
+    db.prepare(`UPDATE vorschlag SET bezug_ansprechpartner_id = NULL WHERE id = ?`).run(id('Kortmann'));
+    expect((await frei(app, kopf, id('Kortmann'))).statusCode).toBe(409);
+  });
 });

@@ -15,6 +15,7 @@ export function S2Eingangskorb() {
   const [lauf, setLauf] = useState<LaufDetail | null>(null);
   const [neuLaden, setNeuLaden] = useState(0);
   const [meldung, setMeldung] = useState('');
+  const [laufFehler, setLaufFehler] = useState('');
 
   useEffect(() => {
     api<LaufZeile[]>('GET', '/laeufe').then(setLaeufe, () => setLaeufe([]));
@@ -23,7 +24,16 @@ export function S2Eingangskorb() {
   const gewaehlt = laufId ? Number(laufId) : laeufe?.[0]?.id;
   useEffect(() => {
     if (!gewaehlt) return;
-    api<LaufDetail>('GET', `/laeufe/${gewaehlt}`).then(setLauf, () => setLauf(null));
+    api<LaufDetail>('GET', `/laeufe/${gewaehlt}`).then(
+      (l) => {
+        setLauf(l);
+        setLaufFehler('');
+      },
+      (e: Error) => {
+        setLauf(null);
+        setLaufFehler(e.message);
+      },
+    );
   }, [gewaehlt, stand, neuLaden]);
 
   function geaendert(text: string) {
@@ -60,6 +70,12 @@ export function S2Eingangskorb() {
                     <span className="muted">
                       {l.anzahl_vorschlaege} Vorschläge, {l.anzahl_freigegeben} freigegeben
                     </span>
+                    {l.abdeckungsgrenzen && (
+                      <>
+                        <br />
+                        <span className="muted">Abdeckungsgrenzen: {l.abdeckungsgrenzen}</span>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -67,6 +83,16 @@ export function S2Eingangskorb() {
           </table>
         </section>
         <div>
+          {laufId && !Number.isInteger(Number(laufId)) && (
+            <section className="box">
+              <p className="muted">Diesen Recherchelauf gibt es nicht. Wähle links einen anderen Lauf.</p>
+            </section>
+          )}
+          {laufFehler && !lauf && (
+            <section className="box">
+              <p className="muted">{laufFehler} Wähle links einen anderen Lauf.</p>
+            </section>
+          )}
           {lauf && lauf.id === gewaehlt && (
             <>
               <section className="box" aria-label={`Lauf vom ${datum(lauf.datum)}`}>

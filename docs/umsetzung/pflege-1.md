@@ -26,3 +26,12 @@ Keine Story. Behebt »Sollte«-Befunde aus den Prüfungen von E1-S0, E1-S1, E1-S
 
 ## So prüft man es von Hand
 `npm test` (enthält jetzt die Grenzprüfung). Einen verbotenen Import ausprobieren, z. B. in `src/server/daten/` etwas aus `../dienste/` importieren: `npm run lint` meldet »Baustein darf keine Dienste kennen«.
+
+## Nachbesserung 1 (nach Prüfung pflege-1-pruefung-1)
+
+| Befund | Umsetzung | Nachweis |
+|---|---|---|
+| 1 Bausteingrenzen nur teilweise in ESLint | `eslint.config.js` setzt jetzt jede Zeile der Tabelle in architektur.md §3 um: Agenten-Simulator nur `daten/einstellungen` (und den Typ `daten/db`), Vorführ-Routen nur Dienste, `api` ohne Regeln und Anbindungen, `anbindungen` ohne Datenhaltung außer in `*-simulator.ts`, dazu Verbot von dynamischem `import()`. Gefundene Verstöße behoben: `api/zugang.ts` fragt die Zugangsart jetzt über den Dienst `zugangFuer`; das Vorführdatum der Uhr liegt in `anbindungen/uhr-simulator.ts`, `uhr.ts` kennt keine Datenhaltung mehr. | `tests/regeln/grenzen.test.ts`: 15 verbotene Importe (u. a. alle aus dem Befund) müssen von ESLint gemeldet werden, 5 erlaubte nicht |
+| 2 Statuswerte als freier Text in `daten/laeufe.ts` | Die Werte sind jetzt mit `satisfies LaufErgebnis` bzw. `satisfies VorschlagZustand` gegen die Listen in `gemeinsam/werte.ts` geprüft; ein Tippfehler bricht die Typprüfung. | `npm run typecheck` (Probe: `'ausgefuert'` → TS1360) |
+
+Die Sollte-Befunde und Hinweise sind in docs/status.md unter »Offene Punkte« gesammelt.
