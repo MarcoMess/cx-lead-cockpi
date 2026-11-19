@@ -23,11 +23,11 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 3 | E1-S2 Vorführdatum, Zurücksetzen | story/E1-S2-vorfuehrdatum | #3 | Zusammengeführt (Prüfung 1 bestanden) | 0 von 2 |
 | 4 | E2-S3 Lauf anlegen | story/E2-S3-lauf-anlegen | #4 | Zusammengeführt (Prüfung 1 bestanden) | 0 von 2 |
 | 5 | E1-S3 Agenten-Simulator | story/E1-S3-agenten-simulator | #5 | Zusammengeführt (Prüfung 1 bestanden) | 0 von 2 |
-| 5a | Pflege 1 Bausteingrenzen | pflege/bausteingrenzen | #6 | In Prüfung (Runde 2) | 1 von 2 |
+| 5a | Pflege 1 Bausteingrenzen | pflege/bausteingrenzen | #6 | Zusammengeführt (Runde 3 bestanden) | 2 von 2 |
 | 6 | E3-S1 Eingangskorb | story/E3-S1-eingangskorb | #7 | Zusammengeführt (Runde 2 bestanden) | 1 von 2 |
 | 7 | E3-S3 Freigeben | story/E3-S3-freigeben | #8 | Zusammengeführt (Runde 1 bestanden; Nachtrag in der Prüfung von E4-S2 mitgeprüft) | 0 von 2 |
 | 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | #9 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
-| 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | – | Offen | 0 von 2 |
+| 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | #10 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | – | Offen | 0 von 2 |
 | 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | – | Offen | 0 von 2 |
 | 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | – | Offen | 0 von 2 |
@@ -35,7 +35,7 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
 
 ## Nächster Schritt
-E4-S3 Kontaktakte umsetzen; Prüfungen von Pflege 1 (Runde 2) und E4-S2 abwarten, dann #6 bis #9 in dieser Reihenfolge zusammenführen.
+E5-S1 Ansprache-Ansicht umsetzen; Prüfung von E4-S3 abwarten, dann #10 zusammenführen.
 
 ## Offene Punkte aus den Prüfungen
 Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der Story erledigt, die den Bereich ohnehin anfasst, spätestens in einer Pflege vor dem Halt.
@@ -44,10 +44,13 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 |---|---|---|
 | E1-S0 | Der Vite-Proxy liest `PORT` nicht aus `.env` | Pflege vor dem Halt |
 | E1-S0 | Untertitel der Screens fehlen noch teilweise | mit dem jeweiligen Screen |
+| Pflege 1 R1 | `transaktion()` mit asynchroner Funktion; Vorführleiste ohne Fehlermeldung (E1-S2 #4) | Pflege vor dem Halt |
+| Pflege 1 R2 | Absichtliche Umgehung der Grenzen über `../`-Pfade oder `createRequire`; Statuswerte in `startdaten.ts` nicht gegen `werte.ts` geprüft | Pflege vor dem Halt |
 | E3-S1 R2 | `/eingangskorb/1e0` zeigt Lauf 1 (harmlos) | erledigt mit E4-S2 (nur ganze Zahlen) |
 | E3-S3 | Dublettenkennzeichnung, Abgleich über Domain, Sperre der Freigabe | E2-S4 |
 | E3-S3 | Frist von 6 Monaten und neuer Anlass bei Wiederansprache | E10-S1 ff. |
 | E4-S2 | Filter nach Merkmal und Tagen | E9 |
+| E4-S3 | »An SAP übergeben« wird in der Akte als Endzustand gezeigt; Tests zu #5/#7 und zu `erlaubteAktionen` unvollständig; Schiene und Filter heißen beide »Status«; `regeln/verlauf.ts` fehlt in Architektur §7/§9 | E5-S2 (Pflege) |
 | E4-S2 | Kontaktliste ohne Schutz gegen späte Antworten beim Filterwechsel; Tests zu #1 prüfen Funktion und Firma nur auf »nicht leer« | E5-S1 (Pflege) |
 | E4-S2 | Meldung `filter_ungueltig` ohne Handlungshinweis; »Dr.« fehlt in der Meldung `person_bekannt` | Pflege vor dem Halt |
 | Konzept | 21-Tage-Schließvorschlag für Reinhardts Altdaten | Entscheidung mit E6-S5 |
