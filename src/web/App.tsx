@@ -6,6 +6,7 @@ import { Anmeldung } from './screens/Anmeldung';
 import { Platzhalter } from './screens/Platzhalter';
 import { NichtGefunden } from './screens/NichtGefunden';
 import { S2Eingangskorb } from './screens/S2Eingangskorb';
+import { S4Kontakte } from './screens/S4Kontakte';
 import type { ScreenId } from '../gemeinsam/screens';
 import { Vorfuehrleiste, type VorfuehrZustand } from './teile/Vorfuehrleiste';
 
@@ -78,6 +79,8 @@ function screenFuer(id: ScreenId) {
   switch (id) {
     case 'S2':
       return <S2Eingangskorb />;
+    case 'S4':
+      return <S4Kontakte />;
     default:
       return <Platzhalter id={id} />;
   }
