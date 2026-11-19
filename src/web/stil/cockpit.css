@@ -481,3 +481,40 @@ td.rechts {
   border-top: 1px solid var(--line);
   margin: 16px 0;
 }
+input.inl.breit {
+  width: 240px;
+}
+.kv.angaben {
+  margin: 10px 0;
+}
+.btn.d {
+  border-color: var(--err);
+  color: var(--err);
+  background: #fff;
+}
+.btn.d:hover {
+  background: var(--errbg);
+}
+.note.fehler {
+  border-left-color: var(--err);
+  background: var(--errbg);
+}
+.kv dd,
+.nachricht,
+.note {
+  overflow-wrap: anywhere;
+}
+input.versteckt {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+label.btn {
+  cursor: pointer;
+  position: relative;
+}
+label.btn:focus-within {
+  outline: 2px solid var(--mint);
+  outline-offset: 2px;
+}

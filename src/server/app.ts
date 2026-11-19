@@ -8,6 +8,7 @@ import { laeufeRouten } from './api/laeufe';
 import { vorschlaegeRouten } from './api/vorschlaege';
 import { kontakteRouten } from './api/kontakte';
 import { anspracheRouten } from './api/ansprache';
+import { sperrlisteRouten } from './api/sperrliste';
 import { richteZugangEin } from './api/zugang';
 import { erstelleUhr, type Uhr } from './anbindungen/uhr';
 import { simRouten } from '../simulator/sim-routen';
@@ -39,7 +40,7 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
     if (err instanceof FachFehler) {
       return reply.status(err.status).send({ fehler: { code: err.code, meldung: err.message, feld: err.feld } });
     }
-    const e = err as { validation?: unknown; statusCode?: number; message: string };
+    const e = err as { validation?: unknown; statusCode?: number; code?: string; message: string };
     if (e.validation || e.statusCode === 400) {
       return reply.status(400).send({
         fehler: {
@@ -49,6 +50,16 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
             : 'Die Eingabe ist ungültig. Bitte prüfe die Angaben.',
         },
       });
+    }
+    if (e.statusCode === 413) {
+      return reply
+        .status(413)
+        .send({ fehler: { code: 'zu_gross', meldung: 'Die Datei ist zu groß. Erlaubt ist höchstens 1 MB.' } });
+    }
+    if (e.statusCode === 415) {
+      return reply
+        .status(415)
+        .send({ fehler: { code: 'falsches_format', meldung: 'Erwartet wird JSON (Content-Type application/json).' } });
     }
     app.log.error(err);
     return reply
@@ -67,6 +78,7 @@ export async function baueApp(opt: AppOptionen): Promise<FastifyInstance> {
   await app.register(vorschlaegeRouten, { prefix: '/api/v1' });
   await app.register(kontakteRouten, { prefix: '/api/v1' });
   await app.register(anspracheRouten, { prefix: '/api/v1' });
+  await app.register(sperrlisteRouten, { prefix: '/api/v1' });
   if (opt.demo) await app.register(simRouten, { prefix: '/api/v1', agentSchluessel: opt.agentSchluessel });
   return app;
 }

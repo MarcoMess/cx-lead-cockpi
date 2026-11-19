@@ -150,6 +150,23 @@ Ziel: Nur Marco arbeitet in der Oberfläche, der Agent erreicht ausschließlich 
 
 **Nicht enthalten:** Laufauftrag und Ausschlussliste im Ablauf des Simulators (E2-S6), Upload der Ergebnisdatei (E2-S5).
 
+### E1-S4 – Echtbetrieb neben dem Vorführbestand
+
+**Als** Marco **möchte ich** das Cockpit mit einem eigenen, leeren Datenbestand starten können, **damit** echte Kontakte nicht mit den erfundenen Beispieldaten vermischt werden.
+
+- **Art:** Wegbereiter *(neu mit Konzept 1.3, 19.11.2026)*
+- **Bezug:** Abschnitt 5 »Ergänzung 1.3: Echtbetrieb« · Abschnitt 11 Datenschutz
+- **Größe:** klein
+- **Abhängig von:** E1-S0, E1-S2, E10-S1
+
+**Akzeptanzkriterien**
+1. Wenn Marco `npm run echt` ausführt, dann startet das Cockpit mit der Datenbank `data/echt.sqlite`; gibt es sie noch nicht, wird sie angelegt mit den fünf Firmen des Startbestands der Sperrliste und dem Rechercheprofil, aber ohne Firmen, Kontakte und Läufe.
+2. Im Echtbetrieb gibt es keine Vorführleiste und keine Adressen unter `/api/v1/sim`; »heute« ist das echte Datum.
+3. `npm run reset` und die Tests ändern `data/echt.sqlite` nicht.
+4. Ein zweiter Start mit `npm run echt` behält alle bis dahin erfassten Daten.
+
+**Nicht enthalten:** Betrieb auf einem Server, Sicherung der Datenbank.
+
 ## Epic E2 – Recherchelauf übernehmen
 
 Ziel: Der Agent fragt das Cockpit, ob er laufen soll, kennt den Bestand und liefert seine Vorschläge strukturiert ab.
@@ -230,7 +247,7 @@ Ziel: Der Agent fragt das Cockpit, ob er laufen soll, kennt den Bestand und lief
 
 ### E2-S5 – Ergebnisdatei von Hand hochladen
 
-**Als** Marco **möchte ich** die Ergebnisdatei des Agenten im Eingangskorb hochladen können, **damit** ein Lauf nicht verloren geht, wenn der Agent die API nicht erreicht.
+**Als** Marco **möchte ich** die Ergebnisdatei des Agenten im Eingangskorb hochladen können, **damit** ein Lauf nicht verloren geht, wenn der Agent die API nicht erreicht – und im ersten Echtbetrieb als regulärer Weg (Konzept 1.3).
 
 - **Art:** Fachlich
 - **Bezug:** A1 Ausnahme »API nicht erreichbar« · S2 Aktion »Datei hochladen«
@@ -241,6 +258,7 @@ Ziel: Der Agent fragt das Cockpit, ob er laufen soll, kennt den Bestand und lief
 1. Gegeben eine Ergebnisdatei mit den vier Beispielvorschlägen, wenn Marco sie auf S2 hochlädt, dann entsteht derselbe Lauf wie beim Anlegen über die API, mit Dublettenprüfung und Zustand »Zu prüfen«.
 2. Gegeben eine Datei, die sich nicht lesen lässt, wenn Marco sie hochlädt, dann entsteht kein Lauf und eine Meldung nennt den Grund.
 3. Gegeben dieselbe Datei wird ein zweites Mal hochgeladen, dann sind alle Vorschläge als Dubletten oder bereits vorhanden erkennbar und es entstehen keine doppelten Firmen oder Kontakte.
+4. *(neu mit Konzept 1.3)* Gegeben die Firma Seehotel-Gruppe Bodan AG steht auf der Sperrliste, wenn eine Datei mit Reto Ammann hochgeladen wird, dann ist sein Vorschlag als »Gesperrt« mit dem Grund des Eintrags gekennzeichnet und lässt sich nicht freigeben; dasselbe gilt für eine gesperrte Person bis zu ihrem »gesperrt bis«.
 
 **Nicht enthalten:** das Dateiformat; es wird in der Architektur-Stufe festgelegt.
 
