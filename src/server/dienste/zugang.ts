@@ -23,3 +23,10 @@ export function istAgentSchluessel(db: Datenbank, schluessel: string): boolean {
   if (!zeile?.wert || !schluessel) return false;
   return timingSafeEqual(Buffer.from(hash(schluessel), 'hex'), Buffer.from(zeile.wert, 'hex'));
 }
+
+/** Schreibt einen zuvor gelesenen Schlüssel-Hash zurück (beim Zurücksetzen der Vorführdaten). */
+export function setzeAgentSchluesselHash(db: Datenbank, zeilen: { schluessel: string; wert: string }[]): void {
+  const schreibe = db.prepare(`INSERT INTO einstellung (schluessel, wert) VALUES (?, ?)
+    ON CONFLICT (schluessel) DO UPDATE SET wert = excluded.wert`);
+  for (const z of zeilen) schreibe.run(z.schluessel, z.wert);
+}
