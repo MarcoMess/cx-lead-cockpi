@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { rmSync } from 'node:fs';
 import { ladeUmgebung } from './umgebung';
 import { oeffneDatenbank } from './daten/db';
+import { zaehleBestand } from './daten/leeren';
 import { setzeZurueck } from './dienste/zuruecksetzen';
 import { VORFUEHR_START_DATUM } from '../gemeinsam/werte';
 
@@ -15,10 +16,10 @@ setzeZurueck(db, agentSchluessel);
 if (!process.env.COCKPIT_AGENT_KEY) {
   console.log(`Kein COCKPIT_AGENT_KEY gesetzt. Neuer Agenten-Schlüssel (nur jetzt sichtbar): ${agentSchluessel}`);
 }
-const zahl = (t: string) => (db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get() as { n: number }).n;
+const n = zaehleBestand(db);
 console.log(
-  `Startdaten geladen in ${datenbankPfad}: ${zahl('firma')} Firmen, ${zahl('ansprechpartner')} Ansprechpartner, ` +
-    `${zahl('recherchelauf')} Rechercheläufe, ${zahl('sperreintrag')} Sperreinträge. Vorführdatum: ${VORFUEHR_START_DATUM}.`,
+  `Startdaten geladen in ${datenbankPfad}: ${n.firma} Firmen, ${n.ansprechpartner} Ansprechpartner, ` +
+    `${n.recherchelauf} Rechercheläufe, ${n.sperreintrag} Sperreinträge. Vorführdatum: ${VORFUEHR_START_DATUM}.`,
 );
 console.log('Läuft der Server schon, starte ihn neu – oder nutze »Zurücksetzen« in der Vorführleiste.');
 db.close();

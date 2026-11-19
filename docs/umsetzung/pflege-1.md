@@ -34,4 +34,21 @@ Keine Story. Behebt »Sollte«-Befunde aus den Prüfungen von E1-S0, E1-S1, E1-S
 | 1 Bausteingrenzen nur teilweise in ESLint | `eslint.config.js` setzt jetzt jede Zeile der Tabelle in architektur.md §3 um: Agenten-Simulator nur `daten/einstellungen` (und den Typ `daten/db`), Vorführ-Routen nur Dienste, `api` ohne Regeln und Anbindungen, `anbindungen` ohne Datenhaltung außer in `*-simulator.ts`, dazu Verbot von dynamischem `import()`. Gefundene Verstöße behoben: `api/zugang.ts` fragt die Zugangsart jetzt über den Dienst `zugangFuer`; das Vorführdatum der Uhr liegt in `anbindungen/uhr-simulator.ts`, `uhr.ts` kennt keine Datenhaltung mehr. | `tests/regeln/grenzen.test.ts`: 15 verbotene Importe (u. a. alle aus dem Befund) müssen von ESLint gemeldet werden, 5 erlaubte nicht |
 | 2 Statuswerte als freier Text in `daten/laeufe.ts` | Die Werte sind jetzt mit `satisfies LaufErgebnis` bzw. `satisfies VorschlagZustand` gegen die Listen in `gemeinsam/werte.ts` geprüft; ein Tippfehler bricht die Typprüfung. | `npm run typecheck` (Probe: `'ausgefuert'` → TS1360) |
 
-Die Sollte-Befunde und Hinweise sind in docs/status.md unter »Offene Punkte« gesammelt.
+Offene Sollte-Befunde aus Runde 1 und wo sie hingehören (Korrektur aus Runde 2, Befund 3: der Abschnitt in status.md existierte auf diesem Branch nicht; ab E4-S2 steht er dort):
+
+| Befund Runde 1 | Stand |
+|---|---|
+| 4 SQL in `reset.ts` | behoben in Nachbesserung 2 (`zaehleBestand` in `daten/leeren.ts`) |
+| 5 `transaktion()` mit asynchroner Funktion | offen; bisher ruft niemand sie asynchron auf. Pflege vor dem Halt |
+| 6 `setzeAgentSchluessel` ohne Transaktion | behoben in Nachbesserung 2 |
+| 7 Vorführleiste zeigt keine Fehlermeldung (E1-S2 #4) | offen, Pflege vor dem Halt |
+
+## Nachbesserung 2 (nach Prüfung pflege-1-pruefung-2)
+
+| Befund | Umsetzung | Nachweis |
+|---|---|---|
+| 1 (Blockiert) Simulator-Regeln galten nur für `agent.ts` und `sim-routen.ts` | Neuer strenger Block für `src/simulator/**/*.ts` (keine api, dienste, regeln, daten, anbindungen); danach die beiden Ausnahmen aus §3 | `tests/regeln/grenzen.test.ts`: fünf Fälle »weitere Simulator-Datei → …« |
+| 2 (Sollte) `daten/db` erlaubte auch Werte | Umstellung auf `@typescript-eslint/no-restricted-imports`; aus `daten/db` dürfen Simulator und Anbindungen nur `import type` | Fälle »Wert aus daten/db« (verboten) und »Typ aus daten/db« (erlaubt) |
+| 3 (Sollte) Abschnitt »Offene Punkte« fehlte | Liste oben in dieser Übergabe; ab E4-S2 in docs/status.md | – |
+
+Nicht gebaut (Hinweise aus Runde 2): Absichtliche Umgehungen über `../`-Pfade oder `createRequire` fängt ESLint nicht; Statuswerte in `startdaten.ts` sind über den Typ der Startdaten nicht gegen `werte.ts` geprüft. Beides steht in docs/status.md unter »Offene Punkte«.

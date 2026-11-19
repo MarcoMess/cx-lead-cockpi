@@ -21,3 +21,16 @@ const TABELLEN_KINDER_ZUERST = [
 export function leereAlleTabellen(db: Datenbank): void {
   for (const t of TABELLEN_KINDER_ZUERST) db.exec(`DELETE FROM ${t}`);
 }
+
+/** Anzahl der Zeilen je Tabelle, für die Meldung von `npm run reset`. */
+export function zaehleBestand(
+  db: Datenbank,
+): Record<'firma' | 'ansprechpartner' | 'recherchelauf' | 'sperreintrag', number> {
+  const zahl = (t: string) => (db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get() as { n: number }).n;
+  return {
+    firma: zahl('firma'),
+    ansprechpartner: zahl('ansprechpartner'),
+    recherchelauf: zahl('recherchelauf'),
+    sperreintrag: zahl('sperreintrag'),
+  };
+}
