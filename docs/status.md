@@ -42,7 +42,7 @@ Marco will zuerst den echten Agenten statt des Simulators. Gewählt: Die geplant
 | 15 | E3-S2 Angaben prüfen, Pflichtangaben | story/E3-S2-pflichtangaben | #16 | Bestanden (Runde 1), Sollte-Befunde behoben; wartet auf #14 und #15 | 0 von 2 |
 | 16 | E3-S4 Verwerfen | story/E3-S4-verwerfen | #17 | In Prüfung (Runde 2) | 1 von 2 |
 | 17 | E2-S5 Ergebnisdatei hochladen (mit Konzept 1.3) | story/E2-S5-upload | #18 | In Prüfung | 0 von 2 |
-| 18 | Echtbetrieb neben dem Vorführbestand (neu, kommt mit Konzept 1.3) | – | – | Offen | – |
+| 18 | E1-S4 Echtbetrieb neben dem Vorführbestand (neu mit Konzept 1.3) | story/E1-S4-echtbetrieb | #19 | In Prüfung | 0 von 2 |
 | 19 | E2-S2 Ausschlussliste (auch Nachweis E10-S1 #4) | – | – | Offen | 0 von 2 |
 
 Danach die übrigen Stories in der Reihenfolge aus `stories.md`.
