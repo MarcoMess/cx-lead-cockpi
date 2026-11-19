@@ -1,4 +1,4 @@
-// Regeln der Ansprache (Konzept, Abschnitt 9; Ablauf A3).
+// Regeln zu Ansprache und Kanal (Konzept, Abschnitt 9 »Kanalwahl«; Ablauf A3). Die Wortzahl zählt die Oberfläche (architektur.md §3).
 import type { AnsprechpartnerStatus, AnspracheModus, NachrichtFassung } from '../../gemeinsam/werte';
 
 /** Erstkontakt aus »Freigegeben«, Nachfassen aus »Angeschrieben« (höchstens ein Nachfassen), sonst keine Ansprache. */

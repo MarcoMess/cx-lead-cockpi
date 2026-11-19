@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { AGENT, alsMarco, neueApp } from '../hilfen';
+import type { Datenbank } from '../../src/server/daten/db';
 
 let app: FastifyInstance | undefined;
 afterEach(async () => app?.close());
@@ -61,10 +62,26 @@ describe('E4-S3 Kontaktakte', () => {
   });
 
   it('E4-S3 #5 Direktkontakt und Firmenkontakt kommen getrennt', async () => {
-    ({ app } = await neueApp());
+    let db: Datenbank;
+    ({ app, db } = await neueApp());
     const a = (await akte(app, 2)).json();
     expect([a.email, a.email_herkunft, a.telefon]).toEqual(['t.reinhardt@hansemarkt.example', 'von_marco', null]);
-    expect(a.firma).toHaveProperty('firmenkontakt');
+    expect(a.firma.firmenkontakt).toBeNull();
+    // Gefüllte Werte (die Startdaten haben keine): Telefon am Kontakt, Zentrale an der Firma.
+    db.prepare(`UPDATE ansprechpartner SET telefon = '+49 40 000000-12' WHERE id = 2`).run();
+    db.prepare(`UPDATE firma SET firmenkontakt = 'info@hansemarkt.example' WHERE id = 4`).run();
+    const b = (await akte(app, 2)).json();
+    expect(b.telefon).toBe('+49 40 000000-12');
+    expect(b.firma.firmenkontakt).toBe('info@hansemarkt.example');
+    expect(b.email).toBe('t.reinhardt@hansemarkt.example');
+  });
+
+  it('Prüfung E4-S3 Sollte 1: »An SAP übergeben« ist kein Endzustand der Akte', async () => {
+    let db: Datenbank;
+    ({ app, db } = await neueApp());
+    db.prepare(`UPDATE ansprechpartner SET status = 'an_sap_uebergeben' WHERE id = 1`).run();
+    expect((await akte(app, 1)).json().endzustand).toBe(false);
+    expect((await akte(app, 6)).json().endzustand).toBe(true);
   });
 
   it('E4-S3 #6 Ostermann: Endzustand, vollständiger Verlauf', async () => {
@@ -80,7 +97,7 @@ describe('E4-S3 Kontaktakte', () => {
     ({ app } = await neueApp());
     const a = (await akte(app, 5)).json();
     expect(a.linkedin_url).toBeNull();
-    expect(a.firma.name).toBeTruthy();
+    expect(a.firma.name).toBe('Weserland Entsorgung GmbH');
   });
 
   it('unbekannter Kontakt 404, Agenten-Schlüssel 403', async () => {

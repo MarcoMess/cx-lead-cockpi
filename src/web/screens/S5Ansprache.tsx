@@ -23,6 +23,20 @@ export function wortzahlText(n: number): string {
   return `${n} ${n === 1 ? 'Wort' : 'Wörter'}, ${drin ? `im Zielkorridor ${korridor}` : `Zielkorridor für LinkedIn ist ${korridor}`}`;
 }
 
+const suchhinweis = (k: Ansprache['kontakt']) => `${k.vorname} ${k.nachname}, ${k.firma_name}`;
+
+/** Kopiert in die Zwischenablage und bestätigt es (A3 Schritt 3, Story E5-S2). Das Cockpit sendet nichts an LinkedIn. */
+function kopiere(wert: string, bestaetigung: string, melde: (t: string) => void) {
+  if (!navigator.clipboard) {
+    melde('Kopieren ist hier nicht möglich. Markiere den Text und kopiere ihn mit Strg+C.');
+    return;
+  }
+  navigator.clipboard.writeText(wert).then(
+    () => melde(bestaetigung),
+    () => melde('Kopieren ist hier nicht möglich. Markiere den Text und kopiere ihn mit Strg+C.'),
+  );
+}
+
 /** S5 Ansprache: Warteschlangen oder die Ansprache eines Kontakts (A3 Schritt 1–2, Story E5-S1). */
 export function S5Ansprache() {
   const { kontaktId } = useParams();
@@ -106,6 +120,7 @@ function AnspracheKontakt({ id }: { id: string }) {
   const [fehler, setFehler] = useState('');
   const [betreff, setBetreff] = useState('');
   const [text, setText] = useState('');
+  const [kopiert, setKopiert] = useState('');
   const gueltig = /^[1-9][0-9]*$/.test(id);
 
   useEffect(() => {
@@ -118,6 +133,7 @@ function AnspracheKontakt({ id }: { id: string }) {
         setFehler('');
         setBetreff(x.nachricht?.betreff ?? '');
         setText(x.nachricht?.text ?? '');
+        setKopiert('');
       },
       (e: Error) => {
         if (!aktuell) return;
@@ -234,6 +250,37 @@ function AnspracheKontakt({ id }: { id: string }) {
           <p className="muted wortzahl" aria-live="polite">
             {wortzahlText(zaehleWoerter(text))}
           </p>
+          <div className="aktionen oben" role="group" aria-label="LinkedIn">
+            <button type="button" className="btn" onClick={() => kopiere(betreff, 'Betreff kopiert.', setKopiert)}>
+              Betreff kopieren
+            </button>
+            <button type="button" className="btn" onClick={() => kopiere(text, 'Nachricht kopiert.', setKopiert)}>
+              Nachricht kopieren
+            </button>
+            {k.linkedin_url && (
+              <a className="btn" href={mitSchema(k.linkedin_url)} target="_blank" rel="noopener noreferrer">
+                Profil öffnen
+              </a>
+            )}
+          </div>
+          {!k.linkedin_url && (
+            <p className="note">
+              Keine verifizierte Profil-URL. Suchhinweis für den Sales Navigator:{' '}
+              <b data-testid="suchhinweis">{suchhinweis(k)}</b>{' '}
+              <button
+                type="button"
+                className="btn klein"
+                onClick={() => kopiere(suchhinweis(k), 'Suchhinweis kopiert.', setKopiert)}
+              >
+                Suchhinweis kopieren
+              </button>
+            </p>
+          )}
+          {kopiert && (
+            <p className="hinweis ok" role="status">
+              {kopiert}
+            </p>
+          )}
           <p className="muted">Du sendest selbst in LinkedIn oder im Sales Navigator. Das Cockpit sendet nichts.</p>
           <div className="aktionen">{akte}</div>
         </section>

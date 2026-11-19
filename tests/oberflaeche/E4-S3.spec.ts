@@ -27,7 +27,7 @@ test('E4-S3 #1 #2 #3 Akte Albers: Stammdaten, Anlass, Statusschiene, Verlauf', a
   await expect(a.getByRole('link', { name: 'Quelle öffnen' })).toHaveAttribute('href', 'https://example.com/quelle-1');
   await expect(a.locator('.tag.hypothese')).toHaveText('Hypothese');
 
-  const schiene = a.getByRole('list', { name: 'Status' }).getByRole('listitem');
+  const schiene = a.getByRole('list', { name: 'Statusschiene' }).getByRole('listitem');
   await expect(schiene).toHaveText([
     /Neu/,
     /Freigegeben/,
@@ -64,9 +64,9 @@ test('E4-S3 #6 #7 Akte Ostermann: Endzustand als Hinweis, Verlauf lesbar, Suchhi
   await expect(a.getByRole('note')).toHaveText(
     'Endzustand »Ohne Antwort geschlossen«. Verlauf, Anlässe und Nachrichten bleiben erhalten.',
   );
-  await expect(a.getByRole('list', { name: 'Status' })).toHaveCount(0);
+  await expect(a.getByRole('list', { name: 'Statusschiene' })).toHaveCount(0);
   await expect(a.locator('.verlauf > li')).toContainText(['Erstkontakt per InMail am 19.10.2026, 08:10 Uhr']);
-  await expect(a).toContainText('Suchhinweis für den Sales Navigator: Markus Ostermann, ');
+  await expect(a).toContainText('Suchhinweis für den Sales Navigator: Markus Ostermann, Weserland Entsorgung GmbH');
   await expect(a.getByRole('link', { name: /linkedin/ })).toHaveCount(0);
 });
 

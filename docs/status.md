@@ -29,13 +29,13 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | #9 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | #10 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | #11 | Zusammengeführt (Marco nimmt Kriterium 5 und neuen Wortlaut von 7 an) | 0 von 2 |
-| 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | – | Offen | 0 von 2 |
+| 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | #12 | Bestanden (Runde 1), wartet auf #11 | 0 von 2 |
 | 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | – | Offen | 0 von 2 |
 
 Danach die übrigen 34 Stories in der Reihenfolge aus `stories.md`.
 
 ## Nächster Schritt
-E5-S2 Kopieren und Profil öffnen umsetzen; Prüfungen von E4-S3 und E5-S1 abwarten.
+E5-S3 Versand protokollieren umsetzen; Prüfungen von E5-S1 und E5-S2 abwarten.
 
 ## Offene Punkte aus den Prüfungen
 Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der Story erledigt, die den Bereich ohnehin anfasst, spätestens in einer Pflege vor dem Halt.
@@ -50,11 +50,12 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 | E3-S3 | Dublettenkennzeichnung, Abgleich über Domain, Sperre der Freigabe | E2-S4 |
 | E3-S3 | Frist von 6 Monaten und neuer Anlass bei Wiederansprache | E10-S1 ff. |
 | E4-S2 | Filter nach Merkmal und Tagen | E9 |
-| E4-S3 | »An SAP übergeben« wird in der Akte als Endzustand gezeigt; Tests zu #5/#7 und zu `erlaubteAktionen` unvollständig; Schiene und Filter heißen beide »Status«; `regeln/verlauf.ts` fehlt in Architektur §7/§9 | E5-S2 (Pflege) |
+| E4-S3 | »An SAP übergeben« wird in der Akte als Endzustand gezeigt; Tests zu #5/#7 und zu `erlaubteAktionen` unvollständig; Schiene und Filter heißen beide »Status«; `regeln/verlauf.ts` fehlt in Architektur §7/§9 | erledigt mit E5-S2 |
 | E4-S2 | Kontaktliste ohne Schutz gegen späte Antworten beim Filterwechsel; Tests zu #1 prüfen Funktion und Firma nur auf »nicht leer« | erledigt mit E5-S1 |
 | E5-S1 | Kriterium 7 nennt Bernasconi, der auf »Nachgefasst« steht und keine Ansprache hat; Vorschlag: »ein freigegebener Kontakt ohne Anlass (Reto Ammann aus dem Lauf vom 19.11.2026)« | Frage an Marco |
 | E5-S1 | Kriterium 5 (Fassung »von Marco geändert«) setzt das Protokollieren voraus, das erst E5-S3 baut; E5-S3 enthält die Servertests »E5-S1 #5« für beide Fälle | Marco nimmt die Verschiebung an? |
 | E5-S1 | Änderungen an Betreff und Text gehen verloren, wenn Marco die Ansprache ohne Markieren verlässt (A3 Schritt 2 »speichert die Fassung«) | Frage an Marco |
+| E5-S2 | Kopier-Bestätigung bleibt nach weiterem Bearbeiten stehen; Test kopiert den Betreff nur unverändert; leeres Feld wird »kopiert« bestätigt | Pflege vor dem Halt |
 | E4-S2 | Meldung `filter_ungueltig` ohne Handlungshinweis; »Dr.« fehlt in der Meldung `person_bekannt` | Pflege vor dem Halt |
 | Konzept | 21-Tage-Schließvorschlag für Reinhardts Altdaten | Entscheidung mit E6-S5 |
 | Konzept | Rechtliches (UWG E-Mail, InMail) und Datenschutz | Frage an Marco vor dem Echtbetrieb |
