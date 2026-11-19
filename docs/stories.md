@@ -441,7 +441,9 @@ Ziel: Marco stellt die Nachricht fertig, sendet selbst und der Versand ist mit z
 4. Wenn Marco den Text kürzt, sodass er unter 45 Wörtern liegt, dann zeigt der Zähler sofort die neue Zahl und nennt den Zielkorridor.
 5. Wenn Marco Betreff oder Text ändert und den Versand protokolliert, dann ist die Fassung als »von Marco geändert« gespeichert; unverändert bleibt sie »Agent«.
 6. Gegeben kein Kontakt ist gewählt, wenn Marco S5 öffnet, dann stehen die Listen »Erstkontakt offen« (hier Simone Gruber) und »Angeschrieben, Nachfassen möglich« (hier Tobias Reinhardt) da.
-7. Gegeben Luca Bernasconi ohne Anlass, dann steht statt eines Aufhängers das Etikett »Kein belastbarer aktueller Anlass«.
+7. Gegeben ein freigegebener Kontakt ohne Anlass (Reto Ammann aus dem Lauf vom 19.11.2026), dann steht statt eines Aufhängers das Etikett »Kein belastbarer aktueller Anlass«. *(Geändert am 19.11.2026 mit Marcos Zustimmung; vorher Luca Bernasconi, der in den Beispieldaten »Nachgefasst« ist.)*
+
+*Nachweis zu Kriterium 5 mit E5-S3 (Speichern beim Protokollieren); von Marco am 19.11.2026 so angenommen.*
 
 **Nicht enthalten:** Kopieren und Profil öffnen (E5-S2), Protokoll (E5-S3), E-Mail (E5-S4, E5-S5).
 
