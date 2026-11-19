@@ -34,6 +34,7 @@ describe('E10-S1 Sperrliste verwalten', () => {
 
   it('E10-S1 #2 neuer Eintrag steht mit dem heutigen Datum in der Liste', async () => {
     const { rufe } = await marco();
+    await rufe('POST', '/sim/datum', { heute: '2026-11-24' });
     const r = await rufe('POST', '/sperrliste', {
       art: 'person',
       name: 'Erika Beispiel',
@@ -45,8 +46,26 @@ describe('E10-S1 Sperrliste verwalten', () => {
       name: 'Erika Beispiel',
       grund: 'Wird von Kollegen betreut',
       herkunft: 'von_marco',
-      erstellt_am: '2026-11-18',
+      erstellt_am: '2026-11-24',
     });
+    const ohneGrund = await rufe('POST', '/sperrliste', { art: 'firma', name: 'Beispiel Werke GmbH' });
+    expect(ohneGrund.json().at(-1)).toMatchObject({ grund: 'Von Marco gesperrt' });
+  });
+
+  it('Prüfung E10-S1 Befund 2: derselbe Name gleicher Art lässt sich nicht doppelt eintragen', async () => {
+    const { db, rufe } = await marco();
+    const r = await rufe('POST', '/sperrliste', { art: 'firma', name: ' bobst ', grund: 'x' });
+    expect(r.statusCode).toBe(409);
+    expect(r.json().fehler).toMatchObject({ code: 'schon_gesperrt', feld: 'name' });
+    expect(db.prepare(`SELECT COUNT(*) n FROM sperreintrag`).get()).toEqual({ n: 5 });
+    expect((await rufe('POST', '/sperrliste', { art: 'person', name: 'BOBST', grund: 'x' })).statusCode).toBe(201);
+  });
+
+  it('Anfrage ohne Inhalt: 422 mit deutscher Meldung', async () => {
+    const { rufe } = await marco();
+    const r = await rufe('POST', '/sperrliste');
+    expect(r.statusCode).toBe(422);
+    expect(r.json().fehler.meldung).toBe('Gib Name, Art und Grund des Eintrags an.');
   });
 
   it('E10-S1 #3 leerer Name: nichts angelegt, Name verlangt', async () => {

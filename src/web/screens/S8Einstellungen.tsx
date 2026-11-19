@@ -48,7 +48,7 @@ export function S8Einstellungen() {
     setMeldung('');
     try {
       setListe(await api<SperrZeile[]>('DELETE', `/sperrliste/${z.id}`));
-      setMeldung(`»${z.name}« ist nicht mehr gesperrt.`);
+      setMeldung(`»${z.name}« steht nicht mehr auf der Sperrliste.`);
     } catch (x) {
       setFehler((x as Error).message);
     }
@@ -92,7 +92,7 @@ export function S8Einstellungen() {
                   {z.grund}
                   {z.gesperrt_bis && <span className="muted"> – gesperrt bis {datum(z.gesperrt_bis)}</span>}
                 </td>
-                <td>{datum(z.erstellt_am)}</td>
+                <td>{z.herkunft === 'startbestand' ? 'Startbestand' : datum(z.erstellt_am)}</td>
                 <td className="rechts">
                   <button
                     type="button"
@@ -136,7 +136,7 @@ export function S8Einstellungen() {
             onChange={(e) => setGrund(e.target.value)}
           />
           <button type="submit" className="btn p">
-            Hinzufügen
+            Eintrag hinzufügen
           </button>
         </form>
       </section>
