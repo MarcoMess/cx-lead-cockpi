@@ -18,11 +18,15 @@ describe('E4-S2 Kontaktliste mit Statusfilter', () => {
     const r = await liste(app);
     expect(r.statusCode).toBe(200);
     expect(namen(r.json()).sort()).toEqual(['Albers', 'Bernasconi', 'Gruber', 'Hollenstein', 'Reinhardt']);
-    for (const k of r.json()) {
-      expect(k.funktion).toBeTruthy();
-      expect(k.firma_name).toBeTruthy();
-      expect(k.status).toBeTruthy();
-    }
+    const zeile = (n: string) => r.json().find((k: { nachname: string }) => k.nachname === n);
+    expect(zeile('Albers')).toMatchObject({
+      funktion: 'Leiterin Customer Service & After-Sales',
+      firma_name: 'Nordwerk Fördertechnik GmbH',
+      status: 'gespraech_vereinbart',
+    });
+    expect(zeile('Reinhardt')).toMatchObject({ firma_name: 'Hansemarkt Handels SE', status: 'angeschrieben' });
+    expect(zeile('Gruber')).toMatchObject({ funktion: 'Chief Digital Officer', status: 'freigegeben' });
+    expect(zeile('Bernasconi')).toMatchObject({ status: 'nachgefasst' });
     expect(namen((await liste(app, 'offene')).json()).sort()).toEqual(namen(r.json()).sort());
   });
 

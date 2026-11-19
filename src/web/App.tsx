@@ -7,6 +7,7 @@ import { Platzhalter } from './screens/Platzhalter';
 import { NichtGefunden } from './screens/NichtGefunden';
 import { S2Eingangskorb } from './screens/S2Eingangskorb';
 import { S4Kontakte } from './screens/S4Kontakte';
+import { S5Ansprache } from './screens/S5Ansprache';
 import type { ScreenId } from '../gemeinsam/screens';
 import { Vorfuehrleiste, type VorfuehrZustand } from './teile/Vorfuehrleiste';
 
@@ -67,6 +68,7 @@ export function App() {
             ))}
             <Route path="/eingangskorb/:laufId" element={<S2Eingangskorb />} />
             <Route path="/kontakte/:kontaktId" element={<S4Kontakte />} />
+            <Route path="/ansprache/:kontaktId" element={<S5Ansprache />} />
             <Route path="/firmen/:firmaId" element={screenFuer('S3')} />
             <Route path="*" element={<NichtGefunden />} />
           </Routes>
@@ -83,6 +85,8 @@ function screenFuer(id: ScreenId) {
       return <S2Eingangskorb />;
     case 'S4':
       return <S4Kontakte />;
+    case 'S5':
+      return <S5Ansprache />;
     default:
       return <Platzhalter id={id} />;
   }

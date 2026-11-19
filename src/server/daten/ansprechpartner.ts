@@ -1,6 +1,6 @@
 // Zugriff auf Ansprechpartner, ihre Anlässe und Nachrichten.
 import type { AkteAnlass, KontaktAkte, KontaktZeile, VerlaufEintrag } from '../../gemeinsam/kontakte';
-import type { AnsprechpartnerStatus } from '../../gemeinsam/werte';
+import type { AnsprechpartnerStatus, NachrichtFassung } from '../../gemeinsam/werte';
 import type { Datenbank } from './db';
 
 export interface NeuerAnsprechpartner {
@@ -161,4 +161,16 @@ export function liesVerlauf(db: Datenbank, id: number): VerlaufEintrag[] {
     )
     .all(id) as unknown as VerlaufEintrag[];
   return [...versuche, ...antworten];
+}
+
+/** Gespeicherte Nachricht eines Ansprechpartners für Kanal und Art, falls vorhanden. */
+export function liesNachricht(
+  db: Datenbank,
+  id: number,
+  kanal: 'linkedin' | 'email',
+  art: 'erstkontakt' | 'nachfassen',
+): { betreff: string | null; text: string; fassung: NachrichtFassung } | undefined {
+  return db
+    .prepare(`SELECT betreff, text, fassung FROM nachricht WHERE ansprechpartner_id = ? AND kanal = ? AND art = ?`)
+    .get(id, kanal, art) as { betreff: string | null; text: string; fassung: NachrichtFassung } | undefined;
 }

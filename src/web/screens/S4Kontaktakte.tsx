@@ -62,6 +62,13 @@ export function S4Kontaktakte({ id }: { id: string }) {
       <p className="unterzeile">
         {akte.funktion}, <Link to={`/firmen/${akte.firma.id}`}>{akte.firma.name}</Link>
       </p>
+      {akte.erlaubte_aktionen.includes('ansprechen') && (
+        <div className="aktionen">
+          <Link className="btn p" to={`/ansprache/${akte.id}`}>
+            Ansprechen
+          </Link>
+        </div>
+      )}
 
       {akte.endzustand ? (
         <p className="note" role="note">
