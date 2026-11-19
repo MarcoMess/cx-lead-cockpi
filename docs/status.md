@@ -28,7 +28,7 @@ Block 1 (Kernweg, danach Halt zum Durchklicken):
 | 7 | E3-S3 Freigeben | story/E3-S3-freigeben | #8 | Zusammengeführt (Runde 1 bestanden; Nachtrag in der Prüfung von E4-S2 mitgeprüft) | 0 von 2 |
 | 8 | E4-S2 Kontaktliste | story/E4-S2-kontaktliste | #9 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
 | 9 | E4-S3 Kontaktakte | story/E4-S3-kontaktakte | #10 | Zusammengeführt (Runde 1 bestanden) | 0 von 2 |
-| 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | #11 | In Prüfung | 0 von 2 |
+| 10 | E5-S1 Ansprache-Ansicht | story/E5-S1-ansprache | #11 | Wartet auf Entscheidung (Prüfung 1: nur Kriterium 5 nicht prüfbar, Nachweis mit E5-S3) | 0 von 2 |
 | 11 | E5-S2 Kopieren, Profil | story/E5-S2-kopieren-profil | – | Offen | 0 von 2 |
 | 12 | E5-S3 Versand protokollieren | story/E5-S3-versand | – | Offen | 0 von 2 |
 
@@ -52,7 +52,9 @@ Sollte-Befunde und Hinweise, die nicht sofort behoben wurden. Sie werden mit der
 | E4-S2 | Filter nach Merkmal und Tagen | E9 |
 | E4-S3 | »An SAP übergeben« wird in der Akte als Endzustand gezeigt; Tests zu #5/#7 und zu `erlaubteAktionen` unvollständig; Schiene und Filter heißen beide »Status«; `regeln/verlauf.ts` fehlt in Architektur §7/§9 | E5-S2 (Pflege) |
 | E4-S2 | Kontaktliste ohne Schutz gegen späte Antworten beim Filterwechsel; Tests zu #1 prüfen Funktion und Firma nur auf »nicht leer« | erledigt mit E5-S1 |
-| E5-S1 | Kriterium 7 nennt Bernasconi, der auf »Nachgefasst« steht und keine Ansprache hat | Frage an Marco |
+| E5-S1 | Kriterium 7 nennt Bernasconi, der auf »Nachgefasst« steht und keine Ansprache hat; Vorschlag: »ein freigegebener Kontakt ohne Anlass (Reto Ammann aus dem Lauf vom 19.11.2026)« | Frage an Marco |
+| E5-S1 | Kriterium 5 (Fassung »von Marco geändert«) setzt das Protokollieren voraus, das erst E5-S3 baut; E5-S3 enthält die Servertests »E5-S1 #5« für beide Fälle | Marco nimmt die Verschiebung an? |
+| E5-S1 | Änderungen an Betreff und Text gehen verloren, wenn Marco die Ansprache ohne Markieren verlässt (A3 Schritt 2 »speichert die Fassung«) | Frage an Marco |
 | E4-S2 | Meldung `filter_ungueltig` ohne Handlungshinweis; »Dr.« fehlt in der Meldung `person_bekannt` | Pflege vor dem Halt |
 | Konzept | 21-Tage-Schließvorschlag für Reinhardts Altdaten | Entscheidung mit E6-S5 |
 | Konzept | Rechtliches (UWG E-Mail, InMail) und Datenschutz | Frage an Marco vor dem Echtbetrieb |
