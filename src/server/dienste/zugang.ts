@@ -1,6 +1,6 @@
 // Prüfung von Passwort und Agenten-Schlüssel. Der Schlüssel liegt nur als Hash in den Einstellungen.
 import { timingSafeEqual } from 'node:crypto';
-import type { Datenbank } from '../daten/db';
+import { transaktion, type Datenbank } from '../daten/db';
 import { liesEinstellung, schreibeEinstellung } from '../daten/einstellungen';
 import { gleicheSchluessel, schluesselHash, zugangsart, type Zugangsart } from '../regeln/zugang';
 
@@ -12,8 +12,10 @@ export function zugangFuer(methode: string, url: string): Zugangsart {
 }
 
 export function setzeAgentSchluessel(db: Datenbank, schluessel: string): void {
-  schreibeEinstellung(db, 'agent_schluessel_hash', schluesselHash(schluessel));
-  schreibeEinstellung(db, 'agent_schluessel_endung', schluessel.slice(-4));
+  transaktion(db, () => {
+    schreibeEinstellung(db, 'agent_schluessel_hash', schluesselHash(schluessel));
+    schreibeEinstellung(db, 'agent_schluessel_endung', schluessel.slice(-4));
+  });
 }
 
 export function istAgentSchluessel(db: Datenbank, schluessel: string): boolean {

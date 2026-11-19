@@ -7,11 +7,22 @@ const eslint = new ESLint();
 async function fehler(datei: string, code: string): Promise<string[]> {
   const [ergebnis] = await eslint.lintText(code + '\n', { filePath: datei });
   return ergebnis.messages
-    .filter((m) => m.ruleId === 'no-restricted-imports' || m.ruleId === 'no-restricted-syntax')
+    .filter((m) => m.ruleId === '@typescript-eslint/no-restricted-imports' || m.ruleId === 'no-restricted-syntax')
     .map((m) => m.ruleId!);
 }
 
 const verboten: [string, string, string][] = [
+  ['weitere Simulator-Datei → Dienst', 'src/simulator/hilfe.ts', "import { x } from '../server/dienste/lege-lauf-an';"],
+  ['weitere Simulator-Datei → daten', 'src/simulator/hilfe.ts', "import { x } from '../server/daten/laeufe';"],
+  ['weitere Simulator-Datei → Regeln', 'src/simulator/hilfe.ts', "import { x } from '../server/regeln/fristen';"],
+  ['weitere Simulator-Datei → api', 'src/simulator/hilfe.ts', "import { x } from '../server/api/agent';"],
+  ['weitere Simulator-Datei → Anbindungen', 'src/simulator/hilfe.ts', "import { x } from '../server/anbindungen/uhr';"],
+  [
+    'Agenten-Simulator → Wert aus daten/db',
+    'src/simulator/agent.ts',
+    "import { oeffneDatenbank } from '../server/daten/db';",
+  ],
+  ['Anbindung → Wert aus daten/db', 'src/server/anbindungen/sap.ts', "import { transaktion } from '../daten/db';"],
   [
     'Agenten-Simulator → Dienst',
     'src/simulator/agent.ts',
@@ -42,6 +53,12 @@ const verboten: [string, string, string][] = [
 ];
 
 const erlaubt: [string, string, string][] = [
+  [
+    'Agenten-Simulator → Typ aus daten/db',
+    'src/simulator/agent.ts',
+    "import type { Datenbank } from '../server/daten/db';",
+  ],
+  ['Anbindung → Typ aus daten/db', 'src/server/anbindungen/uhr.ts', "import type { Datenbank } from '../daten/db';"],
   [
     'Agenten-Simulator → daten/einstellungen',
     'src/simulator/agent.ts',
