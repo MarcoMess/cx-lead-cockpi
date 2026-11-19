@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { AGENT, alsMarco, neueApp } from '../hilfen';
 import { oeffneDatenbank } from '../../src/server/daten/db';
-import { Uhr } from '../../src/server/anbindungen/uhr';
+import { erstelleUhr } from '../../src/server/anbindungen/uhr';
 import { istAgentSchluessel } from '../../src/server/dienste/zugang';
 
 let app: FastifyInstance | undefined;
@@ -23,7 +23,7 @@ describe('Pflege nach den Prüfungen E1-S0 bis E2-S3', () => {
     expect(ausgabe).toContain('Vorführdatum: 2026-11-18');
     expect(ausgabe).toContain('starte ihn neu');
     const db = oeffneDatenbank(pfad);
-    expect(new Uhr(db).heute()).toBe('2026-11-18');
+    expect(erstelleUhr(db).heute()).toBe('2026-11-18');
     expect(db.prepare('SELECT COUNT(*) n FROM firma').get()).toEqual({ n: 7 });
     expect(db.prepare('SELECT COUNT(*) n FROM sperreintrag').get()).toEqual({ n: 5 });
     expect(istAgentSchluessel(db, 'reset-test-schluessel')).toBe(true);

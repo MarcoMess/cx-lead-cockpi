@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { alsMarco, neueApp, zahl } from '../hilfen';
 import { setzeZurueck } from '../../src/server/dienste/zuruecksetzen';
 import { erstelleStartdatenbank } from '../../src/server/daten/startdaten';
-import { Uhr } from '../../src/server/anbindungen/uhr';
+import { erstelleUhr } from '../../src/server/anbindungen/uhr';
 
 let app: FastifyInstance | undefined;
 afterEach(async () => app?.close());
@@ -35,7 +35,7 @@ describe('E1-S2 Vorführdatum und Zurücksetzen', () => {
   it('E1-S2 #1 der Ablauf von npm run reset setzt das Datum auf den 18.11.2026', () => {
     const db = erstelleStartdatenbank(':memory:');
     setzeZurueck(db);
-    expect(new Uhr(db).heute()).toBe('2026-11-18');
+    expect(erstelleUhr(db).heute()).toBe('2026-11-18');
   });
 
   it('E1-S2 #2 plus_werktage: Mittwoch 18.11. → Donnerstag 19.11., Freitag 20.11. → Montag 23.11.2026', async () => {

@@ -2,9 +2,14 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { Datenbank } from '../daten/db';
 import { liesEinstellung, schreibeEinstellung } from '../daten/einstellungen';
-import { gleicheSchluessel, schluesselHash } from '../regeln/zugang';
+import { gleicheSchluessel, schluesselHash, zugangsart, type Zugangsart } from '../regeln/zugang';
 
 export const gleich = gleicheSchluessel;
+
+/** Welche Anmeldung eine Adresse verlangt; die Regel liegt in regeln/zugang.ts. */
+export function zugangFuer(methode: string, url: string): Zugangsart {
+  return zugangsart(methode, url);
+}
 
 export function setzeAgentSchluessel(db: Datenbank, schluessel: string): void {
   schreibeEinstellung(db, 'agent_schluessel_hash', schluesselHash(schluessel));
